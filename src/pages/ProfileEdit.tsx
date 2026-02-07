@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, X, Plus, Trash2 } from "lucide-react";
-
+import { ImageUpload } from "@/components/shared/ImageUpload";
+import { ProfileProgress } from "@/components/shared/ProfileProgress";
 interface SpecialistRole {
   id: string;
   name: string;
@@ -77,6 +78,7 @@ export default function ProfileEdit() {
   const [telegram, setTelegram] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [portfolioUrl, setPortfolioUrl] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
 
   // Reference data
   const [roles, setRoles] = useState<SpecialistRole[]>([]);
@@ -130,6 +132,7 @@ export default function ProfileEdit() {
         setTelegram(profile.telegram || "");
         setLinkedinUrl(profile.linkedin_url || "");
         setPortfolioUrl(profile.portfolio_url || "");
+        setAvatarUrl(profile.avatar_url || "");
 
         // Fetch skills
         const { data: profileSkills } = await supabase
@@ -207,7 +210,8 @@ export default function ProfileEdit() {
         phone: phone.trim() || null,
         telegram: telegram.trim() || null,
         linkedin_url: linkedinUrl.trim() || null,
-        portfolio_url: portfolioUrl.trim() || null
+        portfolio_url: portfolioUrl.trim() || null,
+        avatar_url: avatarUrl || null
       };
 
       let newProfileId = profileId;
@@ -350,6 +354,26 @@ export default function ProfileEdit() {
     setExperiences(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Group skills by category (computed before return)
+  const skillsByCategory = allSkills.reduce((acc, skill) => {
+    const cat = skill.category || "Прочее";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(skill);
+    return acc;
+  }, {} as Record<string, Skill[]>);
+
+  // Profile completeness calculation (must be before conditional returns)
+  const profileFields = useMemo(() => [
+    { key: "avatar", label: "Фото профиля", completed: !!avatarUrl, weight: 10 },
+    { key: "name", label: "Имя и фамилия", completed: !!firstName && !!lastName, weight: 15 },
+    { key: "role", label: "Специализация", completed: !!roleId, weight: 15 },
+    { key: "bio", label: "О себе", completed: !!bio && bio.length > 20, weight: 10 },
+    { key: "location", label: "Город и страна", completed: !!city && !!country, weight: 10 },
+    { key: "skills", label: "Навыки (минимум 3)", completed: selectedSkills.length >= 3, weight: 15 },
+    { key: "experience", label: "Опыт работы", completed: experiences.length > 0 && experiences.some(e => e.company_name && e.position), weight: 15 },
+    { key: "contacts", label: "Контакты (email/telegram)", completed: !!email || !!telegram, weight: 10 },
+  ], [avatarUrl, firstName, lastName, roleId, bio, city, country, selectedSkills, experiences, email, telegram]);
+
   if (authLoading || loading) {
     return (
       <Layout>
@@ -359,14 +383,6 @@ export default function ProfileEdit() {
       </Layout>
     );
   }
-
-  // Group skills by category
-  const skillsByCategory = allSkills.reduce((acc, skill) => {
-    const cat = skill.category || "Прочее";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(skill);
-    return acc;
-  }, {} as Record<string, Skill[]>);
 
   return (
     <Layout>
@@ -381,6 +397,37 @@ export default function ProfileEdit() {
               Отмена
             </Button>
           </div>
+
+          {/* Profile Progress */}
+          <ProfileProgress fields={profileFields} />
+
+          {/* Avatar Upload */}
+          <Card>
+            <CardContent className="py-6">
+              <div className="flex items-center gap-6">
+                <ImageUpload
+                  currentImageUrl={avatarUrl}
+                  onImageUploaded={setAvatarUrl}
+                  bucket="avatars"
+                  userId={user!.id}
+                  size="lg"
+                  shape="circle"
+                  placeholder={
+                    <span className="text-2xl font-display font-bold text-muted-foreground">
+                      {firstName?.[0] || "?"}{lastName?.[0] || "?"}
+                    </span>
+                  }
+                />
+                <div>
+                  <h3 className="font-semibold mb-1">Фото профиля</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Нажмите на изображение, чтобы загрузить фото.<br />
+                    Рекомендуемый размер: 400×400 пикселей.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Basic Info */}
           <Card>
