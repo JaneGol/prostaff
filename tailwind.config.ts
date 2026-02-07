@@ -18,7 +18,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Russo One", "sans-serif"],
+        display: ["Anton", "sans-serif"],
         sans: ["Inter", "sans-serif"],
       },
       colors: {
