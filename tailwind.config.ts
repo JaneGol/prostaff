@@ -18,8 +18,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Anton", "sans-serif"],
-        sans: ["Inter", "sans-serif"],
+        display: ["Plus Jakarta Sans", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
