@@ -24,7 +24,7 @@ export function HeroSection() {
               transition={{ duration: 0.5 }}
             >
               <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium text-white bg-white/20 rounded-pill">
-                🏆 Платформа для спортивной индустрии
+                🏆 Экосистема карьеры в спорте
               </span>
             </motion.div>
 
