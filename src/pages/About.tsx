@@ -61,7 +61,7 @@ export default function About() {
         <div className="container">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tight mb-6">
-              О платформе <span className="text-accent">TalentPool</span>
+              О платформе <span className="text-accent">ProStaff</span>
             </h1>
             <p className="text-xl md:text-2xl text-white/80 leading-relaxed">
               Нишевая платформа для поиска работы в спортивной индустрии. 
@@ -84,7 +84,7 @@ export default function About() {
               </h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  TalentPool был создан для решения ключевой проблемы спортивной индустрии — 
+                  ProStaff был создан для решения ключевой проблемы спортивной индустрии — 
                   сложности поиска узкопрофильных специалистов. Клубы тратят недели на поиск 
                   аналитиков, тренеров и спортивных врачей через разрозненные каналы.
                 </p>
@@ -260,14 +260,14 @@ export default function About() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:hello@talentpool.ru"
+                href="mailto:hello@prostaff.ru"
                 className="inline-flex items-center justify-center gap-2 bg-white text-primary px-6 py-3 rounded-full font-semibold hover:bg-white/90 transition-colors"
               >
                 <Mail className="h-5 w-5" />
-                hello@talentpool.ru
+                hello@prostaff.ru
               </a>
               <a
-                href="https://t.me/talentpool"
+                href="https://t.me/prostaff"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-white/10 text-white px-6 py-3 rounded-full font-semibold hover:bg-white/20 transition-colors"
