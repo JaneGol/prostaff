@@ -18,7 +18,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Bebas Neue", "sans-serif"],
+        display: ["Montserrat", "sans-serif"],
         sans: ["Inter", "sans-serif"],
       },
       colors: {
