@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      applications: {
+        Row: {
+          cover_letter: string | null
+          created_at: string | null
+          employer_notes: string | null
+          id: string
+          job_id: string
+          profile_id: string
+          status: Database["public"]["Enums"]["application_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          cover_letter?: string | null
+          created_at?: string | null
+          employer_notes?: string | null
+          id?: string
+          job_id: string
+          profile_id: string
+          status?: Database["public"]["Enums"]["application_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          cover_letter?: string | null
+          created_at?: string | null
+          employer_notes?: string | null
+          id?: string
+          job_id?: string
+          profile_id?: string
+          status?: Database["public"]["Enums"]["application_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           city: string | null
@@ -108,6 +156,135 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_skills: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_required: boolean | null
+          job_id: string
+          skill_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          job_id: string
+          skill_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          job_id?: string
+          skill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_skills_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          applications_count: number | null
+          city: string | null
+          company_id: string
+          contract_type: Database["public"]["Enums"]["contract_type"] | null
+          country: string | null
+          created_at: string | null
+          description: string
+          expires_at: string | null
+          id: string
+          is_relocatable: boolean | null
+          is_remote: boolean | null
+          level: Database["public"]["Enums"]["experience_level"] | null
+          requirements: string | null
+          responsibilities: string | null
+          role_id: string | null
+          salary_currency: string | null
+          salary_max: number | null
+          salary_min: number | null
+          status: Database["public"]["Enums"]["job_status"] | null
+          title: string
+          updated_at: string | null
+          views_count: number | null
+        }
+        Insert: {
+          applications_count?: number | null
+          city?: string | null
+          company_id: string
+          contract_type?: Database["public"]["Enums"]["contract_type"] | null
+          country?: string | null
+          created_at?: string | null
+          description: string
+          expires_at?: string | null
+          id?: string
+          is_relocatable?: boolean | null
+          is_remote?: boolean | null
+          level?: Database["public"]["Enums"]["experience_level"] | null
+          requirements?: string | null
+          responsibilities?: string | null
+          role_id?: string | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: Database["public"]["Enums"]["job_status"] | null
+          title: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          applications_count?: number | null
+          city?: string | null
+          company_id?: string
+          contract_type?: Database["public"]["Enums"]["contract_type"] | null
+          country?: string | null
+          created_at?: string | null
+          description?: string
+          expires_at?: string | null
+          id?: string
+          is_relocatable?: boolean | null
+          is_remote?: boolean | null
+          level?: Database["public"]["Enums"]["experience_level"] | null
+          requirements?: string | null
+          responsibilities?: string | null
+          role_id?: string | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: Database["public"]["Enums"]["job_status"] | null
+          title?: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "specialist_roles"
             referencedColumns: ["id"]
           },
         ]
@@ -300,13 +477,32 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
+      is_application_owner: {
+        Args: { _application_id: string }
+        Returns: boolean
+      }
       is_company_owner: { Args: { _company_id: string }; Returns: boolean }
+      is_job_owner: { Args: { _job_id: string }; Returns: boolean }
       is_profile_owner: { Args: { _profile_id: string }; Returns: boolean }
       is_profile_public: { Args: { _profile_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "specialist" | "employer" | "admin"
+      application_status:
+        | "pending"
+        | "reviewed"
+        | "shortlisted"
+        | "interview"
+        | "rejected"
+        | "hired"
+      contract_type:
+        | "full_time"
+        | "part_time"
+        | "contract"
+        | "internship"
+        | "freelance"
       experience_level: "intern" | "junior" | "middle" | "senior" | "head"
+      job_status: "draft" | "active" | "paused" | "closed"
       search_status: "actively_looking" | "open_to_offers" | "not_looking"
     }
     CompositeTypes: {
@@ -436,7 +632,23 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["specialist", "employer", "admin"],
+      application_status: [
+        "pending",
+        "reviewed",
+        "shortlisted",
+        "interview",
+        "rejected",
+        "hired",
+      ],
+      contract_type: [
+        "full_time",
+        "part_time",
+        "contract",
+        "internship",
+        "freelance",
+      ],
       experience_level: ["intern", "junior", "middle", "senior", "head"],
+      job_status: ["draft", "active", "paused", "closed"],
       search_status: ["actively_looking", "open_to_offers", "not_looking"],
     },
   },
