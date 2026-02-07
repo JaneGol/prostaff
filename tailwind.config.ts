@@ -18,8 +18,15 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Oswald", "sans-serif"],
+        display: ["Bebas Neue", "sans-serif"],
         sans: ["Inter", "sans-serif"],
+      },
+      fontSize: {
+        // Custom sizes for better hierarchy
+        'display-xl': ['4.5rem', { lineHeight: '0.92', letterSpacing: '0.02em' }],
+        'display-lg': ['3.5rem', { lineHeight: '0.95', letterSpacing: '0.02em' }],
+        'display-md': ['2.5rem', { lineHeight: '0.95', letterSpacing: '0.03em' }],
+        'display-sm': ['1.75rem', { lineHeight: '1', letterSpacing: '0.03em' }],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -32,6 +39,7 @@ export default {
           foreground: "hsl(var(--primary-foreground))",
           dark: "hsl(var(--primary-dark))",
           darker: "hsl(var(--primary-darker))",
+          glow: "hsl(var(--primary-glow))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -50,6 +58,7 @@ export default {
           foreground: "hsl(var(--accent-foreground))",
           hover: "hsl(var(--accent-hover))",
           light: "hsl(var(--accent-light))",
+          glow: "hsl(var(--accent-glow))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -100,12 +109,17 @@ export default {
           from: { opacity: "0", transform: "translateX(20px)" },
           to: { opacity: "1", transform: "translateX(0)" },
         },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.7" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.5s ease-out forwards",
         "slide-in-right": "slide-in-right 0.5s ease-out forwards",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
       },
     },
   },
