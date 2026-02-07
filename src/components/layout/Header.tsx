@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Search, User, LogOut } from "lucide-react";
+import { Menu, X, Search, User, LogOut, Send, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -81,16 +81,32 @@ export function Header() {
                       {userRole === "specialist" ? "Профиль" : "Кабинет"}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end">
                     {userRole === "specialist" && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/profile/edit">Мой профиль</Link>
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link to="/profile/edit">Мой профиль</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/my-applications">
+                            <Send className="h-4 w-4 mr-2" />
+                            Мои отклики
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
                     {userRole === "employer" && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/company/edit">Моя компания</Link>
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link to="/company/edit">Моя компания</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/employer/applications">
+                            <Users className="h-4 w-4 mr-2" />
+                            Отклики кандидатов
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
@@ -148,18 +164,34 @@ export function Header() {
               {user ? (
                 <>
                   {userRole === "specialist" && (
-                    <Link to="/profile/edit" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="outline" className="w-full">
-                        Мой профиль
-                      </Button>
-                    </Link>
+                    <>
+                      <Link to="/profile/edit" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="outline" className="w-full">
+                          Мой профиль
+                        </Button>
+                      </Link>
+                      <Link to="/my-applications" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full">
+                          <Send className="h-4 w-4 mr-2" />
+                          Мои отклики
+                        </Button>
+                      </Link>
+                    </>
                   )}
                   {userRole === "employer" && (
-                    <Link to="/company/edit" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="outline" className="w-full">
-                        Моя компания
-                      </Button>
-                    </Link>
+                    <>
+                      <Link to="/company/edit" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="outline" className="w-full">
+                          Моя компания
+                        </Button>
+                      </Link>
+                      <Link to="/employer/applications" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full">
+                          <Users className="h-4 w-4 mr-2" />
+                          Отклики кандидатов
+                        </Button>
+                      </Link>
+                    </>
                   )}
                   <Button variant="ghost" className="w-full text-destructive" onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />
