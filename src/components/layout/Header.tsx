@@ -34,7 +34,7 @@ export function Header() {
       {/* Top bar */}
       <div className="bg-primary-darker text-white py-2 text-center text-sm">
         <span className="font-medium">
-          🏆 Найди работу мечты в спорте — присоединяйся к платформе!
+          🏆 Экосистема карьеры в спорте — присоединяйся!
         </span>
       </div>
 
