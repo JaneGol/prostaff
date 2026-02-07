@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, MapPin, Send } from "lucide-react";
+import { Mail, Phone, MapPin, Send } from "lucide-react";
 
 const footerLinks = {
   platform: [
@@ -28,26 +28,26 @@ export function Footer() {
       {/* Main footer */}
       <div className="container py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-          {/* Brand - ProStaff */}
+          {/* Brand */}
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-white/10 backdrop-blur flex items-center justify-center">
-                <span className="text-white font-display text-2xl">P</span>
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">
+                <span className="text-primary font-display font-bold text-xl">T</span>
               </div>
-              <span className="font-display text-2xl tracking-wide">
-                PRO<span className="text-accent">STAFF</span>
+              <span className="font-display text-xl font-bold uppercase tracking-tight">
+                Talent<span className="text-accent">Pool</span>
               </span>
             </Link>
-            <p className="text-white/60 text-sm mb-6 leading-relaxed">
+            <p className="text-white/70 text-sm mb-6">
               Нишевая платформа для поиска работы в спортивной индустрии. 
               Объединяем специалистов и клубы РФ, Беларуси и Казахстана.
             </p>
             <div className="flex items-center gap-4">
               <a
-                href="https://t.me/prostaff"
+                href="https://t.me/talentpool"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-lg bg-white/10 hover:bg-accent flex items-center justify-center transition-colors"
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-accent flex items-center justify-center transition-colors"
               >
                 <Send className="h-5 w-5" />
               </a>
@@ -56,15 +56,15 @@ export function Footer() {
 
           {/* Platform links */}
           <div>
-            <h4 className="font-display text-lg tracking-wide mb-4 text-white/90">
-              ПЛАТФОРМА
+            <h4 className="font-display text-lg font-semibold uppercase tracking-wide mb-4">
+              Платформа
             </h4>
             <ul className="space-y-3">
               {footerLinks.platform.map((link) => (
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="text-white/60 hover:text-white transition-colors text-sm"
+                    className="text-white/70 hover:text-white transition-colors text-sm"
                   >
                     {link.label}
                   </Link>
@@ -75,15 +75,15 @@ export function Footer() {
 
           {/* For Specialists */}
           <div>
-            <h4 className="font-display text-lg tracking-wide mb-4 text-white/90">
-              СПЕЦИАЛИСТАМ
+            <h4 className="font-display text-lg font-semibold uppercase tracking-wide mb-4">
+              Специалистам
             </h4>
             <ul className="space-y-3">
               {footerLinks.forSpecialists.map((link) => (
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="text-white/60 hover:text-white transition-colors text-sm"
+                    className="text-white/70 hover:text-white transition-colors text-sm"
                   >
                     {link.label}
                   </Link>
@@ -94,15 +94,15 @@ export function Footer() {
 
           {/* For Clubs */}
           <div>
-            <h4 className="font-display text-lg tracking-wide mb-4 text-white/90">
-              КЛУБАМ
+            <h4 className="font-display text-lg font-semibold uppercase tracking-wide mb-4">
+              Клубам
             </h4>
             <ul className="space-y-3">
               {footerLinks.forClubs.map((link) => (
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="text-white/60 hover:text-white transition-colors text-sm"
+                    className="text-white/70 hover:text-white transition-colors text-sm"
                   >
                     {link.label}
                   </Link>
@@ -115,10 +115,10 @@ export function Footer() {
         {/* Contact info */}
         <div className="mt-12 pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div className="flex flex-wrap items-center gap-6 text-sm text-white/60">
-              <a href="mailto:hello@prostaff.ru" className="flex items-center gap-2 hover:text-white transition-colors">
+            <div className="flex flex-wrap items-center gap-6 text-sm text-white/70">
+              <a href="mailto:hello@talentpool.ru" className="flex items-center gap-2 hover:text-white transition-colors">
                 <Mail className="h-4 w-4" />
-                hello@prostaff.ru
+                hello@talentpool.ru
               </a>
               <span className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
@@ -132,8 +132,8 @@ export function Footer() {
       {/* Copyright */}
       <div className="border-t border-white/10">
         <div className="container py-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white/40">
-            <p>© 2024 ProStaff. Все права защищены.</p>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white/50">
+            <p>© 2024 TalentPool. Все права защищены.</p>
             <div className="flex items-center gap-6">
               <Link to="/privacy" className="hover:text-white transition-colors">
                 Политика конфиденциальности
