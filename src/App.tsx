@@ -16,6 +16,7 @@ import JobEdit from "./pages/JobEdit";
 import EmployerApplications from "./pages/EmployerApplications";
 import MyApplications from "./pages/MyApplications";
 import Content from "./pages/Content";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/employer/applications" element={<EmployerApplications />} />
             <Route path="/my-applications" element={<MyApplications />} />
             <Route path="/content" element={<Content />} />
+            <Route path="/about" element={<About />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
