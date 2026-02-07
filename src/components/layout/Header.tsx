@@ -44,12 +44,12 @@ export function Header() {
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-white font-display font-bold text-xl">T</span>
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                  <span className="text-white font-display font-bold text-xl">P</span>
                 </div>
                 <span className="font-display text-xl md:text-2xl font-bold text-foreground uppercase tracking-tight">
-                  Talent<span className="text-accent">Pool</span>
+                  Pro<span className="text-accent">Staff</span>
                 </span>
               </div>
             </Link>

@@ -31,11 +31,11 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">
-                <span className="text-primary font-display font-bold text-xl">T</span>
+              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
+                <span className="text-primary font-display font-bold text-xl">P</span>
               </div>
               <span className="font-display text-xl font-bold uppercase tracking-tight">
-                Talent<span className="text-accent">Pool</span>
+                Pro<span className="text-accent">Staff</span>
               </span>
             </Link>
             <p className="text-white/70 text-sm mb-6">
@@ -44,7 +44,7 @@ export function Footer() {
             </p>
             <div className="flex items-center gap-4">
               <a
-                href="https://t.me/talentpool"
+                href="https://t.me/prostaff"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 hover:bg-accent flex items-center justify-center transition-colors"
@@ -116,9 +116,9 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex flex-wrap items-center gap-6 text-sm text-white/70">
-              <a href="mailto:hello@talentpool.ru" className="flex items-center gap-2 hover:text-white transition-colors">
+              <a href="mailto:hello@prostaff.ru" className="flex items-center gap-2 hover:text-white transition-colors">
                 <Mail className="h-4 w-4" />
-                hello@talentpool.ru
+                hello@prostaff.ru
               </a>
               <span className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
@@ -133,7 +133,7 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="container py-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white/50">
-            <p>© 2024 TalentPool. Все права защищены.</p>
+            <p>© 2024 ProStaff. Все права защищены.</p>
             <div className="flex items-center gap-6">
               <Link to="/privacy" className="hover:text-white transition-colors">
                 Политика конфиденциальности
