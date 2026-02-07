@@ -1,8 +1,16 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, Search } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, Search, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navLinks = [
   { href: "/specialists", label: "Банк специалистов" },
@@ -13,6 +21,13 @@ const navLinks = [
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, userRole, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full">
@@ -57,16 +72,47 @@ export function Header() {
               <Button variant="ghost" size="icon">
                 <Search className="h-5 w-5" />
               </Button>
-              <Link to="/auth">
-                <Button variant="outline" size="sm">
-                  Войти
-                </Button>
-              </Link>
-              <Link to="/auth?mode=signup">
-                <Button size="sm">
-                  Регистрация
-                </Button>
-              </Link>
+              
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <User className="h-4 w-4" />
+                      {userRole === "specialist" ? "Профиль" : "Кабинет"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {userRole === "specialist" && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/profile/edit">Мой профиль</Link>
+                      </DropdownMenuItem>
+                    )}
+                    {userRole === "employer" && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/company/edit">Моя компания</Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Выйти
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <>
+                  <Link to="/auth">
+                    <Button variant="outline" size="sm">
+                      Войти
+                    </Button>
+                  </Link>
+                  <Link to="/auth?mode=signup">
+                    <Button size="sm">
+                      Регистрация
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -84,7 +130,7 @@ export function Header() {
         <div
           className={cn(
             "lg:hidden overflow-hidden transition-all duration-300 border-t border-border",
-            isMenuOpen ? "max-h-96" : "max-h-0"
+            isMenuOpen ? "max-h-[400px]" : "max-h-0"
           )}
         >
           <div className="container py-4 space-y-4">
@@ -99,16 +145,41 @@ export function Header() {
               </Link>
             ))}
             <div className="flex flex-col gap-3 pt-4 border-t border-border">
-              <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="outline" className="w-full">
-                  Войти
-                </Button>
-              </Link>
-              <Link to="/auth?mode=signup" onClick={() => setIsMenuOpen(false)}>
-                <Button className="w-full">
-                  Регистрация
-                </Button>
-              </Link>
+              {user ? (
+                <>
+                  {userRole === "specialist" && (
+                    <Link to="/profile/edit" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" className="w-full">
+                        Мой профиль
+                      </Button>
+                    </Link>
+                  )}
+                  {userRole === "employer" && (
+                    <Link to="/company/edit" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" className="w-full">
+                        Моя компания
+                      </Button>
+                    </Link>
+                  )}
+                  <Button variant="ghost" className="w-full text-destructive" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Выйти
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      Войти
+                    </Button>
+                  </Link>
+                  <Link to="/auth?mode=signup" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-full">
+                      Регистрация
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
