@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, X, Upload, Building2 } from "lucide-react";
+import { Loader2, Save, X, Building2 } from "lucide-react";
+import { ImageUpload } from "@/components/shared/ImageUpload";
 
 export default function CompanyEdit() {
   const navigate = useNavigate();
@@ -158,31 +159,24 @@ export default function CompanyEdit() {
             </Button>
           </div>
 
-          {/* Logo Preview */}
+          {/* Logo Upload */}
           <Card>
             <CardContent className="py-6">
               <div className="flex items-center gap-6">
-                <div className="w-24 h-24 rounded-xl bg-muted flex items-center justify-center overflow-hidden border-2 border-dashed border-border">
-                  {logoUrl ? (
-                    <img 
-                      src={logoUrl} 
-                      alt={name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Building2 className="h-10 w-10 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="logoUrl">URL логотипа</Label>
-                  <Input
-                    id="logoUrl"
-                    value={logoUrl}
-                    onChange={(e) => setLogoUrl(e.target.value)}
-                    placeholder="https://example.com/logo.png"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Вставьте ссылку на изображение логотипа
+                <ImageUpload
+                  currentImageUrl={logoUrl}
+                  onImageUploaded={setLogoUrl}
+                  bucket="logos"
+                  userId={user!.id}
+                  size="lg"
+                  shape="square"
+                  placeholder={<Building2 className="h-10 w-10 text-muted-foreground" />}
+                />
+                <div>
+                  <h3 className="font-semibold mb-1">Логотип компании</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Нажмите на изображение, чтобы загрузить логотип.<br />
+                    Рекомендуемый размер: 400×400 пикселей.
                   </p>
                 </div>
               </div>
