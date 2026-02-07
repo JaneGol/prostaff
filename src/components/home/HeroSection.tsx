@@ -34,9 +34,9 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="font-display text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white uppercase tracking-tight mb-6"
             >
-              Найди свою команду
+              Платформа карьерных
               <br />
-              <span className="text-white/90">в мире спорта</span>
+              <span className="text-white/90">решений в спорте</span>
             </motion.h1>
 
             <motion.p
