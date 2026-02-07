@@ -18,7 +18,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Montserrat", "sans-serif"],
+        display: ["Russo One", "sans-serif"],
         sans: ["Inter", "sans-serif"],
       },
       colors: {
