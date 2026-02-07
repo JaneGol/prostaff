@@ -39,18 +39,20 @@ export function Header() {
       </div>
 
       {/* Main navigation */}
-      <nav className="bg-white border-b border-border">
+      <nav className="bg-white border-b border-border shadow-sm">
         <div className="container">
           <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-white font-display font-bold text-xl">T</span>
+            {/* Logo - ProStaff */}
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 md:w-11 md:h-11 rounded-lg bg-primary flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                  <span className="text-white font-display text-2xl md:text-3xl">P</span>
                 </div>
-                <span className="font-display text-xl md:text-2xl font-bold text-foreground uppercase tracking-tight">
-                  Talent<span className="text-accent">Pool</span>
-                </span>
+                <div className="flex flex-col -space-y-1">
+                  <span className="font-display text-2xl md:text-3xl text-foreground tracking-wide">
+                    PRO<span className="text-accent">STAFF</span>
+                  </span>
+                </div>
               </div>
             </Link>
 
@@ -60,7 +62,7 @@ export function Header() {
                 <Link
                   key={link.href}
                   to={link.href}
-                  className="text-foreground/80 hover:text-accent font-medium transition-colors"
+                  className="text-foreground/70 hover:text-accent font-medium transition-colors text-sm uppercase tracking-wide"
                 >
                   {link.label}
                 </Link>
@@ -69,7 +71,7 @@ export function Header() {
 
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center gap-4">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                 <Search className="h-5 w-5" />
               </Button>
               
@@ -118,12 +120,12 @@ export function Header() {
               ) : (
                 <>
                   <Link to="/auth">
-                    <Button variant="outline" size="sm">
+                    <Button variant="ghost" size="sm" className="font-medium">
                       Войти
                     </Button>
                   </Link>
                   <Link to="/auth?mode=signup">
-                    <Button size="sm">
+                    <Button size="sm" className="btn-premium font-medium">
                       Регистрация
                     </Button>
                   </Link>
@@ -133,7 +135,7 @@ export function Header() {
 
             {/* Mobile menu button */}
             <button
-              className="lg:hidden p-2 text-foreground"
+              className="lg:hidden p-2 text-foreground hover:bg-muted rounded-lg transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Toggle menu"
             >
@@ -145,22 +147,22 @@ export function Header() {
         {/* Mobile Navigation */}
         <div
           className={cn(
-            "lg:hidden overflow-hidden transition-all duration-300 border-t border-border",
-            isMenuOpen ? "max-h-[400px]" : "max-h-0"
+            "lg:hidden overflow-hidden transition-all duration-300 border-t border-border bg-white",
+            isMenuOpen ? "max-h-[500px]" : "max-h-0"
           )}
         >
-          <div className="container py-4 space-y-4">
+          <div className="container py-4 space-y-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                className="block py-2 text-foreground/80 hover:text-accent font-medium transition-colors"
+                className="block py-3 px-4 text-foreground/80 hover:text-accent hover:bg-muted rounded-lg font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
               </Link>
             ))}
-            <div className="flex flex-col gap-3 pt-4 border-t border-border">
+            <div className="flex flex-col gap-3 pt-4 mt-4 border-t border-border">
               {user ? (
                 <>
                   {userRole === "specialist" && (
@@ -206,7 +208,7 @@ export function Header() {
                     </Button>
                   </Link>
                   <Link to="/auth?mode=signup" onClick={() => setIsMenuOpen(false)}>
-                    <Button className="w-full">
+                    <Button className="w-full btn-premium">
                       Регистрация
                     </Button>
                   </Link>

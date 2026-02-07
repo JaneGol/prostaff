@@ -1,111 +1,113 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* 
- * SPORT TALENT POOL - Design System
- * Спортивная цветовая палитра в стиле олимпийских трансляций
+ * PROSTAFF - Premium Sports Design System
+ * Спортивная цветовая палитра премиум-класса
  * Все цвета в HSL формате
  */
 
 @layer base {
   :root {
-    /* Primary Blue - Ключевой синий (менее агрессивный) */
-    --primary: 230 70% 45%;                    /* #2B47B8 - основной синий */
-    --primary-foreground: 0 0% 100%;           /* белый текст на синем */
-    --primary-dark: 232 60% 32%;               /* #182A8A - тёмный синий для nav */
-    --primary-darker: 234 55% 22%;             /* #0F1C5A - почти чёрно-синий */
+    /* Primary Blue - Глубокий спортивный синий с премиальным ощущением */
+    --primary: 228 72% 38%;                    /* Более глубокий, насыщенный синий */
+    --primary-foreground: 0 0% 100%;
+    --primary-dark: 230 65% 28%;               /* Тёмный синий для nav */
+    --primary-darker: 232 60% 18%;             /* Почти чёрно-синий для footer */
+    --primary-glow: 225 80% 55%;               /* Светящийся синий для акцентов */
     
-    /* Action Red - Акцентный красный для CTA */
-    --accent: 2 98% 44%;                       /* #E10600 - основной красный */
-    --accent-foreground: 0 0% 100%;            /* белый текст на красном */
-    --accent-hover: 2 95% 37%;                 /* #B80500 - hover состояние */
-    --accent-light: 6 85% 95%;                 /* #FCE8E6 - светло-красный фон */
+    /* Action Red - Утяжелённый, уверенный красный */
+    --accent: 0 85% 38%;                       /* Более тёмный, солидный красный */
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 0 82% 32%;                 /* Ещё темнее при hover */
+    --accent-light: 6 75% 94%;                 /* Светло-красный фон */
+    --accent-glow: 2 90% 50%;                  /* Светящийся красный */
     
-    /* Neutrals */
-    --background: 0 0% 100%;                   /* #FFFFFF */
-    --foreground: 216 40% 10%;                 /* #0B1A2B - основной текст */
+    /* Neutrals - Чистые и контрастные */
+    --background: 0 0% 100%;
+    --foreground: 220 45% 8%;                  /* Почти чёрный с синим оттенком */
     
     --card: 0 0% 100%;
-    --card-foreground: 216 40% 10%;
+    --card-foreground: 220 45% 8%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 216 40% 10%;
+    --popover-foreground: 220 45% 8%;
     
-    --secondary: 0 0% 95%;                     /* #F2F2F2 - вторичный фон */
-    --secondary-foreground: 216 40% 10%;
+    --secondary: 220 15% 96%;                  /* Чуть синеватый серый */
+    --secondary-foreground: 220 45% 8%;
     
-    --muted: 0 0% 95%;
-    --muted-foreground: 220 9% 46%;            /* #6B7280 - вторичный текст */
+    --muted: 220 15% 96%;
+    --muted-foreground: 220 10% 45%;
     
-    --border: 0 0% 88%;                        /* #E0E0E0 */
-    --input: 0 0% 88%;
-    --ring: 230 70% 45%;
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 228 72% 38%;
     
     /* Destructive */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     
     /* Status Colors */
-    --success: 142 71% 45%;                    /* #16A34A */
-    --warning: 38 92% 50%;                     /* #F59E0B */
-    --error: 0 72% 51%;                        /* #DC2626 */
-    --gold: 43 70% 47%;                        /* #C9A227 */
-    --silver: 0 0% 65%;                        /* #A7A7A7 */
-    --bronze: 30 50% 38%;                      /* #8B5A2B */
+    --success: 142 71% 40%;
+    --warning: 38 92% 50%;
+    --error: 0 72% 51%;
+    --gold: 43 75% 45%;
+    --silver: 0 0% 62%;
+    --bronze: 30 55% 35%;
     
     --radius: 0.75rem;
     
-    /* Sidebar (для будущего использования) */
-    --sidebar-background: 234 55% 22%;
+    /* Sidebar */
+    --sidebar-background: 232 60% 18%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 234 55% 22%;
-    --sidebar-accent: 230 70% 50%;
+    --sidebar-primary-foreground: 232 60% 18%;
+    --sidebar-accent: 228 72% 45%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 230 50% 30%;
-    --sidebar-ring: 2 98% 44%;
+    --sidebar-border: 228 50% 25%;
+    --sidebar-ring: 0 85% 38%;
   }
 
   .dark {
-    --background: 234 55% 10%;
+    --background: 232 60% 8%;
     --foreground: 0 0% 98%;
     
-    --card: 234 55% 15%;
+    --card: 232 55% 12%;
     --card-foreground: 0 0% 98%;
     
-    --popover: 234 55% 15%;
+    --popover: 232 55% 12%;
     --popover-foreground: 0 0% 98%;
     
-    --primary: 230 70% 55%;
+    --primary: 228 72% 50%;
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 234 40% 20%;
+    --secondary: 232 40% 18%;
     --secondary-foreground: 0 0% 98%;
     
-    --muted: 234 40% 20%;
-    --muted-foreground: 220 9% 65%;
+    --muted: 232 40% 18%;
+    --muted-foreground: 220 10% 65%;
     
-    --accent: 2 98% 50%;
+    --accent: 0 85% 45%;
     --accent-foreground: 0 0% 100%;
     
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 234 30% 25%;
-    --input: 234 30% 25%;
-    --ring: 230 70% 55%;
+    --border: 232 30% 22%;
+    --input: 232 30% 22%;
+    --ring: 228 72% 50%;
     
-    --sidebar-background: 234 55% 8%;
+    --sidebar-background: 232 60% 6%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 230 70% 55%;
+    --sidebar-primary: 228 72% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 234 40% 20%;
+    --sidebar-accent: 232 40% 18%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 234 30% 20%;
-    --sidebar-ring: 2 98% 50%;
+    --sidebar-border: 232 30% 18%;
+    --sidebar-ring: 0 85% 45%;
   }
 }
 
@@ -118,20 +120,45 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
   
-  /* Typography */
+  /* Typography - Bebas Neue для заголовков */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-bold tracking-tight;
+    @apply font-display tracking-wide;
   }
 }
 
 @layer utilities {
-  /* Gradient backgrounds */
+  /* Premium gradient backgrounds с текстурой */
   .bg-hero-gradient {
-    background: linear-gradient(180deg, hsl(230 70% 45%) 0%, hsl(232 60% 32%) 100%);
+    background: linear-gradient(
+      175deg, 
+      hsl(225 75% 42%) 0%, 
+      hsl(228 72% 38%) 25%,
+      hsl(230 68% 32%) 60%,
+      hsl(232 65% 25%) 100%
+    );
   }
   
   .bg-hero-gradient-soft {
-    background: linear-gradient(180deg, hsl(230 65% 50%) 0%, hsl(232 55% 38%) 100%);
+    background: linear-gradient(
+      180deg, 
+      hsl(228 70% 45%) 0%, 
+      hsl(230 65% 35%) 100%
+    );
+  }
+  
+  /* Noise texture overlay для глубины */
+  .bg-noise {
+    position: relative;
+  }
+  
+  .bg-noise::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    mix-blend-mode: overlay;
   }
   
   /* Text gradient */
@@ -139,17 +166,57 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80;
   }
   
-  /* Sport-style uppercase headings */
+  /* Sport-style uppercase headings с правильным трекингом */
   .heading-sport {
-    @apply font-display uppercase tracking-wide;
+    @apply font-display uppercase;
+    letter-spacing: 0.04em;
+    line-height: 0.95;
+  }
+  
+  /* Hero heading - максимально выразительный */
+  .heading-hero {
+    @apply font-display uppercase;
+    letter-spacing: 0.03em;
+    line-height: 0.92;
   }
   
   /* Card shadows */
   .shadow-card {
-    box-shadow: 0 4px 20px -4px rgba(11, 26, 43, 0.1);
+    box-shadow: 0 4px 24px -6px rgba(11, 26, 43, 0.12);
   }
   
   .shadow-card-hover {
-    box-shadow: 0 8px 30px -4px rgba(11, 26, 43, 0.15);
+    box-shadow: 0 12px 40px -8px rgba(11, 26, 43, 0.18);
+  }
+  
+  /* Premium button gradient */
+  .btn-premium {
+    background: linear-gradient(
+      180deg,
+      hsl(0 85% 42%) 0%,
+      hsl(0 85% 38%) 50%,
+      hsl(0 82% 32%) 100%
+    );
+    box-shadow: 
+      0 2px 8px -2px rgba(180, 30, 30, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+  
+  .btn-premium:hover {
+    background: linear-gradient(
+      180deg,
+      hsl(0 85% 38%) 0%,
+      hsl(0 82% 32%) 50%,
+      hsl(0 80% 28%) 100%
+    );
+  }
+  
+  /* Glow effects */
+  .glow-accent {
+    box-shadow: 0 0 30px -5px hsl(0 85% 38% / 0.4);
+  }
+  
+  .glow-primary {
+    box-shadow: 0 0 40px -10px hsl(228 72% 45% / 0.5);
   }
 }
