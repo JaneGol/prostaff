@@ -14,16 +14,300 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      companies: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string | null
+          description: string | null
+          founded_year: number | null
+          id: string
+          league: string | null
+          logo_url: string | null
+          name: string
+          updated_at: string | null
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          founded_year?: number | null
+          id?: string
+          league?: string | null
+          logo_url?: string | null
+          name: string
+          updated_at?: string | null
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          founded_year?: number | null
+          id?: string
+          league?: string | null
+          logo_url?: string | null
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      experiences: {
+        Row: {
+          company_name: string
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_current: boolean | null
+          league: string | null
+          position: string
+          profile_id: string
+          start_date: string
+          team_level: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_name: string
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          league?: string | null
+          position: string
+          profile_id: string
+          start_date: string
+          team_level?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_name?: string
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          league?: string | null
+          position?: string
+          profile_id?: string
+          start_date?: string
+          team_level?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_skills: {
+        Row: {
+          created_at: string | null
+          id: string
+          profile_id: string
+          skill_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          profile_id: string
+          skill_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          profile_id?: string
+          skill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_skills_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          email: string | null
+          first_name: string
+          id: string
+          is_public: boolean | null
+          is_relocatable: boolean | null
+          is_remote_available: boolean | null
+          last_name: string
+          level: Database["public"]["Enums"]["experience_level"] | null
+          linkedin_url: string | null
+          phone: string | null
+          portfolio_url: string | null
+          role_id: string | null
+          search_status: Database["public"]["Enums"]["search_status"] | null
+          telegram: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          email?: string | null
+          first_name: string
+          id?: string
+          is_public?: boolean | null
+          is_relocatable?: boolean | null
+          is_remote_available?: boolean | null
+          last_name: string
+          level?: Database["public"]["Enums"]["experience_level"] | null
+          linkedin_url?: string | null
+          phone?: string | null
+          portfolio_url?: string | null
+          role_id?: string | null
+          search_status?: Database["public"]["Enums"]["search_status"] | null
+          telegram?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          is_public?: boolean | null
+          is_relocatable?: boolean | null
+          is_remote_available?: boolean | null
+          last_name?: string
+          level?: Database["public"]["Enums"]["experience_level"] | null
+          linkedin_url?: string | null
+          phone?: string | null
+          portfolio_url?: string | null
+          role_id?: string | null
+          search_status?: Database["public"]["Enums"]["search_status"] | null
+          telegram?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "specialist_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skills: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      specialist_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          name_en: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          name_en?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          name_en?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: { _role: Database["public"]["Enums"]["app_role"] }
+        Returns: boolean
+      }
+      is_company_owner: { Args: { _company_id: string }; Returns: boolean }
+      is_profile_owner: { Args: { _profile_id: string }; Returns: boolean }
+      is_profile_public: { Args: { _profile_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "specialist" | "employer" | "admin"
+      experience_level: "intern" | "junior" | "middle" | "senior" | "head"
+      search_status: "actively_looking" | "open_to_offers" | "not_looking"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +434,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["specialist", "employer", "admin"],
+      experience_level: ["intern", "junior", "middle", "senior", "head"],
+      search_status: ["actively_looking", "open_to_offers", "not_looking"],
+    },
   },
 } as const
