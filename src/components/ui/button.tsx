@@ -5,16 +5,16 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-btn font-medium",
   {
     variants: {
       variant: {
         // Primary CTA - красная кнопка (pill-форма)
         default:
-          "bg-accent text-accent-foreground hover:bg-accent-hover rounded-pill font-semibold uppercase tracking-wide",
+          "bg-accent text-accent-foreground hover:bg-accent-hover rounded-pill",
         // Secondary - контурная красная
         outline:
-          "border-2 border-accent bg-transparent text-accent hover:bg-accent-light rounded-pill font-semibold uppercase tracking-wide",
+          "border-2 border-accent bg-transparent text-accent hover:bg-accent-light rounded-pill",
         // Ghost для навигации
         ghost:
           "hover:bg-accent/10 hover:text-accent rounded-md",
@@ -29,7 +29,7 @@ const buttonVariants = cva(
           "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-pill",
         // Primary blue - для второстепенных действий
         primary:
-          "bg-primary text-primary-foreground hover:bg-primary/90 rounded-pill font-semibold",
+          "bg-primary text-primary-foreground hover:bg-primary/90 rounded-pill",
       },
       size: {
         default: "h-11 px-6 py-2 text-sm",
