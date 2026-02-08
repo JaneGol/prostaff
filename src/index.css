@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -116,15 +116,65 @@
   
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-size: 16px;
+    line-height: 1.55;
   }
   
-  /* Typography */
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-bold tracking-tight;
+  /* Typography System - Cera Pro Alternative (Outfit) */
+  h1 {
+    @apply font-display;
+    font-size: clamp(52px, 5vw, 60px);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+  }
+  
+  h2 {
+    @apply font-display;
+    font-size: clamp(36px, 4vw, 40px);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  
+  h3 {
+    @apply font-display;
+    font-size: clamp(26px, 3vw, 28px);
+    font-weight: 500;
+    line-height: 1.25;
+  }
+  
+  h4, h5, h6 {
+    @apply font-display;
+    font-weight: 500;
   }
 }
 
 @layer utilities {
+  /* Typography utilities */
+  .text-body-m {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.55;
+  }
+  
+  .text-body-l {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  
+  .text-ui {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  
+  .text-ui-lg {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  
   /* Gradient backgrounds */
   .bg-hero-gradient {
     background: linear-gradient(180deg, hsl(230 70% 45%) 0%, hsl(232 60% 32%) 100%);
@@ -137,11 +187,6 @@
   /* Text gradient */
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80;
-  }
-  
-  /* Sport-style uppercase headings */
-  .heading-sport {
-    @apply font-display uppercase tracking-wide;
   }
   
   /* Card shadows */

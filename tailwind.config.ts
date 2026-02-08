@@ -18,8 +18,19 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Plus Jakarta Sans", "sans-serif"],
-        sans: ["Plus Jakarta Sans", "sans-serif"],
+        display: ["Outfit", "sans-serif"],
+        sans: ["Outfit", "sans-serif"],
+      },
+      fontSize: {
+        // UI / Labels
+        'ui': ['13px', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.02em' }],
+        'ui-lg': ['14px', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.02em' }],
+        // Body
+        'body-m': ['16px', { lineHeight: '1.55', fontWeight: '400' }],
+        'body-l': ['18px', { lineHeight: '1.6', fontWeight: '400' }],
+        // Buttons
+        'btn': ['14px', { lineHeight: '1.4', fontWeight: '500' }],
+        'btn-lg': ['15px', { lineHeight: '1.4', fontWeight: '500' }],
       },
       colors: {
         border: "hsl(var(--border))",
