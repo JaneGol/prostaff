@@ -17,6 +17,7 @@ import {
   Users,
   Trophy,
   Monitor,
+  ArrowUpDown,
   X
 } from "lucide-react";
 
@@ -75,6 +76,69 @@ const levelLabels: Record<string, string> = {
   head: "Head"
 };
 
+// Mock data for demo when no real profiles exist
+const MOCK_PROFILES: ProfileCard[] = [
+  { id: "mock-1", first_name: "", last_name: "", avatar_url: null, city: "Москва", country: "Россия", level: "senior", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "1", name: "Аналитик данных" }, secondary_role_id: null },
+  { id: "mock-2", first_name: "", last_name: "", avatar_url: null, city: "Санкт-Петербург", country: "Россия", level: "middle", search_status: "open_to_offers", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "2", name: "Видеоаналитик" }, secondary_role_id: null },
+  { id: "mock-3", first_name: "", last_name: "", avatar_url: null, city: "Алматы", country: "Казахстан", level: "junior", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "3", name: "Скаут" }, secondary_role_id: null },
+  { id: "mock-4", first_name: "", last_name: "", avatar_url: null, city: "Минск", country: "Беларусь", level: "head", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "4", name: "Главный тренер" }, secondary_role_id: null },
+  { id: "mock-5", first_name: "", last_name: "", avatar_url: null, city: "Казань", country: "Россия", level: "middle", search_status: "actively_looking", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "5", name: "S&C специалист" }, secondary_role_id: null },
+  { id: "mock-6", first_name: "", last_name: "", avatar_url: null, city: "Краснодар", country: "Россия", level: "senior", search_status: "not_looking", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "6", name: "Спортивный врач" }, secondary_role_id: null },
+  { id: "mock-7", first_name: "", last_name: "", avatar_url: null, city: "Астана", country: "Казахстан", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "7", name: "Тренер вратарей" }, secondary_role_id: null },
+  { id: "mock-8", first_name: "", last_name: "", avatar_url: null, city: "Екатеринбург", country: "Россия", level: "junior", search_status: "open_to_offers", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "8", name: "Нутрициолог" }, secondary_role_id: null },
+  { id: "mock-9", first_name: "", last_name: "", avatar_url: null, city: "Сочи", country: "Россия", level: "senior", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "9", name: "Реабилитолог" }, secondary_role_id: null },
+  { id: "mock-10", first_name: "", last_name: "", avatar_url: null, city: "Гомель", country: "Беларусь", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "10", name: "Аналитик GPS/отслеживания" }, secondary_role_id: null },
+];
+
+const MOCK_SKILLS: Record<string, ProfileSkillRow[]> = {
+  "mock-1": [
+    { profile_id: "mock-1", skill_id: "s1", is_top: true, custom_name: "Python", is_custom: true },
+    { profile_id: "mock-1", skill_id: "s2", is_top: true, custom_name: "Tableau", is_custom: true },
+    { profile_id: "mock-1", skill_id: "s3", is_top: true, custom_name: "SQL", is_custom: true },
+  ],
+  "mock-2": [
+    { profile_id: "mock-2", skill_id: "s1", is_top: true, custom_name: "Hudl", is_custom: true },
+    { profile_id: "mock-2", skill_id: "s2", is_top: true, custom_name: "Sportscode", is_custom: true },
+  ],
+  "mock-3": [
+    { profile_id: "mock-3", skill_id: "s1", is_top: true, custom_name: "Wyscout", is_custom: true },
+    { profile_id: "mock-3", skill_id: "s2", is_top: true, custom_name: "InStat", is_custom: true },
+  ],
+  "mock-5": [
+    { profile_id: "mock-5", skill_id: "s1", is_top: true, custom_name: "Catapult", is_custom: true },
+    { profile_id: "mock-5", skill_id: "s2", is_top: true, custom_name: "Polar", is_custom: true },
+    { profile_id: "mock-5", skill_id: "s3", is_top: true, custom_name: "STATSports", is_custom: true },
+  ],
+  "mock-8": [
+    { profile_id: "mock-8", skill_id: "s1", is_top: true, custom_name: "Спортивное питание", is_custom: true },
+  ],
+  "mock-10": [
+    { profile_id: "mock-10", skill_id: "s1", is_top: true, custom_name: "Catapult", is_custom: true },
+    { profile_id: "mock-10", skill_id: "s2", is_top: true, custom_name: "Kinexon", is_custom: true },
+    { profile_id: "mock-10", skill_id: "s3", is_top: true, custom_name: "Python", is_custom: true },
+    { profile_id: "mock-10", skill_id: "s4", is_top: true, custom_name: "R", is_custom: true },
+  ],
+};
+
+const MOCK_SPORTS: Record<string, ProfileSportExp[]> = {
+  "mock-1": [{ sport_id: "s1", years: 5, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-2": [{ sport_id: "s1", years: 3, sports: { name: "Футбол", icon: "circle-dot" } }, { sport_id: "s2", years: 1, sports: { name: "Хоккей", icon: "snowflake" } }],
+  "mock-3": [{ sport_id: "s1", years: 2, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-4": [{ sport_id: "s1", years: 15, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-5": [{ sport_id: "s1", years: 4, sports: { name: "Футбол", icon: "circle-dot" } }, { sport_id: "s3", years: 2, sports: { name: "Баскетбол", icon: "target" } }],
+  "mock-7": [{ sport_id: "s1", years: 8, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-9": [{ sport_id: "s1", years: 7, sports: { name: "Футбол", icon: "circle-dot" } }, { sport_id: "s4", years: 3, sports: { name: "Волейбол", icon: "activity" } }],
+  "mock-10": [{ sport_id: "s1", years: 3, sports: { name: "Футбол", icon: "circle-dot" } }, { sport_id: "s2", years: 2, sports: { name: "Хоккей", icon: "snowflake" } }],
+};
+
+type SortOption = "relevance" | "level_desc" | "level_asc";
+const SORT_LABELS: Record<SortOption, string> = {
+  relevance: "По релевантности",
+  level_desc: "Уровень ↓",
+  level_asc: "Уровень ↑",
+};
+const LEVEL_ORDER: Record<string, number> = { intern: 0, junior: 1, middle: 2, senior: 3, head: 4 };
+
 export default function Specialists() {
   const [profiles, setProfiles] = useState<ProfileCard[]>([]);
   const [roles, setRoles] = useState<SpecialistRole[]>([]);
@@ -90,6 +154,7 @@ export default function Specialists() {
   const [selectedSkill, setSelectedSkill] = useState<string>("");
   const [includeSecondaryRole, setIncludeSecondaryRole] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>("relevance");
 
   useEffect(() => {
     fetchData();
@@ -222,8 +287,10 @@ export default function Specialists() {
           setProfileSkills(grouped);
         }
       } else {
-        setProfileSports({});
-        setProfileSkills({});
+        // Use mock data when no real profiles
+        setProfiles(MOCK_PROFILES);
+        setProfileSports(MOCK_SPORTS);
+        setProfileSkills(MOCK_SKILLS);
       }
     } catch (err) {
       console.error("Error fetching profiles:", err);
@@ -238,6 +305,10 @@ export default function Specialists() {
     return skill?.name || "—";
   };
 
+  // Merge real + mock skills/sports for display
+  const displaySkills = { ...MOCK_SKILLS, ...profileSkills };
+  const displaySports = { ...MOCK_SPORTS, ...profileSports };
+
   const filteredProfiles = profiles.filter(profile => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
@@ -245,6 +316,12 @@ export default function Specialists() {
     const role = profile.specialist_roles?.name.toLowerCase() || "";
     const location = `${profile.city || ""} ${profile.country || ""}`.toLowerCase();
     return fullName.includes(q) || role.includes(q) || location.includes(q);
+  });
+
+  const sortedProfiles = [...filteredProfiles].sort((a, b) => {
+    if (sortBy === "level_desc") return (LEVEL_ORDER[b.level || ""] ?? -1) - (LEVEL_ORDER[a.level || ""] ?? -1);
+    if (sortBy === "level_asc") return (LEVEL_ORDER[a.level || ""] ?? -1) - (LEVEL_ORDER[b.level || ""] ?? -1);
+    return 0;
   });
 
   const clearFilters = () => {
@@ -379,9 +456,22 @@ export default function Specialists() {
               </div>
             )}
 
-            <div className="ml-auto flex items-center gap-2 text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>Найдено: {filteredProfiles.length}</span>
+            <div className="ml-auto flex items-center gap-3">
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                <SelectTrigger className="w-[180px] h-9 text-sm">
+                  <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(SORT_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Users className="h-4 w-4" />
+                <span>Найдено: {sortedProfiles.length}</span>
+              </div>
             </div>
           </div>
 
@@ -392,7 +482,7 @@ export default function Specialists() {
                 <Skeleton key={i} className="h-56 rounded-lg" />
               ))}
             </div>
-          ) : filteredProfiles.length === 0 ? (
+          ) : sortedProfiles.length === 0 ? (
             <div className="text-center py-16">
               <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Специалисты не найдены</h3>
@@ -403,7 +493,7 @@ export default function Specialists() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredProfiles.map(profile => {
+              {sortedProfiles.map(profile => {
                 const isActive = profile.search_status === "actively_looking";
                 const isOpen = profile.search_status === "open_to_offers";
                 const statusLabel = isActive ? "Ищет работу" : isOpen ? "Открыт к предложениям" : null;
@@ -456,24 +546,24 @@ export default function Specialists() {
                         )}
 
                         {/* Skills — inline text, no heavy badges */}
-                        {profileSkills[profile.id]?.length > 0 && (
+                        {displaySkills[profile.id]?.length > 0 && (
                           <div className="text-xs text-foreground/80 mb-2">
-                            {profileSkills[profile.id].slice(0, 3).map((s, i) => (
+                            {displaySkills[profile.id].slice(0, 3).map((s, i) => (
                               <span key={i}>
                                 {i > 0 && <span className="text-border mx-1">·</span>}
                                 {getSkillName(s)}
                               </span>
                             ))}
-                            {profileSkills[profile.id].length > 3 && (
-                              <span className="text-muted-foreground ml-1">+{profileSkills[profile.id].length - 3}</span>
+                            {displaySkills[profile.id].length > 3 && (
+                              <span className="text-muted-foreground ml-1">+{displaySkills[profile.id].length - 3}</span>
                             )}
                           </div>
                         )}
 
                         {/* Sports — compact inline */}
-                        {profileSports[profile.id]?.length > 0 && (
+                        {displaySports[profile.id]?.length > 0 && (
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            {profileSports[profile.id].slice(0, 3).map((s) => {
+                            {displaySports[profile.id].slice(0, 3).map((s) => {
                               const Icon = getSportIcon(s.sports?.icon || null);
                               return (
                                 <span key={s.sport_id} className="flex items-center gap-1">
