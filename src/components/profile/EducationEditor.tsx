@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, GraduationCap } from "lucide-react";
+import { Plus, Trash2, GraduationCap, Award } from "lucide-react";
 
 export interface Education {
   id?: string;
@@ -147,7 +147,8 @@ export function EducationEditor({ education, certificates, onEducationChange, on
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="font-display uppercase flex items-center gap-2">
-            📜 Сертификаты
+            <Award className="h-5 w-5" />
+            Сертификаты
           </CardTitle>
           <Button variant="outline" size="sm" onClick={addCertificate}>
             <Plus className="h-4 w-4 mr-2" />Добавить
