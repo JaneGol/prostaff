@@ -231,7 +231,7 @@ export function SportsEditor({
               className="cursor-pointer py-1.5 px-3 transition-colors"
               onClick={() => toggleGroup("any")}
             >
-              🌍 Рассматриваю любой вид спорта
+              Рассматриваю любой вид спорта
             </Badge>
           </div>
 
