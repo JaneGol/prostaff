@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Search, User, LogOut, Send, Users, BarChart3 } from "lucide-react";
+import { Menu, X, Search, User, LogOut, Send, Users, BarChart3, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/hooks/useAnalytics";
 import { useAuth } from "@/hooks/useAuth";
+import { useClubAccess } from "@/hooks/useClubAccess";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +24,7 @@ const navLinks = [
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, userRole, signOut } = useAuth();
+  const { access } = useClubAccess();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -75,6 +77,13 @@ export function Header() {
                 <Search className="h-5 w-5" />
               </Button>
               
+              {user && userRole === "employer" && access && (
+                <Link to="/pricing" className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  <Eye className="h-4 w-4" />
+                  <span>{access.free_views_remaining}</span>
+                </Link>
+              )}
+
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -190,6 +199,14 @@ export function Header() {
                   )}
                   {userRole === "employer" && (
                     <>
+                      {access && (
+                        <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground px-4 py-2">
+                            <Eye className="h-4 w-4" />
+                            Осталось просмотров: {access.free_views_remaining}
+                          </div>
+                        </Link>
+                      )}
                       <Link to="/company/edit" onClick={() => setIsMenuOpen(false)}>
                         <Button variant="outline" className="w-full">
                           Моя компания
