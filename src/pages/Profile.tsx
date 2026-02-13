@@ -12,7 +12,8 @@ import { getSportIcon } from "@/lib/sportIcons";
 import { 
   MapPin, Mail, Phone, Globe, Briefcase, GraduationCap,
   Calendar, ExternalLink, Edit, MessageCircle, CheckCircle,
-  Clock, Lock, Eye, AlertTriangle, Trophy, Handshake
+  Clock, Lock, Eye, AlertTriangle, Trophy, Handshake, FolderOpen,
+  Star, Award
 } from "lucide-react";
 
 interface ProfileData {
@@ -35,7 +36,13 @@ interface ProfileData {
   portfolio_url: string | null;
   show_name: boolean;
   show_contacts: boolean;
+  hide_current_org: boolean;
+  visibility_level: string;
+  about_useful: string | null;
+  about_style: string | null;
+  about_goals: string | null;
   specialist_roles: { id: string; name: string } | null;
+  secondary_role: { id: string; name: string } | null;
 }
 
 interface Experience {
@@ -48,24 +55,61 @@ interface Experience {
   end_date: string | null;
   is_current: boolean;
   description: string | null;
+  employment_type: string | null;
+  achievements: string[] | null;
+  is_remote: boolean;
+  hide_org: boolean;
 }
 
 interface Skill {
   id: string;
   name: string;
   category: string | null;
+  proficiency: number;
+  is_top: boolean;
+  custom_name: string | null;
+  is_custom: boolean;
 }
 
 interface SportExp {
   sport_id: string;
   years: number;
   level: string | null;
+  context_level: string | null;
   sport: { id: string; name: string; icon: string | null } | null;
 }
 
 interface SportOpen {
   sport_id: string;
   sport: { id: string; name: string; icon: string | null } | null;
+}
+
+interface EducationItem {
+  id: string;
+  institution: string;
+  degree: string | null;
+  field_of_study: string | null;
+  start_year: number | null;
+  end_year: number | null;
+  is_current: boolean;
+}
+
+interface CertificateItem {
+  id: string;
+  name: string;
+  issuer: string | null;
+  year: number | null;
+  url: string | null;
+}
+
+interface PortfolioItemData {
+  id: string;
+  type: string;
+  title: string;
+  url: string;
+  description: string | null;
+  tags: string[];
+  visibility: string;
 }
 
 const levelLabels: Record<string, string> = {
@@ -75,7 +119,18 @@ const levelLabels: Record<string, string> = {
 const statusLabels: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
   actively_looking: { label: "Активно ищу работу", variant: "default" },
   open_to_offers: { label: "Открыт к предложениям", variant: "secondary" },
+  not_looking_but_open: { label: "Готов рассмотреть топ-роль", variant: "secondary" },
   not_looking: { label: "Не ищу работу", variant: "outline" }
+};
+
+const proficiencyLabels: Record<number, string> = { 1: "Базовый", 2: "Уверенный", 3: "Эксперт" };
+const degreeLabels: Record<string, string> = {
+  bachelor: "Бакалавр", master: "Магистр", phd: "Кандидат/Доктор наук",
+  specialist: "Специалист", courses: "Курсы", other: "Другое"
+};
+const employmentLabels: Record<string, string> = {
+  full_time: "Полная занятость", part_time: "Частичная", contract: "Контракт",
+  internship: "Стажировка", freelance: "Фриланс"
 };
 
 type AccessLevel = "owner" | "full" | "preview" | "paywall" | "login_required";
@@ -88,6 +143,9 @@ export default function Profile() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [sportsExp, setSportsExp] = useState<SportExp[]>([]);
   const [sportsOpen, setSportsOpen] = useState<SportOpen[]>([]);
+  const [educationItems, setEducationItems] = useState<EducationItem[]>([]);
+  const [certificateItems, setCertificateItems] = useState<CertificateItem[]>([]);
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItemData[]>([]);
   const [loading, setLoading] = useState(true);
   const [accessLevel, setAccessLevel] = useState<AccessLevel>("preview");
   const [viewsRemaining, setViewsRemaining] = useState<number | null>(null);
@@ -103,14 +161,25 @@ export default function Profile() {
     try {
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select(`*, specialist_roles (id, name)`)
+        .select(`*, specialist_roles!profiles_role_id_fkey (id, name)`)
         .eq("id", id)
         .maybeSingle();
 
       if (profileError) throw profileError;
       if (!profileData) { setLoading(false); return; }
 
-      setProfile(profileData as any);
+      // Fetch secondary role separately if exists
+      let secondaryRole = null;
+      if ((profileData as any).secondary_role_id) {
+        const { data: secRole } = await supabase
+          .from("specialist_roles")
+          .select("id, name")
+          .eq("id", (profileData as any).secondary_role_id)
+          .maybeSingle();
+        secondaryRole = secRole;
+      }
+
+      setProfile({ ...profileData, secondary_role: secondaryRole, hide_current_org: (profileData as any).hide_current_org || false, visibility_level: (profileData as any).visibility_level || "public_preview", about_useful: (profileData as any).about_useful, about_style: (profileData as any).about_style, about_goals: (profileData as any).about_goals } as any);
 
       // Determine access level
       if (user && user.id === profileData.user_id) {
@@ -118,44 +187,52 @@ export default function Profile() {
       } else if (userRole === "admin") {
         setAccessLevel("full");
       } else if (userRole === "employer" && user) {
-        // Check if already viewed via edge function
         const { data: existingView } = await supabase
           .from("profile_views")
           .select("id")
           .eq("viewer_user_id", user.id)
           .eq("profile_id", id)
           .maybeSingle();
-
-        if (existingView) {
-          setAccessLevel("full");
-        } else {
-          setAccessLevel("preview");
-        }
+        setAccessLevel(existingView ? "full" : "preview");
       } else if (user) {
-        // Logged in but not employer (specialist viewing another)
         setAccessLevel("preview");
       } else {
         setAccessLevel("login_required");
       }
 
-      // Track profile view
       trackEvent("profile_view", "specialist", profileData.first_name + " " + profileData.last_name, profileData.id, {
-        role: profileData.specialist_roles?.name || "unknown",
+        role: (profileData as any).specialist_roles?.name || "unknown",
         level: profileData.level || "unknown",
       });
 
-      // Fetch experiences, skills, and sports in parallel
-      const [expRes, skillsRes, sportsExpRes, sportsOpenRes] = await Promise.all([
+      // Fetch all related data in parallel
+      const [expRes, skillsRes, sportsExpRes, sportsOpenRes, eduRes, certRes, portRes] = await Promise.all([
         supabase.from("experiences").select("*").eq("profile_id", id!).order("start_date", { ascending: false }),
-        supabase.from("profile_skills").select(`skill_id, skills (id, name, category)`).eq("profile_id", id!),
-        supabase.from("profile_sports_experience").select("sport_id, years, level, sports:sport_id (id, name, icon)").eq("profile_id", id!),
+        supabase.from("profile_skills").select(`skill_id, proficiency, is_top, is_custom, custom_name, skills (id, name, category)`).eq("profile_id", id!),
+        supabase.from("profile_sports_experience").select("sport_id, years, level, context_level, sports:sport_id (id, name, icon)").eq("profile_id", id!),
         supabase.from("profile_sports_open_to").select("sport_id, sports:sport_id (id, name, icon)").eq("profile_id", id!),
+        supabase.from("candidate_education").select("*").eq("profile_id", id!).order("start_year", { ascending: false }),
+        supabase.from("candidate_certificates").select("*").eq("profile_id", id!).order("year", { ascending: false }),
+        supabase.from("candidate_portfolio").select("*").eq("profile_id", id!),
       ]);
 
-      if (expRes.data) setExperiences(expRes.data);
-      if (skillsRes.data) setSkills(skillsRes.data.map((s: any) => s.skills).filter(Boolean));
+      if (expRes.data) setExperiences(expRes.data as any);
+      if (skillsRes.data) {
+        setSkills(skillsRes.data.map((s: any) => ({
+          id: s.skill_id || s.custom_name,
+          name: s.is_custom ? s.custom_name : s.skills?.name || "—",
+          category: s.skills?.category || null,
+          proficiency: s.proficiency || 2,
+          is_top: s.is_top || false,
+          custom_name: s.custom_name,
+          is_custom: s.is_custom || false,
+        })));
+      }
       if (sportsExpRes.data) setSportsExp(sportsExpRes.data.map((s: any) => ({ ...s, sport: s.sports })));
       if (sportsOpenRes.data) setSportsOpen(sportsOpenRes.data.map((s: any) => ({ ...s, sport: s.sports })));
+      if (eduRes.data) setEducationItems(eduRes.data as any);
+      if (certRes.data) setCertificateItems(certRes.data as any);
+      if (portRes.data) setPortfolioItems(portRes.data.map((p: any) => ({ ...p, tags: Array.isArray(p.tags) ? p.tags : [] })));
     } catch (err) {
       console.error("Error fetching profile:", err);
     } finally {
@@ -166,37 +243,26 @@ export default function Profile() {
   const handleUnlockProfile = async () => {
     if (!user || !profile) return;
     setUnlocking(true);
-
     try {
-      const { data, error } = await supabase.functions.invoke("view-profile", {
-        body: { profileId: profile.id },
-      });
-
+      const { data, error } = await supabase.functions.invoke("view-profile", { body: { profileId: profile.id } });
       if (error) throw error;
-
       if (data.access === "full") {
         setAccessLevel("full");
         setViewsRemaining(data.views_remaining ?? data.weekly_remaining ?? null);
         trackEvent("contact_unlock", "profile", `${profile.first_name} ${profile.last_name}`, profile.id);
       } else if (data.access === "paywall") {
         setAccessLevel("paywall");
-        trackEvent("quota_exhausted", "profile", `${profile.first_name} ${profile.last_name}`, profile.id);
       }
     } catch (err: any) {
-      console.error("Unlock error:", err);
-      // Check if it's a 402 paywall response
-      if (err?.context?.status === 402) {
-        setAccessLevel("paywall");
-        trackEvent("quota_exhausted", "profile", `${profile.first_name} ${profile.last_name}`, profile.id);
-      }
+      if (err?.context?.status === 402) setAccessLevel("paywall");
     } finally {
       setUnlocking(false);
     }
   };
 
-  // Helper: should we show private info?
   const canSeeName = accessLevel === "owner" || accessLevel === "full" || (profile?.show_name ?? true);
   const canSeeContacts = accessLevel === "owner" || accessLevel === "full";
+  const canSeeDetails = accessLevel === "owner" || accessLevel === "full";
 
   if (loading) {
     return (
@@ -205,7 +271,6 @@ export default function Profile() {
           <div className="max-w-4xl mx-auto space-y-6">
             <Skeleton className="h-64 w-full rounded-2xl" />
             <Skeleton className="h-48 w-full rounded-2xl" />
-            <Skeleton className="h-32 w-full rounded-2xl" />
           </div>
         </div>
       </Layout>
@@ -224,20 +289,18 @@ export default function Profile() {
     );
   }
 
-  const displayName = canSeeName
-    ? `${profile.first_name} ${profile.last_name}`
-    : (profile.specialist_roles?.name || "Специалист");
-  const initials = canSeeName
-    ? `${profile.first_name[0]}${profile.last_name[0]}`
-    : "??";
+  const displayName = canSeeName ? `${profile.first_name} ${profile.last_name}` : (profile.specialist_roles?.name || "Специалист");
+  const initials = canSeeName ? `${profile.first_name[0]}${profile.last_name[0]}` : "??";
   const location = [profile.city, profile.country].filter(Boolean).join(", ");
   const statusInfo = profile.search_status ? statusLabels[profile.search_status] : null;
+
+  const topSkills = skills.filter(s => s.is_top);
+  const otherSkills = skills.filter(s => !s.is_top);
 
   return (
     <Layout>
       <div className="container py-8 md:py-12">
         <div className="max-w-4xl mx-auto space-y-6">
-          {/* Views remaining banner */}
           {viewsRemaining !== null && viewsRemaining >= 0 && (
             <div className="bg-accent/10 border border-accent/20 rounded-lg px-4 py-3 flex items-center gap-2 text-sm">
               <Eye className="h-4 w-4 text-accent" />
@@ -254,37 +317,31 @@ export default function Profile() {
                   {canSeeName && profile.avatar_url ? (
                     <img src={profile.avatar_url} alt={displayName} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-3xl md:text-4xl font-display font-bold text-muted-foreground">
-                      {initials}
-                    </span>
+                    <span className="text-3xl md:text-4xl font-display font-bold text-muted-foreground">{initials}</span>
                   )}
                 </div>
               </div>
 
               {isOwner && (
                 <div className="absolute top-4 right-4">
-                  <Link to="/profile/edit">
-                    <Button variant="outline" size="sm">
-                      <Edit className="h-4 w-4 mr-2" />Редактировать
-                    </Button>
-                  </Link>
+                  <Link to="/profile/edit"><Button variant="outline" size="sm"><Edit className="h-4 w-4 mr-2" />Редактировать</Button></Link>
                 </div>
               )}
 
               <div className="pt-14 md:pt-20 space-y-4">
                 <div>
-                  <h1 className="font-display text-2xl md:text-3xl font-bold uppercase">
-                    {displayName}
-                  </h1>
-                  {profile.specialist_roles && canSeeName && (
-                    <p className="text-lg text-muted-foreground mt-1">{profile.specialist_roles.name}</p>
-                  )}
-                  {!canSeeName && profile.specialist_roles && (
-                    <p className="text-lg text-muted-foreground mt-1 flex items-center gap-2">
-                      {profile.specialist_roles.name}
+                  <h1 className="font-display text-2xl md:text-3xl font-bold uppercase">{displayName}</h1>
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    {profile.specialist_roles && (
+                      <p className="text-lg text-muted-foreground">{profile.specialist_roles.name}</p>
+                    )}
+                    {profile.secondary_role && (
+                      <Badge variant="outline" className="text-xs">+ {profile.secondary_role.name}</Badge>
+                    )}
+                    {!canSeeName && (
                       <Badge variant="outline" className="text-xs"><Lock className="h-3 w-3 mr-1" />Имя скрыто</Badge>
-                    </p>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -294,9 +351,7 @@ export default function Profile() {
                       {statusInfo.label}
                     </Badge>
                   )}
-                  {profile.level && (
-                    <Badge variant="outline"><GraduationCap className="h-3 w-3 mr-1" />{levelLabels[profile.level] || profile.level}</Badge>
-                  )}
+                  {profile.level && <Badge variant="outline"><GraduationCap className="h-3 w-3 mr-1" />{levelLabels[profile.level] || profile.level}</Badge>}
                   {profile.is_relocatable && <Badge variant="outline">Готов к релокации</Badge>}
                   {profile.is_remote_available && <Badge variant="outline">Удалённая работа</Badge>}
                 </div>
@@ -311,23 +366,15 @@ export default function Profile() {
                 {!isOwner && accessLevel === "preview" && userRole === "employer" && (
                   <div className="flex gap-3 pt-2">
                     <Button onClick={handleUnlockProfile} disabled={unlocking}>
-                      {unlocking ? (
-                        <><Lock className="h-4 w-4 mr-2 animate-pulse" />Открываем...</>
-                      ) : (
-                        <><Eye className="h-4 w-4 mr-2" />Открыть полный профиль</>
-                      )}
+                      {unlocking ? <><Lock className="h-4 w-4 mr-2 animate-pulse" />Открываем...</> : <><Eye className="h-4 w-4 mr-2" />Открыть полный профиль</>}
                     </Button>
                   </div>
                 )}
-
                 {!isOwner && accessLevel === "login_required" && (
                   <div className="flex gap-3 pt-2">
-                    <Link to="/auth">
-                      <Button><Lock className="h-4 w-4 mr-2" />Войдите, чтобы увидеть контакты</Button>
-                    </Link>
+                    <Link to="/auth"><Button><Lock className="h-4 w-4 mr-2" />Войдите, чтобы увидеть контакты</Button></Link>
                   </div>
                 )}
-
                 {!isOwner && accessLevel === "full" && (
                   <div className="flex gap-3 pt-2">
                     <Button onClick={() => trackEvent("contact_click", "profile", displayName, profile.id)}>
@@ -339,26 +386,41 @@ export default function Profile() {
             </CardContent>
           </Card>
 
-          {/* Paywall Card */}
           {accessLevel === "paywall" && (
             <Card className="border-accent/30 bg-accent/5">
               <CardContent className="py-6 text-center">
                 <AlertTriangle className="h-10 w-10 text-accent mx-auto mb-3" />
                 <h2 className="font-display text-lg font-bold uppercase mb-2">Лимит просмотров исчерпан</h2>
-                <p className="text-muted-foreground mb-4">
-                  Оформите подписку для неограниченного доступа к профилям специалистов
-                </p>
+                <p className="text-muted-foreground mb-4">Оформите подписку для неограниченного доступа</p>
                 <Button disabled>Оформить подписку (скоро)</Button>
               </CardContent>
             </Card>
           )}
 
-          {/* Bio */}
-          {profile.bio && (
+          {/* About */}
+          {(profile.bio || profile.about_useful || profile.about_style || profile.about_goals) && (
             <Card>
-              <CardContent className="py-6">
-                <h2 className="font-display text-lg font-bold uppercase mb-3">О себе</h2>
-                <p className="text-foreground whitespace-pre-wrap">{profile.bio}</p>
+              <CardContent className="py-6 space-y-4">
+                <h2 className="font-display text-lg font-bold uppercase">О себе</h2>
+                {profile.bio && <p className="text-foreground whitespace-pre-wrap">{profile.bio}</p>}
+                {profile.about_useful && (
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Чем полезен команде</h4>
+                    <p className="text-foreground">{profile.about_useful}</p>
+                  </div>
+                )}
+                {profile.about_style && (
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Стиль работы</h4>
+                    <p className="text-foreground">{profile.about_style}</p>
+                  </div>
+                )}
+                {profile.about_goals && (
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Цели</h4>
+                    <p className="text-foreground">{profile.about_goals}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -368,36 +430,52 @@ export default function Profile() {
             <Card>
               <CardContent className="py-6">
                 <h2 className="font-display text-lg font-bold uppercase mb-4">Навыки</h2>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => (
-                    <Badge key={skill.id} variant="secondary">{skill.name}</Badge>
-                  ))}
-                </div>
+                {topSkills.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                      <Star className="h-3.5 w-3.5 text-yellow-500" />Ключевые навыки
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {topSkills.map(skill => (
+                        <Badge key={skill.id} variant="default" className="flex items-center gap-1">
+                          {skill.name}
+                          <span className="text-xs opacity-70">• {proficiencyLabels[skill.proficiency]}</span>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {otherSkills.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {otherSkills.map(skill => (
+                      <Badge key={skill.id} variant="secondary" className="flex items-center gap-1">
+                        {skill.name}
+                        <span className="text-xs opacity-50">• {proficiencyLabels[skill.proficiency]}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
 
-          {/* Sports Experience */}
+          {/* Sports */}
           {sportsExp.length > 0 && (
             <Card>
               <CardContent className="py-6">
                 <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Опыт по видам спорта
+                  <Trophy className="h-5 w-5" />Опыт по видам спорта
                 </h2>
                 <div className="space-y-3">
-                  {sportsExp.map((s) => {
+                  {sportsExp.map(s => {
                     const Icon = getSportIcon(s.sport?.icon);
                     return (
                       <div key={s.sport_id} className="flex items-center gap-3">
                         <Icon className="h-5 w-5 text-primary" />
                         <span className="font-medium">{s.sport?.name}</span>
                         <Badge variant="outline">{s.years} {s.years === 1 ? "год" : s.years < 5 ? "года" : "лет"}</Badge>
-                        {s.level && (
-                          <Badge variant="secondary" className="text-xs">
-                            {s.level === "beginner" ? "Начинающий" : s.level === "intermediate" ? "Средний" : s.level === "advanced" ? "Продвинутый" : "Эксперт"}
-                          </Badge>
-                        )}
+                        {s.level && <Badge variant="secondary" className="text-xs">{s.level === "beginner" ? "Начинающий" : s.level === "intermediate" ? "Средний" : s.level === "advanced" ? "Продвинутый" : "Эксперт"}</Badge>}
+                        {s.context_level && <Badge variant="outline" className="text-xs">{s.context_level}</Badge>}
                       </div>
                     );
                   })}
@@ -406,21 +484,18 @@ export default function Profile() {
             </Card>
           )}
 
-          {/* Sports Open To */}
           {sportsOpen.length > 0 && (
             <Card>
               <CardContent className="py-6">
                 <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
-                  <Handshake className="h-5 w-5" />
-                  Готов работать в
+                  <Handshake className="h-5 w-5" />Готов работать в
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  {sportsOpen.map((s) => {
+                  {sportsOpen.map(s => {
                     const Icon = getSportIcon(s.sport?.icon);
                     return (
                       <Badge key={s.sport_id} variant="outline" className="flex items-center gap-1.5 py-1.5 px-3">
-                        <Icon className="h-3.5 w-3.5" />
-                        {s.sport?.name}
+                        <Icon className="h-3.5 w-3.5" />{s.sport?.name}
                       </Badge>
                     );
                   })}
@@ -433,30 +508,123 @@ export default function Profile() {
           {experiences.length > 0 && (
             <Card>
               <CardContent className="py-6">
-                <h2 className="font-display text-lg font-bold uppercase mb-4">Опыт работы</h2>
+                <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
+                  <Briefcase className="h-5 w-5" />Опыт работы
+                </h2>
                 <div className="space-y-6">
-                  {experiences.map((exp, index) => (
-                    <div key={exp.id} className="relative pl-6 pb-6 last:pb-0">
-                      {index < experiences.length - 1 && (
-                        <div className="absolute left-2 top-3 bottom-0 w-0.5 bg-border" />
-                      )}
-                      <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary border-2 border-card" />
-                      <div>
-                        <h3 className="font-semibold text-foreground">{exp.position}</h3>
-                        <p className="text-muted-foreground">{exp.company_name}</p>
-                        {(exp.league || exp.team_level) && (
-                          <p className="text-sm text-muted-foreground">
-                            {[exp.league, exp.team_level].filter(Boolean).join(" • ")}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(exp.start_date).toLocaleDateString("ru-RU", { month: "long", year: "numeric" })}
-                          {" — "}
-                          {exp.is_current ? "настоящее время" : exp.end_date ? new Date(exp.end_date).toLocaleDateString("ru-RU", { month: "long", year: "numeric" }) : ""}
+                  {experiences.map((exp, index) => {
+                    const showOrg = !(exp.hide_org && !isOwner && (profile?.hide_current_org) && exp.is_current);
+                    return (
+                      <div key={exp.id} className="relative pl-6 pb-6 last:pb-0">
+                        {index < experiences.length - 1 && <div className="absolute left-2 top-3 bottom-0 w-0.5 bg-border" />}
+                        <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary border-2 border-card" />
+                        <div>
+                          <h3 className="font-semibold text-foreground">{exp.position}</h3>
+                          <p className="text-muted-foreground">{showOrg ? exp.company_name : "Организация скрыта"}</p>
+                          {(exp.league || exp.team_level) && (
+                            <p className="text-sm text-muted-foreground">{[exp.league, exp.team_level].filter(Boolean).join(" • ")}</p>
+                          )}
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(exp.start_date).toLocaleDateString("ru-RU", { month: "long", year: "numeric" })}
+                              {" — "}
+                              {exp.is_current ? "настоящее время" : exp.end_date ? new Date(exp.end_date).toLocaleDateString("ru-RU", { month: "long", year: "numeric" }) : ""}
+                            </div>
+                            {exp.employment_type && <Badge variant="outline" className="text-xs">{employmentLabels[exp.employment_type] || exp.employment_type}</Badge>}
+                            {exp.is_remote && <Badge variant="outline" className="text-xs">Удалённо</Badge>}
+                          </div>
+                          {exp.description && <p className="text-sm mt-2">{exp.description}</p>}
+                          {exp.achievements && exp.achievements.length > 0 && (
+                            <ul className="mt-2 space-y-1">
+                              {exp.achievements.map((ach, i) => (
+                                <li key={i} className="text-sm flex items-start gap-2">
+                                  <CheckCircle className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                                  {ach}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </div>
-                        {exp.description && <p className="text-sm mt-2">{exp.description}</p>}
                       </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Education */}
+          {(educationItems.length > 0 || certificateItems.length > 0) && (
+            <Card>
+              <CardContent className="py-6">
+                <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5" />Образование и сертификаты
+                </h2>
+                {educationItems.length > 0 && (
+                  <div className="space-y-4 mb-4">
+                    {educationItems.map(edu => (
+                      <div key={edu.id} className="border-l-2 border-primary pl-4">
+                        <h3 className="font-semibold">{edu.institution}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {edu.degree && degreeLabels[edu.degree] ? degreeLabels[edu.degree] : edu.degree}
+                          {edu.field_of_study && ` — ${edu.field_of_study}`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {edu.start_year && `${edu.start_year}`}{edu.end_year && ` — ${edu.end_year}`}{edu.is_current && " — настоящее время"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {certificateItems.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                      <Award className="h-4 w-4" />Сертификаты
+                    </h4>
+                    {certificateItems.map(cert => (
+                      <div key={cert.id} className="flex items-center gap-3 text-sm">
+                        <span className="font-medium">{cert.name}</span>
+                        {cert.issuer && <span className="text-muted-foreground">— {cert.issuer}</span>}
+                        {cert.year && <span className="text-muted-foreground">({cert.year})</span>}
+                        {cert.url && (
+                          <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Portfolio */}
+          {portfolioItems.length > 0 && (
+            <Card>
+              <CardContent className="py-6">
+                <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
+                  <FolderOpen className="h-5 w-5" />Портфолио
+                </h2>
+                <div className="space-y-4">
+                  {portfolioItems.filter(p => p.visibility === "public" || canSeeDetails).map(item => (
+                    <div key={item.id} className="border rounded-lg p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold">{item.title}</h3>
+                          <Badge variant="outline" className="text-xs mt-1">{item.type}</Badge>
+                        </div>
+                        <a href={item.url} target="_blank" rel="noopener noreferrer">
+                          <Button variant="outline" size="sm"><ExternalLink className="h-3 w-3 mr-1" />Открыть</Button>
+                        </a>
+                      </div>
+                      {item.description && <p className="text-sm text-muted-foreground mt-2">{item.description}</p>}
+                      {item.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {item.tags.map((tag, i) => <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>)}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -464,54 +632,30 @@ export default function Profile() {
             </Card>
           )}
 
-          {/* Contact Info — only for owner or full access */}
+          {/* Contacts */}
           {canSeeContacts && (profile.email || profile.phone || profile.telegram || profile.linkedin_url || profile.portfolio_url) && (
             <Card>
               <CardContent className="py-6">
                 <h2 className="font-display text-lg font-bold uppercase mb-4">Контакты</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {profile.email && (
-                    <a href={`mailto:${profile.email}`} className="flex items-center gap-3 text-foreground hover:text-accent transition-colors">
-                      <Mail className="h-5 w-5 text-muted-foreground" />{profile.email}
-                    </a>
-                  )}
-                  {profile.phone && (
-                    <a href={`tel:${profile.phone}`} className="flex items-center gap-3 text-foreground hover:text-accent transition-colors">
-                      <Phone className="h-5 w-5 text-muted-foreground" />{profile.phone}
-                    </a>
-                  )}
-                  {profile.telegram && (
-                    <a href={`https://t.me/${profile.telegram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-foreground hover:text-accent transition-colors">
-                      <MessageCircle className="h-5 w-5 text-muted-foreground" />{profile.telegram}
-                    </a>
-                  )}
-                  {profile.linkedin_url && (
-                    <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-foreground hover:text-accent transition-colors">
-                      <ExternalLink className="h-5 w-5 text-muted-foreground" />LinkedIn
-                    </a>
-                  )}
-                  {profile.portfolio_url && (
-                    <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-foreground hover:text-accent transition-colors">
-                      <Globe className="h-5 w-5 text-muted-foreground" />Портфолио
-                    </a>
-                  )}
+                  {profile.email && <a href={`mailto:${profile.email}`} className="flex items-center gap-3 hover:text-accent transition-colors"><Mail className="h-5 w-5 text-muted-foreground" />{profile.email}</a>}
+                  {profile.phone && <a href={`tel:${profile.phone}`} className="flex items-center gap-3 hover:text-accent transition-colors"><Phone className="h-5 w-5 text-muted-foreground" />{profile.phone}</a>}
+                  {profile.telegram && <a href={`https://t.me/${profile.telegram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-accent transition-colors"><MessageCircle className="h-5 w-5 text-muted-foreground" />{profile.telegram}</a>}
+                  {profile.linkedin_url && <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-accent transition-colors"><ExternalLink className="h-5 w-5 text-muted-foreground" />LinkedIn</a>}
+                  {profile.portfolio_url && <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-accent transition-colors"><Globe className="h-5 w-5 text-muted-foreground" />Портфолио</a>}
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Gated contacts hint */}
           {!canSeeContacts && !isOwner && (
             <Card className="border-dashed">
               <CardContent className="py-6 text-center">
                 <Lock className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                 <p className="text-muted-foreground text-sm">
-                  {accessLevel === "login_required"
-                    ? "Войдите как работодатель, чтобы увидеть контактные данные"
-                    : accessLevel === "paywall"
-                    ? "Оформите подписку для доступа к контактам"
-                    : "Откройте полный профиль, чтобы увидеть контактные данные"
-                  }
+                  {accessLevel === "login_required" ? "Войдите как работодатель, чтобы увидеть контакты" :
+                   accessLevel === "paywall" ? "Оформите подписку для доступа к контактам" :
+                   "Откройте полный профиль, чтобы увидеть контакты"}
                 </p>
               </CardContent>
             </Card>

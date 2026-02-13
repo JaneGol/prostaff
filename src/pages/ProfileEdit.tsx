@@ -1,21 +1,25 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, X, Plus, Trash2 } from "lucide-react";
+import { Loader2, Save, X } from "lucide-react";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { ProfileProgress } from "@/components/shared/ProfileProgress";
+import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { SportsEditor, SportExperience, SportOpenTo } from "@/components/profile/SportsEditor";
+import { SkillsEditor, SkillSelection } from "@/components/profile/SkillsEditor";
+import { ExperienceEditor, Experience } from "@/components/profile/ExperienceEditor";
+import { EducationEditor, Education, Certificate } from "@/components/profile/EducationEditor";
+import { PortfolioEditor, PortfolioItem } from "@/components/profile/PortfolioEditor";
+import { AboutEditor } from "@/components/profile/AboutEditor";
 
 interface SpecialistRole {
   id: string;
@@ -26,18 +30,6 @@ interface Skill {
   id: string;
   name: string;
   category: string | null;
-}
-
-interface Experience {
-  id?: string;
-  company_name: string;
-  position: string;
-  league: string;
-  team_level: string;
-  start_date: string;
-  end_date: string;
-  is_current: boolean;
-  description: string;
 }
 
 const levels = [
@@ -51,7 +43,14 @@ const levels = [
 const searchStatuses = [
   { value: "actively_looking", label: "Активно ищу работу" },
   { value: "open_to_offers", label: "Открыт к предложениям" },
+  { value: "not_looking_but_open", label: "Не ищу, но готов рассмотреть топ-роль" },
   { value: "not_looking", label: "Не ищу работу" }
+];
+
+const visibilityLevels = [
+  { value: "public_preview", label: "Публичное превью (роль, навыки, опыт без деталей)" },
+  { value: "clubs_only", label: "Только для зарегистрированных клубов" },
+  { value: "hidden", label: "Скрытый (только по прямой ссылке)" },
 ];
 
 export default function ProfileEdit() {
@@ -62,49 +61,89 @@ export default function ProfileEdit() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState("basic");
 
-  // Form data
+  // Basic info
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [roleId, setRoleId] = useState("");
+  const [secondaryRoleId, setSecondaryRoleId] = useState("");
   const [level, setLevel] = useState("middle");
+  const [avatarUrl, setAvatarUrl] = useState("");
+
+  // About
   const [bio, setBio] = useState("");
+  const [aboutUseful, setAboutUseful] = useState("");
+  const [aboutStyle, setAboutStyle] = useState("");
+  const [aboutGoals, setAboutGoals] = useState("");
+
+  // Location & Status
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("Россия");
   const [isRelocatable, setIsRelocatable] = useState(false);
   const [isRemoteAvailable, setIsRemoteAvailable] = useState(false);
   const [searchStatus, setSearchStatus] = useState("open_to_offers");
+  const [desiredCity, setDesiredCity] = useState("");
+  const [desiredCountry, setDesiredCountry] = useState("");
+  const [desiredContractType, setDesiredContractType] = useState("");
+
+  // Privacy
   const [isPublic, setIsPublic] = useState(true);
+  const [visibilityLevel, setVisibilityLevel] = useState("public_preview");
   const [showName, setShowName] = useState(true);
   const [showContacts, setShowContacts] = useState(true);
+  const [hideCurrentOrg, setHideCurrentOrg] = useState(false);
+
+  // Contacts
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [telegram, setTelegram] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [portfolioUrl, setPortfolioUrl] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
 
   // Reference data
   const [roles, setRoles] = useState<SpecialistRole[]>([]);
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [allowedSecondaryRoles, setAllowedSecondaryRoles] = useState<string[]>([]);
+
+  // Complex fields
+  const [selectedSkills, setSelectedSkills] = useState<SkillSelection[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [education, setEducation] = useState<Education[]>([]);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [sportsExperience, setSportsExperience] = useState<SportExperience[]>([]);
   const [sportsOpenTo, setSportsOpenTo] = useState<SportOpenTo[]>([]);
+
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
       return;
     }
-    if (user) {
-      fetchData();
-    }
+    if (user) fetchData();
   }, [user, authLoading]);
+
+  // Fetch allowed secondary roles when primary role changes
+  useEffect(() => {
+    if (roleId) {
+      supabase
+        .from("role_relations")
+        .select("secondary_role_id")
+        .eq("primary_role_id", roleId)
+        .eq("is_allowed", true)
+        .then(({ data }) => {
+          setAllowedSecondaryRoles(data?.map(r => r.secondary_role_id) || []);
+        });
+    } else {
+      setAllowedSecondaryRoles([]);
+      setSecondaryRoleId("");
+    }
+  }, [roleId]);
 
   const fetchData = async () => {
     try {
-      // Fetch reference data
       const [rolesRes, skillsRes] = await Promise.all([
         supabase.from("specialist_roles").select("id, name").order("name"),
         supabase.from("skills").select("id, name, category").order("name")
@@ -113,7 +152,6 @@ export default function ProfileEdit() {
       if (rolesRes.data) setRoles(rolesRes.data);
       if (skillsRes.data) setAllSkills(skillsRes.data);
 
-      // Fetch existing profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("*")
@@ -125,16 +163,25 @@ export default function ProfileEdit() {
         setFirstName(profile.first_name);
         setLastName(profile.last_name);
         setRoleId(profile.role_id || "");
+        setSecondaryRoleId((profile as any).secondary_role_id || "");
         setLevel(profile.level || "middle");
         setBio(profile.bio || "");
+        setAboutUseful((profile as any).about_useful || "");
+        setAboutStyle((profile as any).about_style || "");
+        setAboutGoals((profile as any).about_goals || "");
         setCity(profile.city || "");
         setCountry(profile.country || "Россия");
         setIsRelocatable(profile.is_relocatable || false);
         setIsRemoteAvailable(profile.is_remote_available || false);
         setSearchStatus(profile.search_status || "open_to_offers");
+        setDesiredCity((profile as any).desired_city || "");
+        setDesiredCountry((profile as any).desired_country || "");
+        setDesiredContractType((profile as any).desired_contract_type || "");
         setIsPublic(profile.is_public !== false);
-        setShowName((profile as any).show_name !== false);
-        setShowContacts((profile as any).show_contacts !== false);
+        setVisibilityLevel((profile as any).visibility_level || "public_preview");
+        setShowName(profile.show_name !== false);
+        setShowContacts(profile.show_contacts !== false);
+        setHideCurrentOrg((profile as any).hide_current_org || false);
         setEmail(profile.email || user!.email || "");
         setPhone(profile.phone || "");
         setTelegram(profile.telegram || "");
@@ -142,25 +189,30 @@ export default function ProfileEdit() {
         setPortfolioUrl(profile.portfolio_url || "");
         setAvatarUrl(profile.avatar_url || "");
 
-        // Fetch skills
-        const { data: profileSkills } = await supabase
-          .from("profile_skills")
-          .select("skill_id")
-          .eq("profile_id", profile.id);
+        // Fetch all related data in parallel
+        const [skillsData, expData, eduData, certData, portData, sportsExpData, sportsOpenData] = await Promise.all([
+          supabase.from("profile_skills").select("*").eq("profile_id", profile.id),
+          supabase.from("experiences").select("*").eq("profile_id", profile.id).order("start_date", { ascending: false }),
+          supabase.from("candidate_education").select("*").eq("profile_id", profile.id).order("start_year", { ascending: false }),
+          supabase.from("candidate_certificates").select("*").eq("profile_id", profile.id).order("year", { ascending: false }),
+          supabase.from("candidate_portfolio").select("*").eq("profile_id", profile.id),
+          supabase.from("profile_sports_experience").select("id, sport_id, years, level, sports:sport_id (id, name, icon)").eq("profile_id", profile.id),
+          supabase.from("profile_sports_open_to").select("id, sport_id, sports:sport_id (id, name, icon)").eq("profile_id", profile.id),
+        ]);
 
-        if (profileSkills) {
-          setSelectedSkills(profileSkills.map(s => s.skill_id));
+        if (skillsData.data) {
+          setSelectedSkills(skillsData.data.map((s: any) => ({
+            skill_id: s.skill_id,
+            proficiency: s.proficiency || 2,
+            is_top: s.is_top || false,
+            is_custom: s.is_custom || false,
+            custom_name: s.custom_name || undefined,
+            custom_group: s.custom_group || undefined,
+          })));
         }
 
-        // Fetch experiences
-        const { data: experiencesData } = await supabase
-          .from("experiences")
-          .select("*")
-          .eq("profile_id", profile.id)
-          .order("start_date", { ascending: false });
-
-        if (experiencesData) {
-          setExperiences(experiencesData.map(e => ({
+        if (expData.data) {
+          setExperiences(expData.data.map((e: any) => ({
             id: e.id,
             company_name: e.company_name,
             position: e.position,
@@ -169,50 +221,67 @@ export default function ProfileEdit() {
             start_date: e.start_date,
             end_date: e.end_date || "",
             is_current: e.is_current || false,
-            description: e.description || ""
+            description: e.description || "",
+            employment_type: e.employment_type || "full_time",
+            achievements: Array.isArray(e.achievements) ? e.achievements : [],
+            is_remote: e.is_remote || false,
+            hide_org: e.hide_org || false,
           })));
         }
 
-        // Fetch sports experience
-        const { data: sportsExpData } = await supabase
-          .from("profile_sports_experience")
-          .select("id, sport_id, years, level, sports:sport_id (id, name, icon)")
-          .eq("profile_id", profile.id);
-
-        if (sportsExpData) {
-          setSportsExperience(sportsExpData.map((s: any) => ({
-            id: s.id,
-            sport_id: s.sport_id,
-            years: s.years || 1,
-            level: s.level || "intermediate",
-            sport: s.sports,
+        if (eduData.data) {
+          setEducation(eduData.data.map((e: any) => ({
+            id: e.id,
+            institution: e.institution,
+            degree: e.degree || "",
+            field_of_study: e.field_of_study || "",
+            start_year: e.start_year,
+            end_year: e.end_year,
+            country: e.country || "",
+            city: e.city || "",
+            is_current: e.is_current || false,
           })));
         }
 
-        // Fetch sports open to
-        const { data: sportsOpenData } = await supabase
-          .from("profile_sports_open_to")
-          .select("id, sport_id, sports:sport_id (id, name, icon)")
-          .eq("profile_id", profile.id);
+        if (certData.data) {
+          setCertificates(certData.data.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            issuer: c.issuer || "",
+            year: c.year,
+            url: c.url || "",
+          })));
+        }
 
-        if (sportsOpenData) {
-          setSportsOpenTo(sportsOpenData.map((s: any) => ({
-            id: s.id,
-            sport_id: s.sport_id,
-            sport: s.sports,
+        if (portData.data) {
+          setPortfolio(portData.data.map((p: any) => ({
+            id: p.id,
+            type: p.type || "other",
+            title: p.title,
+            url: p.url,
+            description: p.description || "",
+            tags: Array.isArray(p.tags) ? p.tags : [],
+            visibility: p.visibility || "public",
+          })));
+        }
+
+        if (sportsExpData.data) {
+          setSportsExperience(sportsExpData.data.map((s: any) => ({
+            id: s.id, sport_id: s.sport_id, years: s.years || 1, level: s.level || "intermediate", sport: s.sports,
+          })));
+        }
+
+        if (sportsOpenData.data) {
+          setSportsOpenTo(sportsOpenData.data.map((s: any) => ({
+            id: s.id, sport_id: s.sport_id, sport: s.sports,
           })));
         }
       } else {
-        // New profile - set email from auth
         setEmail(user!.email || "");
       }
     } catch (err) {
       console.error("Error fetching data:", err);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить данные",
-        variant: "destructive"
-      });
+      toast({ title: "Ошибка", description: "Не удалось загрузить данные", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -220,11 +289,7 @@ export default function ProfileEdit() {
 
   const handleSave = async () => {
     if (!firstName.trim() || !lastName.trim()) {
-      toast({
-        title: "Ошибка",
-        description: "Заполните имя и фамилию",
-        variant: "destructive"
-      });
+      toast({ title: "Ошибка", description: "Заполните имя и фамилию", variant: "destructive" });
       return;
     }
 
@@ -236,16 +301,25 @@ export default function ProfileEdit() {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         role_id: roleId || null,
+        secondary_role_id: secondaryRoleId || null,
         level: level as any,
         bio: bio.trim() || null,
+        about_useful: aboutUseful.trim() || null,
+        about_style: aboutStyle.trim() || null,
+        about_goals: aboutGoals.trim() || null,
         city: city.trim() || null,
         country: country.trim() || null,
         is_relocatable: isRelocatable,
         is_remote_available: isRemoteAvailable,
         search_status: searchStatus as any,
+        desired_city: desiredCity.trim() || null,
+        desired_country: desiredCountry.trim() || null,
+        desired_contract_type: desiredContractType || null,
         is_public: isPublic,
+        visibility_level: visibilityLevel,
         show_name: showName,
         show_contacts: showContacts,
+        hide_current_org: hideCurrentOrg,
         email: email.trim() || null,
         phone: phone.trim() || null,
         telegram: telegram.trim() || null,
@@ -257,186 +331,144 @@ export default function ProfileEdit() {
       let newProfileId = profileId;
 
       if (profileId) {
-        // Update existing
-        const { error } = await supabase
-          .from("profiles")
-          .update(profileData)
-          .eq("id", profileId);
-
+        const { error } = await supabase.from("profiles").update(profileData).eq("id", profileId);
         if (error) throw error;
       } else {
-        // Create new
-        const { data, error } = await supabase
-          .from("profiles")
-          .insert(profileData)
-          .select("id")
-          .single();
-
+        const { data, error } = await supabase.from("profiles").insert(profileData).select("id").single();
         if (error) throw error;
         newProfileId = data.id;
         setProfileId(data.id);
       }
 
-      // Update skills
       if (newProfileId) {
-        // Remove old skills
-        await supabase
-          .from("profile_skills")
-          .delete()
-          .eq("profile_id", newProfileId);
-
-        // Add new skills
+        // Skills
+        await supabase.from("profile_skills").delete().eq("profile_id", newProfileId);
         if (selectedSkills.length > 0) {
-          await supabase
-            .from("profile_skills")
-            .insert(selectedSkills.map(skillId => ({
-              profile_id: newProfileId,
-              skill_id: skillId
-            })));
-        }
-
-        // Handle experiences
-        // Delete removed experiences
-        const existingIds = experiences.filter(e => e.id).map(e => e.id);
-        if (existingIds.length > 0) {
-          await supabase
-            .from("experiences")
-            .delete()
-            .eq("profile_id", newProfileId)
-            .not("id", "in", `(${existingIds.join(",")})`);
-        } else {
-          await supabase
-            .from("experiences")
-            .delete()
-            .eq("profile_id", newProfileId);
-        }
-
-        // Upsert experiences
-        for (const exp of experiences) {
-          if (exp.id) {
-            await supabase
-              .from("experiences")
-              .update({
-                company_name: exp.company_name,
-                position: exp.position,
-                league: exp.league || null,
-                team_level: exp.team_level || null,
-                start_date: exp.start_date,
-                end_date: exp.end_date || null,
-                is_current: exp.is_current,
-                description: exp.description || null
-              })
-              .eq("id", exp.id);
-          } else {
-            await supabase
-              .from("experiences")
-              .insert({
-                profile_id: newProfileId,
-                company_name: exp.company_name,
-                position: exp.position,
-                league: exp.league || null,
-                team_level: exp.team_level || null,
-                start_date: exp.start_date,
-                end_date: exp.end_date || null,
-                is_current: exp.is_current,
-                description: exp.description || null
-              });
-          }
-        }
-
-        // Save sports experience
-        await supabase.from("profile_sports_experience").delete().eq("profile_id", newProfileId);
-        if (sportsExperience.length > 0) {
-          await supabase.from("profile_sports_experience").insert(
-            sportsExperience.map((s) => ({
+          await supabase.from("profile_skills").insert(
+            selectedSkills.map(s => ({
               profile_id: newProfileId!,
-              sport_id: s.sport_id,
-              years: s.years,
-              level: s.level,
-            }))
+              skill_id: s.skill_id,
+              proficiency: s.proficiency,
+              is_top: s.is_top,
+              is_custom: s.is_custom,
+              custom_name: s.custom_name || null,
+              custom_group: s.custom_group || null,
+              status: s.is_custom ? "pending" : "approved",
+            })) as any
           );
         }
 
-        // Save sports open to
+        // Experiences
+        await supabase.from("experiences").delete().eq("profile_id", newProfileId);
+        for (const exp of experiences) {
+          await supabase.from("experiences").insert({
+            profile_id: newProfileId,
+            company_name: exp.company_name,
+            position: exp.position,
+            league: exp.league || null,
+            team_level: exp.team_level || null,
+            start_date: exp.start_date,
+            end_date: exp.end_date || null,
+            is_current: exp.is_current,
+            description: exp.description || null,
+            employment_type: exp.employment_type,
+            achievements: exp.achievements,
+            is_remote: exp.is_remote,
+            hide_org: exp.hide_org,
+          } as any);
+        }
+
+        // Education
+        await supabase.from("candidate_education").delete().eq("profile_id", newProfileId);
+        for (const edu of education) {
+          if (!edu.institution.trim()) continue;
+          await supabase.from("candidate_education").insert({
+            profile_id: newProfileId,
+            institution: edu.institution,
+            degree: edu.degree || null,
+            field_of_study: edu.field_of_study || null,
+            start_year: edu.start_year,
+            end_year: edu.end_year,
+            country: edu.country || null,
+            city: edu.city || null,
+            is_current: edu.is_current,
+          } as any);
+        }
+
+        // Certificates
+        await supabase.from("candidate_certificates").delete().eq("profile_id", newProfileId);
+        for (const cert of certificates) {
+          if (!cert.name.trim()) continue;
+          await supabase.from("candidate_certificates").insert({
+            profile_id: newProfileId,
+            name: cert.name,
+            issuer: cert.issuer || null,
+            year: cert.year,
+            url: cert.url || null,
+          } as any);
+        }
+
+        // Portfolio
+        await supabase.from("candidate_portfolio").delete().eq("profile_id", newProfileId);
+        for (const item of portfolio) {
+          if (!item.title.trim() || !item.url.trim()) continue;
+          await supabase.from("candidate_portfolio").insert({
+            profile_id: newProfileId,
+            type: item.type,
+            title: item.title,
+            url: item.url,
+            description: item.description || null,
+            tags: item.tags,
+            visibility: item.visibility,
+          } as any);
+        }
+
+        // Sports experience
+        await supabase.from("profile_sports_experience").delete().eq("profile_id", newProfileId);
+        if (sportsExperience.length > 0) {
+          await supabase.from("profile_sports_experience").insert(
+            sportsExperience.map(s => ({ profile_id: newProfileId!, sport_id: s.sport_id, years: s.years, level: s.level }))
+          );
+        }
+
+        // Sports open to
         await supabase.from("profile_sports_open_to").delete().eq("profile_id", newProfileId);
         if (sportsOpenTo.length > 0) {
           await supabase.from("profile_sports_open_to").insert(
-            sportsOpenTo.map((s) => ({
-              profile_id: newProfileId!,
-              sport_id: s.sport_id,
-            }))
+            sportsOpenTo.map(s => ({ profile_id: newProfileId!, sport_id: s.sport_id }))
           );
         }
       }
 
-      toast({
-        title: "Сохранено",
-        description: "Профиль успешно обновлён"
-      });
-
+      toast({ title: "Сохранено", description: "Профиль успешно обновлён" });
       navigate(`/profile/${newProfileId}`);
     } catch (err) {
       console.error("Error saving profile:", err);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось сохранить профиль",
-        variant: "destructive"
-      });
+      toast({ title: "Ошибка", description: "Не удалось сохранить профиль", variant: "destructive" });
     } finally {
       setSaving(false);
     }
   };
 
-  const toggleSkill = (skillId: string) => {
-    setSelectedSkills(prev =>
-      prev.includes(skillId)
-        ? prev.filter(id => id !== skillId)
-        : [...prev, skillId]
-    );
+  const scrollToSection = (sectionId: string) => {
+    setActiveSection(sectionId);
+    sectionRefs.current[sectionId]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const addExperience = () => {
-    setExperiences(prev => [...prev, {
-      company_name: "",
-      position: "",
-      league: "",
-      team_level: "",
-      start_date: "",
-      end_date: "",
-      is_current: false,
-      description: ""
-    }]);
-  };
+  const primaryRoleName = roles.find(r => r.id === roleId)?.name;
+  const secondaryRoleOptions = roles.filter(r => r.id !== roleId && (allowedSecondaryRoles.length === 0 || allowedSecondaryRoles.includes(r.id)));
 
-  const updateExperience = (index: number, field: keyof Experience, value: any) => {
-    setExperiences(prev => prev.map((exp, i) =>
-      i === index ? { ...exp, [field]: value } : exp
-    ));
-  };
-
-  const removeExperience = (index: number) => {
-    setExperiences(prev => prev.filter((_, i) => i !== index));
-  };
-
-  // Group skills by category (computed before return)
-  const skillsByCategory = allSkills.reduce((acc, skill) => {
-    const cat = skill.category || "Прочее";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(skill);
-    return acc;
-  }, {} as Record<string, Skill[]>);
-
-  // Profile completeness calculation (must be before conditional returns)
   const profileFields = useMemo(() => [
-    { key: "avatar", label: "Фото профиля", completed: !!avatarUrl, weight: 10 },
-    { key: "name", label: "Имя и фамилия", completed: !!firstName && !!lastName, weight: 15 },
-    { key: "role", label: "Специализация", completed: !!roleId, weight: 15 },
-    { key: "bio", label: "О себе", completed: !!bio && bio.length > 20, weight: 10 },
-    { key: "location", label: "Город и страна", completed: !!city && !!country, weight: 10 },
-    { key: "skills", label: "Навыки (минимум 3)", completed: selectedSkills.length >= 3, weight: 15 },
-    { key: "experience", label: "Опыт работы", completed: experiences.length > 0 && experiences.some(e => e.company_name && e.position), weight: 15 },
-    { key: "contacts", label: "Контакты (email/telegram)", completed: !!email || !!telegram, weight: 10 },
-  ], [avatarUrl, firstName, lastName, roleId, bio, city, country, selectedSkills, experiences, email, telegram]);
+    { key: "avatar", label: "Фото профиля", completed: !!avatarUrl, weight: 5 },
+    { key: "role", label: "Специализация + уровень", completed: !!roleId && !!level, weight: 15 },
+    { key: "about", label: "О себе", completed: !!bio && bio.length > 20, weight: 10 },
+    { key: "location", label: "Город и формат работы", completed: !!city && !!country, weight: 10 },
+    { key: "skills", label: "Навыки (минимум 5)", completed: selectedSkills.length >= 5, weight: 15 },
+    { key: "experience", label: "Опыт работы (минимум 1)", completed: experiences.length > 0 && experiences.some(e => e.company_name && e.position), weight: 20 },
+    { key: "education", label: "Образование / сертификаты", completed: education.length > 0 || certificates.length > 0, weight: 10 },
+    { key: "sports", label: "Виды спорта (опыт)", completed: sportsExperience.length > 0, weight: 10 },
+    { key: "contacts", label: "Контакты", completed: !!email || !!telegram, weight: 5 },
+  ], [avatarUrl, roleId, level, bio, city, country, selectedSkills, experiences, education, certificates, sportsExperience, email, telegram]);
 
   if (authLoading || loading) {
     return (
@@ -451,441 +483,300 @@ export default function ProfileEdit() {
   return (
     <Layout>
       <div className="container py-8 md:py-12">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="font-display text-2xl md:text-3xl font-bold uppercase">
-              {profileId ? "Редактирование профиля" : "Создание профиля"}
-            </h1>
-            <Button variant="outline" onClick={() => navigate(-1)}>
-              <X className="h-4 w-4 mr-2" />
-              Отмена
-            </Button>
-          </div>
+        <div className="flex gap-8">
+          {/* Sidebar */}
+          <ProfileSidebar activeSection={activeSection} onSectionClick={scrollToSection} />
 
-          {/* Profile Progress */}
-          <ProfileProgress fields={profileFields} />
-
-          {/* Avatar Upload */}
-          <Card>
-            <CardContent className="py-6">
-              <div className="flex items-center gap-6">
-                <ImageUpload
-                  currentImageUrl={avatarUrl}
-                  onImageUploaded={setAvatarUrl}
-                  bucket="avatars"
-                  userId={user!.id}
-                  size="lg"
-                  shape="circle"
-                  placeholder={
-                    <span className="text-2xl font-display font-bold text-muted-foreground">
-                      {firstName?.[0] || "?"}{lastName?.[0] || "?"}
-                    </span>
-                  }
-                />
-                <div>
-                  <h3 className="font-semibold mb-1">Фото профиля</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Нажмите на изображение, чтобы загрузить фото.<br />
-                    Рекомендуемый размер: 400×400 пикселей.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Basic Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-display uppercase">Основная информация</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">Имя *</Label>
-                  <Input
-                    id="firstName"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Иван"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Фамилия *</Label>
-                  <Input
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Иванов"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Специализация</Label>
-                  <Select value={roleId} onValueChange={setRoleId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите роль" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roles.map(role => (
-                        <SelectItem key={role.id} value={role.id}>
-                          {role.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Уровень</Label>
-                  <Select value={level} onValueChange={setLevel}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {levels.map(l => (
-                        <SelectItem key={l.value} value={l.value}>
-                          {l.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bio">О себе</Label>
-                <Textarea
-                  id="bio"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Расскажите о своём опыте и профессиональных интересах..."
-                  rows={4}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Location & Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-display uppercase">Локация и статус</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">Город</Label>
-                  <Input
-                    id="city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Москва"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country">Страна</Label>
-                  <Input
-                    id="country"
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    placeholder="Россия"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Статус поиска</Label>
-                <Select value={searchStatus} onValueChange={setSearchStatus}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {searchStatuses.map(s => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="relocatable">Готов к релокации</Label>
-                  <Switch
-                    id="relocatable"
-                    checked={isRelocatable}
-                    onCheckedChange={setIsRelocatable}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="remote">Удалённая работа</Label>
-                  <Switch
-                    id="remote"
-                    checked={isRemoteAvailable}
-                    onCheckedChange={setIsRemoteAvailable}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="public">Публичный профиль</Label>
-                  <Switch
-                    id="public"
-                    checked={isPublic}
-                    onCheckedChange={setIsPublic}
-                  />
-                </div>
-              </div>
-
-              {/* Privacy toggles */}
-              <div className="border-t pt-4 mt-4 space-y-1">
-                <h4 className="font-medium text-sm mb-3">Настройки приватности</h4>
-                <p className="text-xs text-muted-foreground mb-3">
-                  Контролируйте, какую информацию видят работодатели до подтверждения доступа
-                </p>
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="showName">Показывать имя клубам</Label>
-                      <p className="text-xs text-muted-foreground">Если выключено, клубы увидят только роль и навыки</p>
-                    </div>
-                    <Switch
-                      id="showName"
-                      checked={showName}
-                      onCheckedChange={setShowName}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="showContacts">Показывать контакты</Label>
-                      <p className="text-xs text-muted-foreground">Email, телефон, Telegram будут скрыты для новых просмотров</p>
-                    </div>
-                    <Switch
-                      id="showContacts"
-                      checked={showContacts}
-                      onCheckedChange={setShowContacts}
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Skills */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-display uppercase">Навыки</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Object.entries(skillsByCategory).map(([category, skills]) => (
-                <div key={category}>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">{category}</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {skills.map(skill => (
-                      <Badge
-                        key={skill.id}
-                        variant={selectedSkills.includes(skill.id) ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => toggleSkill(skill.id)}
-                      >
-                        {skill.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Sports */}
-          <SportsEditor
-            profileId={profileId}
-            sportsExperience={sportsExperience}
-            sportsOpenTo={sportsOpenTo}
-            onExperienceChange={setSportsExperience}
-            onOpenToChange={setSportsOpenTo}
-          />
-
-          {/* Experience */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="font-display uppercase">Опыт работы</CardTitle>
-              <Button variant="outline" size="sm" onClick={addExperience}>
-                <Plus className="h-4 w-4 mr-2" />
-                Добавить
+          {/* Main Content */}
+          <div className="flex-1 max-w-3xl space-y-6">
+            <div className="flex items-center justify-between">
+              <h1 className="font-display text-2xl md:text-3xl font-bold uppercase">
+                {profileId ? "Редактирование профиля" : "Создание профиля"}
+              </h1>
+              <Button variant="outline" onClick={() => navigate(-1)}>
+                <X className="h-4 w-4 mr-2" />Отмена
               </Button>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {experiences.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
-                  Добавьте свой опыт работы
-                </p>
-              ) : (
-                experiences.map((exp, index) => (
-                  <div key={index} className="border rounded-lg p-4 space-y-4">
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-medium">Место работы {index + 1}</h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeExperience(index)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+            </div>
+
+            <ProfileProgress fields={profileFields} />
+
+            {/* BASIC */}
+            <div ref={el => { sectionRefs.current["basic"] = el; }}>
+              <Card>
+                <CardContent className="py-6">
+                  <div className="flex items-center gap-6">
+                    <ImageUpload
+                      currentImageUrl={avatarUrl}
+                      onImageUploaded={setAvatarUrl}
+                      bucket="avatars"
+                      userId={user!.id}
+                      size="lg"
+                      shape="circle"
+                      placeholder={
+                        <span className="text-2xl font-display font-bold text-muted-foreground">
+                          {firstName?.[0] || "?"}{lastName?.[0] || "?"}
+                        </span>
+                      }
+                    />
+                    <div>
+                      <h3 className="font-semibold mb-1">Фото профиля</h3>
+                      <p className="text-sm text-muted-foreground">400×400 px рекомендуется</p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Компания/Клуб *</Label>
-                        <Input
-                          value={exp.company_name}
-                          onChange={(e) => updateExperience(index, "company_name", e.target.value)}
-                          placeholder="ФК Спартак"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Должность *</Label>
-                        <Input
-                          value={exp.position}
-                          onChange={(e) => updateExperience(index, "position", e.target.value)}
-                          placeholder="Видеоаналитик"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Лига</Label>
-                        <Input
-                          value={exp.league}
-                          onChange={(e) => updateExperience(index, "league", e.target.value)}
-                          placeholder="РПЛ"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Команда/Уровень</Label>
-                        <Input
-                          value={exp.team_level}
-                          onChange={(e) => updateExperience(index, "team_level", e.target.value)}
-                          placeholder="Основа / U-21"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Дата начала *</Label>
-                        <Input
-                          type="date"
-                          value={exp.start_date}
-                          onChange={(e) => updateExperience(index, "start_date", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Дата окончания</Label>
-                        <Input
-                          type="date"
-                          value={exp.end_date}
-                          onChange={(e) => updateExperience(index, "end_date", e.target.value)}
-                          disabled={exp.is_current}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={exp.is_current}
-                        onCheckedChange={(checked) => updateExperience(index, "is_current", checked)}
-                      />
-                      <Label>Текущее место работы</Label>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="font-display uppercase">Основная информация</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Имя *</Label>
+                      <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Описание</Label>
-                      <Textarea
-                        value={exp.description}
-                        onChange={(e) => updateExperience(index, "description", e.target.value)}
-                        placeholder="Опишите ваши обязанности и достижения..."
-                        rows={3}
-                      />
+                      <Label>Фамилия *</Label>
+                      <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
                     </div>
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
 
-          {/* Contacts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-display uppercase">Контакты</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ivan@example.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Телефон</Label>
-                  <Input
-                    id="phone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+7 (999) 123-45-67"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="telegram">Telegram</Label>
-                  <Input
-                    id="telegram"
-                    value={telegram}
-                    onChange={(e) => setTelegram(e.target.value)}
-                    placeholder="@username"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="linkedin">LinkedIn</Label>
-                  <Input
-                    id="linkedin"
-                    value={linkedinUrl}
-                    onChange={(e) => setLinkedinUrl(e.target.value)}
-                    placeholder="https://linkedin.com/in/username"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="portfolio">Портфолио / Сайт</Label>
-                <Input
-                  id="portfolio"
-                  value={portfolioUrl}
-                  onChange={(e) => setPortfolioUrl(e.target.value)}
-                  placeholder="https://example.com"
-                />
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Основная специализация</Label>
+                      <Select value={roleId} onValueChange={setRoleId}>
+                        <SelectTrigger><SelectValue placeholder="Выберите роль" /></SelectTrigger>
+                        <SelectContent>
+                          {roles.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Смежная специализация</Label>
+                      <Select value={secondaryRoleId} onValueChange={setSecondaryRoleId} disabled={!roleId}>
+                        <SelectTrigger><SelectValue placeholder="Опционально" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Нет</SelectItem>
+                          {secondaryRoleOptions.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">Смежная роль помогает клубам находить вас шире. Выберите, если реально выполняете задачи этой роли.</p>
+                    </div>
+                  </div>
 
-          {/* Save Button */}
-          <div className="flex justify-end gap-4">
-            <Button variant="outline" onClick={() => navigate(-1)}>
-              Отмена
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Сохранение...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Сохранить
-                </>
-              )}
-            </Button>
+                  <div className="space-y-2">
+                    <Label>Уровень</Label>
+                    <Select value={level} onValueChange={setLevel}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {levels.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* ABOUT */}
+            <div ref={el => { sectionRefs.current["about"] = el; }}>
+              <AboutEditor
+                bio={bio} aboutUseful={aboutUseful} aboutStyle={aboutStyle} aboutGoals={aboutGoals}
+                onBioChange={setBio} onAboutUsefulChange={setAboutUseful}
+                onAboutStyleChange={setAboutStyle} onAboutGoalsChange={setAboutGoals}
+                roleName={primaryRoleName}
+              />
+            </div>
+
+            {/* STATUS & PRIVACY */}
+            <div ref={el => { sectionRefs.current["status"] = el; }}>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-display uppercase">Локация, статус и приватность</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Город</Label>
+                      <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Москва" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Страна</Label>
+                      <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Россия" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Статус поиска</Label>
+                    <Select value={searchStatus} onValueChange={setSearchStatus}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {searchStatuses.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Desired role preferences */}
+                  {searchStatus !== "not_looking" && (
+                    <div className="border-t pt-4 space-y-4">
+                      <h4 className="font-medium text-sm">Что ищу</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Формат</Label>
+                          <Select value={desiredContractType} onValueChange={setDesiredContractType}>
+                            <SelectTrigger><SelectValue placeholder="Любой" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="any">Любой</SelectItem>
+                              <SelectItem value="full_time">Полная занятость</SelectItem>
+                              <SelectItem value="part_time">Частичная</SelectItem>
+                              <SelectItem value="contract">Контракт</SelectItem>
+                              <SelectItem value="freelance">Фриланс</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Желаемый город</Label>
+                          <Input value={desiredCity} onChange={(e) => setDesiredCity(e.target.value)} placeholder="Любой" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-3 border-t pt-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Готов к релокации</Label>
+                      <Switch checked={isRelocatable} onCheckedChange={setIsRelocatable} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label>Удалённая работа</Label>
+                      <Switch checked={isRemoteAvailable} onCheckedChange={setIsRemoteAvailable} />
+                    </div>
+                  </div>
+
+                  {/* Visibility */}
+                  <div className="border-t pt-4 space-y-3">
+                    <h4 className="font-medium text-sm">Видимость профиля</h4>
+                    <Select value={visibilityLevel} onValueChange={setVisibilityLevel}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {visibilityLevels.map(v => <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="border-t pt-4 space-y-3">
+                    <h4 className="font-medium text-sm">Настройки приватности</h4>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label>Показывать имя клубам</Label>
+                          <p className="text-xs text-muted-foreground">Если выключено — клубы увидят только роль</p>
+                        </div>
+                        <Switch checked={showName} onCheckedChange={setShowName} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label>Показывать контакты</Label>
+                          <p className="text-xs text-muted-foreground">Контакты видны только после разблокировки</p>
+                        </div>
+                        <Switch checked={showContacts} onCheckedChange={setShowContacts} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label>Скрыть текущую организацию</Label>
+                          <p className="text-xs text-muted-foreground">В публичном профиле название текущей работы будет скрыто</p>
+                        </div>
+                        <Switch checked={hideCurrentOrg} onCheckedChange={setHideCurrentOrg} />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* SKILLS */}
+            <div ref={el => { sectionRefs.current["skills"] = el; }}>
+              <SkillsEditor
+                allSkills={allSkills}
+                selectedSkills={selectedSkills}
+                onChange={setSelectedSkills}
+                primaryRoleName={primaryRoleName}
+              />
+            </div>
+
+            {/* SPORTS */}
+            <div ref={el => { sectionRefs.current["sports"] = el; }}>
+              <SportsEditor
+                profileId={profileId}
+                sportsExperience={sportsExperience}
+                sportsOpenTo={sportsOpenTo}
+                onExperienceChange={setSportsExperience}
+                onOpenToChange={setSportsOpenTo}
+              />
+            </div>
+
+            {/* EXPERIENCE */}
+            <div ref={el => { sectionRefs.current["experience"] = el; }}>
+              <ExperienceEditor experiences={experiences} onChange={setExperiences} />
+            </div>
+
+            {/* EDUCATION */}
+            <div ref={el => { sectionRefs.current["education"] = el; }}>
+              <EducationEditor
+                education={education}
+                certificates={certificates}
+                onEducationChange={setEducation}
+                onCertificatesChange={setCertificates}
+              />
+            </div>
+
+            {/* PORTFOLIO */}
+            <div ref={el => { sectionRefs.current["portfolio"] = el; }}>
+              <PortfolioEditor items={portfolio} onChange={setPortfolio} />
+            </div>
+
+            {/* CONTACTS */}
+            <div ref={el => { sectionRefs.current["contacts"] = el; }}>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-display uppercase">Контакты</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ivan@example.com" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Телефон</Label>
+                      <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 (999) 123-45-67" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Telegram</Label>
+                      <Input value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>LinkedIn</Label>
+                      <Input value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/username" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Портфолио / Сайт</Label>
+                    <Input value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} placeholder="https://example.com" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Save */}
+            <div className="flex justify-end gap-4 pb-8">
+              <Button variant="outline" onClick={() => navigate(-1)}>Отмена</Button>
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Сохранение...</> : <><Save className="h-4 w-4 mr-2" />Сохранить</>}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
