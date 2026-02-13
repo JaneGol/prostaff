@@ -15,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, X, Plus, Trash2 } from "lucide-react";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { ProfileProgress } from "@/components/shared/ProfileProgress";
+import { SportsEditor, SportExperience, SportOpenTo } from "@/components/profile/SportsEditor";
+
 interface SpecialistRole {
   id: string;
   name: string;
@@ -87,6 +89,8 @@ export default function ProfileEdit() {
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [sportsExperience, setSportsExperience] = useState<SportExperience[]>([]);
+  const [sportsOpenTo, setSportsOpenTo] = useState<SportOpenTo[]>([]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -166,6 +170,36 @@ export default function ProfileEdit() {
             end_date: e.end_date || "",
             is_current: e.is_current || false,
             description: e.description || ""
+          })));
+        }
+
+        // Fetch sports experience
+        const { data: sportsExpData } = await supabase
+          .from("profile_sports_experience")
+          .select("id, sport_id, years, level, sports:sport_id (id, name, icon)")
+          .eq("profile_id", profile.id);
+
+        if (sportsExpData) {
+          setSportsExperience(sportsExpData.map((s: any) => ({
+            id: s.id,
+            sport_id: s.sport_id,
+            years: s.years || 1,
+            level: s.level || "intermediate",
+            sport: s.sports,
+          })));
+        }
+
+        // Fetch sports open to
+        const { data: sportsOpenData } = await supabase
+          .from("profile_sports_open_to")
+          .select("id, sport_id, sports:sport_id (id, name, icon)")
+          .eq("profile_id", profile.id);
+
+        if (sportsOpenData) {
+          setSportsOpenTo(sportsOpenData.map((s: any) => ({
+            id: s.id,
+            sport_id: s.sport_id,
+            sport: s.sports,
           })));
         }
       } else {
@@ -308,6 +342,30 @@ export default function ProfileEdit() {
                 description: exp.description || null
               });
           }
+        }
+
+        // Save sports experience
+        await supabase.from("profile_sports_experience").delete().eq("profile_id", newProfileId);
+        if (sportsExperience.length > 0) {
+          await supabase.from("profile_sports_experience").insert(
+            sportsExperience.map((s) => ({
+              profile_id: newProfileId!,
+              sport_id: s.sport_id,
+              years: s.years,
+              level: s.level,
+            }))
+          );
+        }
+
+        // Save sports open to
+        await supabase.from("profile_sports_open_to").delete().eq("profile_id", newProfileId);
+        if (sportsOpenTo.length > 0) {
+          await supabase.from("profile_sports_open_to").insert(
+            sportsOpenTo.map((s) => ({
+              profile_id: newProfileId!,
+              sport_id: s.sport_id,
+            }))
+          );
         }
       }
 
@@ -637,6 +695,15 @@ export default function ProfileEdit() {
               ))}
             </CardContent>
           </Card>
+
+          {/* Sports */}
+          <SportsEditor
+            profileId={profileId}
+            sportsExperience={sportsExperience}
+            sportsOpenTo={sportsOpenTo}
+            onExperienceChange={setSportsExperience}
+            onOpenToChange={setSportsOpenTo}
+          />
 
           {/* Experience */}
           <Card>

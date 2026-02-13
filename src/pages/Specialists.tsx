@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { getSportIcon } from "@/lib/sportIcons";
 import { 
   Search, 
   MapPin, 
@@ -15,7 +16,8 @@ import {
   ChevronRight,
   Users,
   CheckCircle,
-  Clock
+  Clock,
+  Trophy
 } from "lucide-react";
 
 interface ProfileCard {
@@ -38,6 +40,18 @@ interface SpecialistRole {
   name: string;
 }
 
+interface Sport {
+  id: string;
+  name: string;
+  icon: string | null;
+}
+
+interface ProfileSportExp {
+  sport_id: string;
+  years: number;
+  sports: { name: string; icon: string | null } | null;
+}
+
 const levelLabels: Record<string, string> = {
   intern: "Стажёр",
   junior: "Junior",
@@ -49,10 +63,13 @@ const levelLabels: Record<string, string> = {
 export default function Specialists() {
   const [profiles, setProfiles] = useState<ProfileCard[]>([]);
   const [roles, setRoles] = useState<SpecialistRole[]>([]);
+  const [sports, setSports] = useState<Sport[]>([]);
+  const [profileSports, setProfileSports] = useState<Record<string, ProfileSportExp[]>>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [selectedLevel, setSelectedLevel] = useState<string>("");
+  const [selectedSport, setSelectedSport] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -61,16 +78,17 @@ export default function Specialists() {
 
   useEffect(() => {
     fetchProfiles();
-  }, [selectedRole, selectedLevel]);
+  }, [selectedRole, selectedLevel, selectedSport]);
 
   const fetchData = async () => {
     try {
-      const { data: rolesData } = await supabase
-        .from("specialist_roles")
-        .select("id, name")
-        .order("name");
+      const [rolesRes, sportsRes] = await Promise.all([
+        supabase.from("specialist_roles").select("id, name").order("name"),
+        supabase.from("sports").select("id, name, icon").eq("is_active", true).order("sort_order"),
+      ]);
 
-      if (rolesData) setRoles(rolesData);
+      if (rolesRes.data) setRoles(rolesRes.data);
+      if (sportsRes.data) setSports(sportsRes.data);
       await fetchProfiles();
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -99,7 +117,7 @@ export default function Specialists() {
         .eq("is_public", true)
         .order("updated_at", { ascending: false });
 
-      if (selectedRole) {
+      if (selectedRole && selectedRole !== "all") {
         query = query.eq("role_id", selectedRole);
       }
 
@@ -110,7 +128,46 @@ export default function Specialists() {
       const { data, error } = await query;
 
       if (error) throw error;
-      setProfiles(data || []);
+      let profilesList = data || [];
+
+      // If sport filter is active, filter by sport experience or open-to
+      if (selectedSport && selectedSport !== "all") {
+        const profileIds = profilesList.map(p => p.id);
+        if (profileIds.length > 0) {
+          const [expRes, openRes] = await Promise.all([
+            supabase.from("profile_sports_experience").select("profile_id").eq("sport_id", selectedSport).in("profile_id", profileIds),
+            supabase.from("profile_sports_open_to").select("profile_id").eq("sport_id", selectedSport).in("profile_id", profileIds),
+          ]);
+          const matchIds = new Set([
+            ...(expRes.data || []).map(r => r.profile_id),
+            ...(openRes.data || []).map(r => r.profile_id),
+          ]);
+          profilesList = profilesList.filter(p => matchIds.has(p.id));
+        }
+      }
+
+      setProfiles(profilesList);
+
+      // Fetch sports for all displayed profiles
+      const allIds = profilesList.map(p => p.id);
+      if (allIds.length > 0) {
+        const { data: sportsData } = await supabase
+          .from("profile_sports_experience")
+          .select("profile_id, sport_id, years, sports:sport_id (name, icon)")
+          .in("profile_id", allIds)
+          .order("years", { ascending: false });
+
+        if (sportsData) {
+          const grouped: Record<string, ProfileSportExp[]> = {};
+          for (const s of sportsData as any[]) {
+            if (!grouped[s.profile_id]) grouped[s.profile_id] = [];
+            grouped[s.profile_id].push({ sport_id: s.sport_id, years: s.years, sports: s.sports });
+          }
+          setProfileSports(grouped);
+        }
+      } else {
+        setProfileSports({});
+      }
     } catch (err) {
       console.error("Error fetching profiles:", err);
     } finally {
@@ -128,12 +185,13 @@ export default function Specialists() {
   });
 
   const clearFilters = () => {
-    setSelectedRole("");
-    setSelectedLevel("");
+    setSelectedRole("all");
+    setSelectedLevel("all");
+    setSelectedSport("all");
     setSearchQuery("");
   };
 
-  const hasActiveFilters = selectedRole || selectedLevel || searchQuery;
+  const hasActiveFilters = (selectedRole && selectedRole !== "all") || (selectedLevel && selectedLevel !== "all") || (selectedSport && selectedSport !== "all") || searchQuery;
 
   return (
     <Layout>
@@ -184,7 +242,7 @@ export default function Specialists() {
                     <SelectValue placeholder="Специализация" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Все специализации</SelectItem>
+                    <SelectItem value="all">Все специализации</SelectItem>
                     {roles.map(role => (
                       <SelectItem key={role.id} value={role.id}>
                         {role.name}
@@ -204,6 +262,26 @@ export default function Specialists() {
                         {label}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={selectedSport} onValueChange={setSelectedSport}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Вид спорта" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все виды спорта</SelectItem>
+                    {sports.map(sport => {
+                      const Icon = getSportIcon(sport.icon);
+                      return (
+                        <SelectItem key={sport.id} value={sport.id}>
+                          <span className="flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            {sport.name}
+                          </span>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </>
@@ -314,6 +392,27 @@ export default function Specialists() {
                           </Badge>
                         )}
                       </div>
+
+                      {/* Sports */}
+                      {profileSports[profile.id]?.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                          {profileSports[profile.id].slice(0, 3).map((s) => {
+                            const Icon = getSportIcon(s.sports?.icon || null);
+                            return (
+                              <Badge key={s.sport_id} variant="outline" className="text-xs flex items-center gap-1 py-0.5">
+                                <Icon className="h-3 w-3" />
+                                {s.sports?.name}
+                                <span className="text-muted-foreground">({s.years}г)</span>
+                              </Badge>
+                            );
+                          })}
+                          {profileSports[profile.id].length > 3 && (
+                            <Badge variant="outline" className="text-xs py-0.5">
+                              +{profileSports[profile.id].length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
 
                       {/* Arrow */}
                       <div className="flex justify-end mt-4">
