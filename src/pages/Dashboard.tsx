@@ -148,191 +148,253 @@ function SpecialistDashboard({ userId }: { userId: string }) {
   }
 
   const nextSteps = progressSteps.filter(s => !s.completed).slice(0, 3);
+  const searchStatusLabel: Record<string, string> = {
+    actively_looking: "Активно ищу работу",
+    open_to_offers: "Открыт к предложениям",
+    not_looking_but_open: "Готов рассмотреть",
+    not_looking: "Не ищу работу",
+  };
+
+  const levels: Record<string, string> = {
+    intern: "Стажёр", junior: "Junior", middle: "Middle", senior: "Senior", head: "Head",
+  };
 
   return (
     <Layout>
-      <div className="min-h-[80vh]">
-        {/* Hero section — state-dependent */}
-        <section className="border-b border-border/50">
-          <div className="container py-10 md:py-14">
-            <div className="max-w-3xl">
-              <p className="text-sm font-medium text-primary mb-2 tracking-wide uppercase">
-                Личный кабинет
-              </p>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
-                {state === "new"
-                  ? `${profile?.first_name ? `${profile.first_name}, создайте` : "Создайте"} профессиональный профиль`
-                  : state === "building"
-                    ? `${profile?.first_name || ""}, давайте завершим профиль`
-                    : `${profile?.first_name || ""}, ваш профиль готов!`
-                }
-              </h1>
-              <p className="text-lg text-muted-foreground mt-3 max-w-xl">
-                {state === "new"
-                  ? "Заполненный профиль — ваша визитная карточка для клубов и организаций"
-                  : state === "building"
-                    ? "Осталось немного. Профили, заполненные на 80%+, получают в 3 раза больше просмотров"
-                    : "Клубы видят ваш профиль и могут связаться с вами напрямую"
-                }
-              </p>
-            </div>
+      <div className="min-h-[80vh] bg-secondary/30">
+        {/* Hero */}
+        <section className="bg-background border-b border-border/50">
+          <div className="container py-8 md:py-10">
+            <p className="text-[13px] font-medium text-primary mb-1.5 tracking-wide uppercase">
+              Личный кабинет
+            </p>
+            <h1 className="text-2xl md:text-[28px] font-medium text-foreground leading-tight">
+              {state === "new"
+                ? `${profile?.first_name ? `${profile.first_name}, создайте` : "Создайте"} профессиональный профиль`
+                : state === "building"
+                  ? `${profile?.first_name || ""}, давайте завершим профиль`
+                  : `${profile?.first_name || ""}, ваш профиль готов`
+              }
+            </h1>
+            <p className="text-[15px] text-muted-foreground mt-2 max-w-xl">
+              {state === "new"
+                ? "Заполненный профиль — ваша визитная карточка для клубов и организаций"
+                : state === "building"
+                  ? "Профили, заполненные на 80%+, получают в 3 раза больше просмотров"
+                  : "Клубы видят ваш профиль и могут связаться с вами напрямую"
+              }
+            </p>
           </div>
         </section>
 
-        <div className="container py-8 md:py-10">
-          {/* Profile completion card — shown when < 80% */}
-          {state !== "ready" && (
-            <div className="bg-card border border-border rounded-2xl p-6 md:p-8 mb-8 shadow-sm">
-              <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
-                {/* Progress circle */}
-                <div className="flex-shrink-0 flex items-center justify-center">
-                  <div className="relative w-24 h-24">
-                    <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--secondary))" strokeWidth="8" />
-                      <circle
-                        cx="50" cy="50" r="42" fill="none"
-                        stroke="hsl(var(--primary))"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        strokeDasharray={`${pct * 2.64} ${264 - pct * 2.64}`}
-                        className="transition-all duration-1000 ease-out"
-                      />
-                    </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-xl font-bold text-foreground">
-                      {pct}%
-                    </span>
+        <div className="container py-6 md:py-8">
+          <div className="flex gap-6 lg:gap-8">
+            {/* ── LEFT COLUMN (60-65%) ── */}
+            <div className="flex-1 min-w-0 space-y-6">
+              {/* Profile completion — shown when < 80% */}
+              {state !== "ready" && (
+                <div className="bg-card rounded-2xl p-5 md:p-6 shadow-card">
+                  <div className="flex items-start gap-5">
+                    {/* Progress circle */}
+                    <div className="flex-shrink-0">
+                      <div className="relative w-20 h-20">
+                        <svg className="w-20 h-20 -rotate-90" viewBox="0 0 100 100">
+                          <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--secondary))" strokeWidth="8" />
+                          <circle
+                            cx="50" cy="50" r="42" fill="none"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="8"
+                            strokeLinecap="round"
+                            strokeDasharray={`${pct * 2.64} ${264 - pct * 2.64}`}
+                            className="transition-all duration-1000 ease-out"
+                          />
+                        </svg>
+                        <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-foreground">
+                          {pct}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Steps */}
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-[16px] font-medium text-foreground mb-1">
+                        {state === "new" ? "Начните с основного" : "Следующие шаги"}
+                      </h2>
+                      <p className="text-[13px] text-muted-foreground mb-3">
+                        {nextSteps.length > 0
+                          ? `Выполните ${nextSteps.length} ${nextSteps.length === 1 ? "шаг" : "шага"}, чтобы улучшить профиль`
+                          : "Профиль заполнен — отлично!"
+                        }
+                      </p>
+                      <div className="space-y-2 mb-4">
+                        {nextSteps.map((step) => (
+                          <div key={step.key} className="flex items-center gap-2.5 text-[14px]">
+                            <Circle className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
+                            <span className="text-muted-foreground">{step.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <Link to="/profile/edit">
+                        <Button className="text-[14px] px-5">
+                          {state === "new" ? "Начать заполнение" : "Продолжить"}
+                          <ArrowRight className="h-4 w-4 ml-1.5" />
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
+              )}
 
-                {/* Steps */}
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-semibold text-foreground mb-1">
-                    {state === "new" ? "Начните с основного" : "Следующие шаги"}
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {nextSteps.length > 0
-                      ? `Выполните ${nextSteps.length} ${nextSteps.length === 1 ? "шаг" : "шага"}, чтобы улучшить профиль`
-                      : "Профиль заполнен — отлично!"
-                    }
-                  </p>
-                  <div className="space-y-2.5 mb-5">
-                    {nextSteps.map((step) => (
-                      <div key={step.key} className="flex items-center gap-3 text-[15px]">
-                        <Circle className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />
-                        <span className="text-muted-foreground">{step.label}</span>
-                      </div>
-                    ))}
+              {/* Ready state — compact */}
+              {state === "ready" && (
+                <div className="bg-card rounded-2xl p-5 shadow-card flex items-center gap-4">
+                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-medium text-foreground">Профиль заполнен на {pct}%</p>
+                    <p className="text-[13px] text-muted-foreground">Ваш профиль виден работодателям</p>
                   </div>
                   <Link to="/profile/edit">
-                    <Button size="lg" className="text-[15px] px-6">
-                      {state === "new" ? "Начать заполнение" : "Продолжить заполнение"}
-                      <ArrowRight className="h-4 w-4 ml-2" />
+                    <Button variant="outline" size="sm" className="text-[13px]">Редактировать</Button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Quick actions */}
+              <div>
+                <h2 className="text-[16px] font-medium text-foreground mb-3">Быстрые действия</h2>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <QuickAction
+                    icon={<User className="h-5 w-5" />}
+                    title="Мой профиль"
+                    description="Просмотр и редактирование"
+                    to={profile?.id ? `/profile/${profile.id}` : "/profile/edit"}
+                  />
+                  <QuickAction
+                    icon={<Briefcase className="h-5 w-5" />}
+                    title="Вакансии"
+                    description="Открытые позиции в спорте"
+                    to="/jobs"
+                  />
+                  <QuickAction
+                    icon={<FileText className="h-5 w-5" />}
+                    title="PDF резюме"
+                    description="Скачать профиль"
+                    to={profile?.id ? `/profile/${profile.id}` : "/profile/edit"}
+                  />
+                  <QuickAction
+                    icon={<Settings className="h-5 w-5" />}
+                    title="Настройки"
+                    description="Приватность и видимость"
+                    to="/profile/edit"
+                  />
+                </div>
+              </div>
+
+              {/* Motivational block for incomplete profiles */}
+              {state !== "ready" && (
+                <div className="bg-card rounded-2xl p-5 shadow-card">
+                  <h2 className="text-[16px] font-medium text-foreground mb-2">Открытые вакансии</h2>
+                  <p className="text-[13px] text-muted-foreground mb-3">
+                    Заполните профиль, чтобы откликаться на вакансии и быть заметнее
+                  </p>
+                  <Link to="/jobs">
+                    <Button variant="outline" size="sm" className="text-[13px]">
+                      Смотреть вакансии <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   </Link>
                 </div>
-              </div>
+              )}
+            </div>
 
-              {/* Full checklist — collapsed under divider */}
-              <div className="border-t border-border/50 mt-6 pt-5">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-                  Все разделы
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                  {progressSteps.map((step) => (
-                    <div key={step.key} className="flex items-center gap-2 text-sm py-1">
-                      {step.completed ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+            {/* ── RIGHT COLUMN (35-40%) ── */}
+            <div className="hidden lg:block w-72 xl:w-80 shrink-0">
+              <div className="sticky top-24 space-y-5">
+                {/* Mini preview card */}
+                <div className="bg-card rounded-2xl p-5 shadow-card">
+                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">
+                    Как вас видят клубы
+                  </p>
+                  <div className="flex flex-col items-center text-center">
+                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden mb-3">
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <Circle className="h-4 w-4 text-muted-foreground/40 flex-shrink-0" />
+                        <span className="text-lg font-medium text-muted-foreground">
+                          {profile?.first_name?.[0] || "?"}{profile?.last_name?.[0] || "?"}
+                        </span>
                       )}
-                      <span className={step.completed ? "text-foreground" : "text-muted-foreground"}>
-                        {step.label}
-                      </span>
                     </div>
-                  ))}
+                    <p className="text-[15px] font-medium text-foreground">
+                      {profile?.first_name || "Имя"} {profile?.last_name || "Фамилия"}
+                    </p>
+                    {roleName && (
+                      <p className="text-[13px] text-muted-foreground mt-0.5">{roleName}</p>
+                    )}
+                    {profile?.level && (
+                      <span className="inline-block text-[11px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-2">
+                        {levels[profile.level] || profile.level}
+                      </span>
+                    )}
+                    {(profile?.city || profile?.country) && (
+                      <p className="text-[12px] text-muted-foreground mt-2 flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {[profile.city, profile.country].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                    {profile?.search_status && (
+                      <p className="text-[11px] text-muted-foreground mt-2">
+                        {searchStatusLabel[profile.search_status] || profile.search_status}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* All sections checklist */}
+                <div className="bg-card rounded-2xl p-5 shadow-card">
+                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-3">
+                    Все разделы
+                  </p>
+                  <div className="space-y-1.5">
+                    {progressSteps.map((step) => (
+                      <div key={step.key} className="flex items-center gap-2.5 text-[13px] py-1">
+                        {step.completed ? (
+                          <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))] flex-shrink-0" />
+                        ) : (
+                          <Circle className="h-3.5 w-3.5 text-muted-foreground/40 flex-shrink-0" />
+                        )}
+                        <span className={step.completed ? "text-foreground" : "text-muted-foreground"}>
+                          {step.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="bg-card rounded-2xl p-5 shadow-card">
+                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-3">
+                    Статистика
+                  </p>
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between text-[13px]">
+                      <span className="text-muted-foreground flex items-center gap-2">
+                        <Eye className="h-3.5 w-3.5" /> Просмотров
+                      </span>
+                      <span className="font-medium text-foreground">{viewsCount || 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[13px]">
+                      <span className="text-muted-foreground flex items-center gap-2">
+                        <Briefcase className="h-3.5 w-3.5" /> Откликов
+                      </span>
+                      <span className="font-medium text-foreground">{applicationsCount || 0}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          )}
-
-          {/* Ready state — compact progress */}
-          {state === "ready" && (
-            <div className="bg-card border border-border rounded-2xl p-6 mb-8 shadow-sm flex items-center gap-6">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">Профиль заполнен на {pct}%</p>
-                  <p className="text-sm text-muted-foreground">Ваш профиль виден работодателям</p>
-                </div>
-              </div>
-              <Link to="/profile/edit">
-                <Button variant="outline" size="sm">Редактировать</Button>
-              </Link>
-            </div>
-          )}
-
-          {/* Quick actions + Stats — only show stats when there's data */}
-          <div className={`grid gap-8 ${state === "ready" ? "lg:grid-cols-3" : "lg:grid-cols-1"}`}>
-            <div className={state === "ready" ? "lg:col-span-2" : ""}>
-              <h2 className="text-lg font-semibold text-foreground mb-4">Быстрые действия</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <QuickAction
-                  icon={<User className="h-5 w-5" />}
-                  title="Мой профиль"
-                  description="Просмотр и редактирование"
-                  to={profile?.id ? `/profile/${profile.id}` : "/profile/edit"}
-                />
-                <QuickAction
-                  icon={<Briefcase className="h-5 w-5" />}
-                  title="Вакансии"
-                  description="Открытые позиции в спорте"
-                  to="/jobs"
-                />
-                <QuickAction
-                  icon={<FileText className="h-5 w-5" />}
-                  title="PDF резюме"
-                  description="Скачать профиль"
-                  to={profile?.id ? `/profile/${profile.id}` : "/profile/edit"}
-                />
-                <QuickAction
-                  icon={<Settings className="h-5 w-5" />}
-                  title="Настройки"
-                  description="Приватность и видимость"
-                  to="/profile/edit"
-                />
-              </div>
-            </div>
-
-            {/* Stats — only in ready state */}
-            {state === "ready" && (
-              <div>
-                <h2 className="text-lg font-semibold text-foreground mb-4">Статистика</h2>
-                <div className="space-y-3">
-                  <StatRow icon={<Eye className="h-4 w-4" />} label="Просмотров профиля" value={viewsCount || 0} />
-                  <StatRow icon={<Briefcase className="h-4 w-4" />} label="Откликов отправлено" value={applicationsCount || 0} />
-                  <StatRow icon={<TrendingUp className="h-4 w-4" />} label="Специализация" value={roleName || "—"} />
-                  <StatRow icon={<MapPin className="h-4 w-4" />} label="Город" value={profile?.city || "Не указан"} />
-                </div>
-              </div>
-            )}
           </div>
-
-          {/* Motivational block for new/building users */}
-          {state !== "ready" && (
-            <div className="mt-10">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Открытые вакансии</h2>
-              <p className="text-muted-foreground mb-4">
-                Заполните профиль, чтобы откликаться на вакансии и быть заметнее для работодателей
-              </p>
-              <Link to="/jobs">
-                <Button variant="outline">
-                  Смотреть вакансии <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </Link>
-            </div>
-          )}
         </div>
       </div>
     </Layout>
