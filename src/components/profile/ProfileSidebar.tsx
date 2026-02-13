@@ -20,13 +20,13 @@ const sections = [
 
 export function ProfileSidebar({ activeSection, onSectionClick }: ProfileSidebarProps) {
   return (
-    <nav className="hidden lg:block sticky top-24 space-y-1 w-48">
+    <nav className="space-y-1 w-full">
       {sections.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
           onClick={() => onSectionClick(id)}
           className={cn(
-            "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
+            "flex items-center gap-2.5 w-full text-left px-3 py-2.5 rounded-lg text-[14px] transition-colors",
             activeSection === id
               ? "bg-primary/10 text-primary font-medium"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
