@@ -64,6 +64,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (!error && data) {
         setUserRole(data.role);
+      } else if (!data) {
+        // User confirmed email but role wasn't created - check metadata and create
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        const meta = currentUser?.user_metadata;
+        if (meta?.role) {
+          const role = meta.role as AppRole;
+          await supabase.from("user_roles").insert({ user_id: userId, role });
+          setUserRole(role);
+          
+          // Also create profile/company if missing
+          if (role === "specialist" && meta.first_name && meta.last_name) {
+            const { data: existingProfile } = await supabase
+              .from("profiles").select("id").eq("user_id", userId).maybeSingle();
+            if (!existingProfile) {
+              await supabase.from("profiles").insert({
+                user_id: userId,
+                first_name: meta.first_name,
+                last_name: meta.last_name,
+                email: currentUser?.email
+              });
+            }
+          } else if (role === "employer" && meta.company_name) {
+            const { data: existingCompany } = await supabase
+              .from("companies").select("id").eq("user_id", userId).maybeSingle();
+            if (!existingCompany) {
+              await supabase.from("companies").insert({
+                user_id: userId,
+                name: meta.company_name
+              });
+            }
+          }
+        }
       }
     } catch (err) {
       console.error("Error fetching user role:", err);
