@@ -8,10 +8,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { trackEvent } from "@/hooks/useAnalytics";
+import { getSportIcon } from "@/lib/sportIcons";
 import { 
   MapPin, Mail, Phone, Globe, Briefcase, GraduationCap,
   Calendar, ExternalLink, Edit, MessageCircle, CheckCircle,
-  Clock, Lock, Eye, AlertTriangle
+  Clock, Lock, Eye, AlertTriangle, Trophy, Handshake
 } from "lucide-react";
 
 interface ProfileData {
@@ -55,6 +56,18 @@ interface Skill {
   category: string | null;
 }
 
+interface SportExp {
+  sport_id: string;
+  years: number;
+  level: string | null;
+  sport: { id: string; name: string; icon: string | null } | null;
+}
+
+interface SportOpen {
+  sport_id: string;
+  sport: { id: string; name: string; icon: string | null } | null;
+}
+
 const levelLabels: Record<string, string> = {
   intern: "Стажёр", junior: "Junior", middle: "Middle", senior: "Senior", head: "Head"
 };
@@ -73,6 +86,8 @@ export default function Profile() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [sportsExp, setSportsExp] = useState<SportExp[]>([]);
+  const [sportsOpen, setSportsOpen] = useState<SportOpen[]>([]);
   const [loading, setLoading] = useState(true);
   const [accessLevel, setAccessLevel] = useState<AccessLevel>("preview");
   const [viewsRemaining, setViewsRemaining] = useState<number | null>(null);
@@ -129,14 +144,18 @@ export default function Profile() {
         level: profileData.level || "unknown",
       });
 
-      // Fetch experiences and skills in parallel
-      const [expRes, skillsRes] = await Promise.all([
+      // Fetch experiences, skills, and sports in parallel
+      const [expRes, skillsRes, sportsExpRes, sportsOpenRes] = await Promise.all([
         supabase.from("experiences").select("*").eq("profile_id", id!).order("start_date", { ascending: false }),
         supabase.from("profile_skills").select(`skill_id, skills (id, name, category)`).eq("profile_id", id!),
+        supabase.from("profile_sports_experience").select("sport_id, years, level, sports:sport_id (id, name, icon)").eq("profile_id", id!),
+        supabase.from("profile_sports_open_to").select("sport_id, sports:sport_id (id, name, icon)").eq("profile_id", id!),
       ]);
 
       if (expRes.data) setExperiences(expRes.data);
       if (skillsRes.data) setSkills(skillsRes.data.map((s: any) => s.skills).filter(Boolean));
+      if (sportsExpRes.data) setSportsExp(sportsExpRes.data.map((s: any) => ({ ...s, sport: s.sports })));
+      if (sportsOpenRes.data) setSportsOpen(sportsOpenRes.data.map((s: any) => ({ ...s, sport: s.sports })));
     } catch (err) {
       console.error("Error fetching profile:", err);
     } finally {
@@ -353,6 +372,58 @@ export default function Profile() {
                   {skills.map((skill) => (
                     <Badge key={skill.id} variant="secondary">{skill.name}</Badge>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Sports Experience */}
+          {sportsExp.length > 0 && (
+            <Card>
+              <CardContent className="py-6">
+                <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
+                  <Trophy className="h-5 w-5" />
+                  Опыт по видам спорта
+                </h2>
+                <div className="space-y-3">
+                  {sportsExp.map((s) => {
+                    const Icon = getSportIcon(s.sport?.icon);
+                    return (
+                      <div key={s.sport_id} className="flex items-center gap-3">
+                        <Icon className="h-5 w-5 text-primary" />
+                        <span className="font-medium">{s.sport?.name}</span>
+                        <Badge variant="outline">{s.years} {s.years === 1 ? "год" : s.years < 5 ? "года" : "лет"}</Badge>
+                        {s.level && (
+                          <Badge variant="secondary" className="text-xs">
+                            {s.level === "beginner" ? "Начинающий" : s.level === "intermediate" ? "Средний" : s.level === "advanced" ? "Продвинутый" : "Эксперт"}
+                          </Badge>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Sports Open To */}
+          {sportsOpen.length > 0 && (
+            <Card>
+              <CardContent className="py-6">
+                <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
+                  <Handshake className="h-5 w-5" />
+                  Готов работать в
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {sportsOpen.map((s) => {
+                    const Icon = getSportIcon(s.sport?.icon);
+                    return (
+                      <Badge key={s.sport_id} variant="outline" className="flex items-center gap-1.5 py-1.5 px-3">
+                        <Icon className="h-3.5 w-3.5" />
+                        {s.sport?.name}
+                      </Badge>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

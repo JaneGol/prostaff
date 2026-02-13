@@ -475,6 +475,84 @@ export type Database = {
           },
         ]
       }
+      profile_sports_experience: {
+        Row: {
+          created_at: string | null
+          id: string
+          level: string | null
+          profile_id: string
+          sport_id: string
+          years: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          level?: string | null
+          profile_id: string
+          sport_id: string
+          years?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          level?: string | null
+          profile_id?: string
+          sport_id?: string
+          years?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_sports_experience_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_sports_experience_sport_id_fkey"
+            columns: ["sport_id"]
+            isOneToOne: false
+            referencedRelation: "sports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_sports_open_to: {
+        Row: {
+          created_at: string | null
+          id: string
+          profile_id: string
+          sport_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          profile_id: string
+          sport_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          profile_id?: string
+          sport_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_sports_open_to_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_sports_open_to_sport_id_fkey"
+            columns: ["sport_id"]
+            isOneToOne: false
+            referencedRelation: "sports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_views: {
         Row: {
           id: string
@@ -629,6 +707,51 @@ export type Database = {
           id?: string
           name?: string
           name_en?: string | null
+        }
+        Relationships: []
+      }
+      sports: {
+        Row: {
+          created_at: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          is_olympic: boolean | null
+          name: string
+          name_en: string | null
+          season: string | null
+          slug: string
+          sort_order: number | null
+          type_activity: string | null
+          type_participation: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_olympic?: boolean | null
+          name: string
+          name_en?: string | null
+          season?: string | null
+          slug: string
+          sort_order?: number | null
+          type_activity?: string | null
+          type_participation?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_olympic?: boolean | null
+          name?: string
+          name_en?: string | null
+          season?: string | null
+          slug?: string
+          sort_order?: number | null
+          type_activity?: string | null
+          type_participation?: string | null
         }
         Relationships: []
       }
