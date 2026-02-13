@@ -148,6 +148,8 @@ function SpecialistDashboard({ userId }: { userId: string }) {
   }
 
   const nextSteps = progressSteps.filter(s => !s.completed).slice(0, 3);
+  const hasStats = (viewsCount || 0) > 0 || (applicationsCount || 0) > 0;
+
   const searchStatusLabel: Record<string, string> = {
     actively_looking: "Активно ищу работу",
     open_to_offers: "Открыт к предложениям",
@@ -194,52 +196,76 @@ function SpecialistDashboard({ userId }: { userId: string }) {
               {/* Profile completion — shown when < 80% */}
               {state !== "ready" && (
                 <div className="bg-card rounded-2xl p-5 md:p-6 shadow-card">
-                  <div className="flex items-start gap-5">
-                    {/* Progress circle */}
-                    <div className="flex-shrink-0">
-                      <div className="relative w-20 h-20">
-                        <svg className="w-20 h-20 -rotate-90" viewBox="0 0 100 100">
-                          <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--secondary))" strokeWidth="8" />
-                          <circle
-                            cx="50" cy="50" r="42" fill="none"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="8"
-                            strokeLinecap="round"
-                            strokeDasharray={`${pct * 2.64} ${264 - pct * 2.64}`}
-                            className="transition-all duration-1000 ease-out"
-                          />
-                        </svg>
-                        <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-foreground">
-                          {pct}%
-                        </span>
+                  <div className="flex flex-col md:flex-row md:items-start gap-5">
+                    {/* Left: Progress + Steps */}
+                    <div className="flex items-start gap-5 flex-1 min-w-0">
+                      {/* Progress circle */}
+                      <div className="flex-shrink-0">
+                        <div className="relative w-20 h-20">
+                          <svg className="w-20 h-20 -rotate-90" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--secondary))" strokeWidth="8" />
+                            <circle
+                              cx="50" cy="50" r="42" fill="none"
+                              stroke="hsl(var(--primary))"
+                              strokeWidth="8"
+                              strokeLinecap="round"
+                              strokeDasharray={`${pct * 2.64} ${264 - pct * 2.64}`}
+                              className="transition-all duration-1000 ease-out"
+                            />
+                          </svg>
+                          <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-foreground">
+                            {pct}%
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Steps */}
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-[16px] font-medium text-foreground mb-1">
+                          {state === "new" ? "Начните с основного" : "Следующие шаги"}
+                        </h2>
+                        <p className="text-[13px] text-muted-foreground mb-3">
+                          {nextSteps.length > 0
+                            ? `Выполните ${nextSteps.length} ${nextSteps.length === 1 ? "шаг" : "шага"}, чтобы улучшить профиль`
+                            : "Профиль заполнен — отлично!"
+                          }
+                        </p>
+                        <div className="space-y-2 mb-4">
+                          {nextSteps.map((step) => (
+                            <div key={step.key} className="flex items-center gap-2.5 text-[14px]">
+                              <Circle className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
+                              <span className="text-muted-foreground">{step.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <Link to="/profile/edit">
+                          <Button className="text-[14px] px-5">
+                            {state === "new" ? "Начать заполнение" : "Продолжить"}
+                            <ArrowRight className="h-4 w-4 ml-1.5" />
+                          </Button>
+                        </Link>
                       </div>
                     </div>
 
-                    {/* Steps */}
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-[16px] font-medium text-foreground mb-1">
-                        {state === "new" ? "Начните с основного" : "Следующие шаги"}
-                      </h2>
-                      <p className="text-[13px] text-muted-foreground mb-3">
-                        {nextSteps.length > 0
-                          ? `Выполните ${nextSteps.length} ${nextSteps.length === 1 ? "шаг" : "шага"}, чтобы улучшить профиль`
-                          : "Профиль заполнен — отлично!"
-                        }
-                      </p>
-                      <div className="space-y-2 mb-4">
-                        {nextSteps.map((step) => (
-                          <div key={step.key} className="flex items-center gap-2.5 text-[14px]">
-                            <Circle className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
-                            <span className="text-muted-foreground">{step.label}</span>
-                          </div>
-                        ))}
+                    {/* Right: Stats integrated */}
+                    <div className="md:w-44 shrink-0 md:border-l md:border-border md:pl-5 border-t md:border-t-0 pt-4 md:pt-0 space-y-3">
+                      <div className="flex items-center justify-between md:flex-col md:items-start gap-1">
+                        <span className="text-[12px] text-muted-foreground flex items-center gap-1.5">
+                          <Eye className="h-3.5 w-3.5" /> Просмотров
+                        </span>
+                        <span className="text-xl font-bold text-foreground">{viewsCount || 0}</span>
                       </div>
-                      <Link to="/profile/edit">
-                        <Button className="text-[14px] px-5">
-                          {state === "new" ? "Начать заполнение" : "Продолжить"}
-                          <ArrowRight className="h-4 w-4 ml-1.5" />
-                        </Button>
-                      </Link>
+                      <div className="flex items-center justify-between md:flex-col md:items-start gap-1">
+                        <span className="text-[12px] text-muted-foreground flex items-center gap-1.5">
+                          <Briefcase className="h-3.5 w-3.5" /> Откликов
+                        </span>
+                        <span className="text-xl font-bold text-foreground">{applicationsCount || 0}</span>
+                      </div>
+                      {!hasStats && (
+                        <p className="text-[11px] text-muted-foreground leading-snug">
+                          Заполните профиль — и клубы начнут вас находить
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -372,26 +398,6 @@ function SpecialistDashboard({ userId }: { userId: string }) {
                   </div>
                 </div>
 
-                {/* Stats */}
-                <div className="bg-card rounded-2xl p-5 shadow-card">
-                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-3">
-                    Статистика
-                  </p>
-                  <div className="space-y-2.5">
-                    <div className="flex items-center justify-between text-[13px]">
-                      <span className="text-muted-foreground flex items-center gap-2">
-                        <Eye className="h-3.5 w-3.5" /> Просмотров
-                      </span>
-                      <span className="font-medium text-foreground">{viewsCount || 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-[13px]">
-                      <span className="text-muted-foreground flex items-center gap-2">
-                        <Briefcase className="h-3.5 w-3.5" /> Откликов
-                      </span>
-                      <span className="font-medium text-foreground">{applicationsCount || 0}</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
