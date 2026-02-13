@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     additionalData?: { firstName?: string; lastName?: string; companyName?: string }
   ) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = "https://prostaff.icu/";
       
       const { data, error } = await supabase.auth.signUp({
         email,
