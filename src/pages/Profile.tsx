@@ -13,8 +13,9 @@ import {
   MapPin, Mail, Phone, Globe, Briefcase, GraduationCap,
   Calendar, ExternalLink, Edit, MessageCircle, CheckCircle,
   Clock, Lock, Eye, AlertTriangle, Trophy, Handshake, FolderOpen,
-  Star, Award
+  Star, Award, FileText
 } from "lucide-react";
+import { PdfResumeModal } from "@/components/profile/PdfResumeModal";
 
 interface ProfileData {
   id: string;
@@ -150,6 +151,7 @@ export default function Profile() {
   const [accessLevel, setAccessLevel] = useState<AccessLevel>("preview");
   const [viewsRemaining, setViewsRemaining] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  const [pdfOpen, setPdfOpen] = useState(false);
 
   const isOwner = user && profile && user.id === profile.user_id;
 
@@ -323,7 +325,10 @@ export default function Profile() {
               </div>
 
               {isOwner && (
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-4 right-4 flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setPdfOpen(true)}>
+                    <FileText className="h-4 w-4 mr-2" />PDF
+                  </Button>
                   <Link to="/profile/edit"><Button variant="outline" size="sm"><Edit className="h-4 w-4 mr-2" />Редактировать</Button></Link>
                 </div>
               )}
@@ -659,6 +664,19 @@ export default function Profile() {
                 </p>
               </CardContent>
             </Card>
+          )}
+          {isOwner && (
+            <PdfResumeModal
+              open={pdfOpen}
+              onClose={() => setPdfOpen(false)}
+              profile={profile as any}
+              experiences={experiences}
+              skills={skills}
+              sportsExp={sportsExp}
+              education={educationItems}
+              certificates={certificateItems}
+              portfolio={portfolioItems}
+            />
           )}
         </div>
       </div>
