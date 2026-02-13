@@ -13,6 +13,7 @@ import {
   FileText, Send, Building2, ArrowUpRight, ArrowDownRight,
   Activity, UserPlus, Target
 } from "lucide-react";
+import ArticleEditor from "@/components/admin/ArticleEditor";
 
 type DateRange = "today" | "7d" | "30d" | "all";
 
@@ -291,6 +292,7 @@ export default function AdminDashboard() {
               <TabsTrigger value="devices">Устройства</TabsTrigger>
               <TabsTrigger value="activity">Активность</TabsTrigger>
               <TabsTrigger value="events">События</TabsTrigger>
+              <TabsTrigger value="content">Контент</TabsTrigger>
               <TabsTrigger value="platform">Платформа</TabsTrigger>
             </TabsList>
 
@@ -633,6 +635,10 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            <TabsContent value="content" className="space-y-4 mt-4">
+              <ArticleEditor />
             </TabsContent>
 
             <TabsContent value="platform" className="space-y-4 mt-4">
