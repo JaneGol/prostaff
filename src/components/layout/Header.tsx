@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Search, User, LogOut, Send, Users, BarChart3, Eye } from "lucide-react";
+import { Menu, X, Search, User, LogOut, Send, Users, BarChart3, Eye, Home, Briefcase, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/hooks/useAnalytics";
@@ -14,13 +14,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const navLinks = [
-  { href: "/specialists", label: "Банк специалистов" },
-  { href: "/jobs", label: "Вакансии" },
-  { href: "/content", label: "Контент" },
-  { href: "/about", label: "О нас" },
-];
-
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, userRole, signOut } = useAuth();
@@ -32,21 +25,69 @@ export function Header() {
     navigate("/");
   };
 
+  // Role-based navigation
+  const getNavLinks = () => {
+    if (!user) {
+      return [
+        { href: "/specialists", label: "Банк специалистов" },
+        { href: "/jobs", label: "Вакансии" },
+        { href: "/content", label: "Контент" },
+        { href: "/about", label: "О нас" },
+      ];
+    }
+
+    if (userRole === "specialist") {
+      return [
+        { href: "/dashboard", label: "Главная" },
+        { href: "/jobs", label: "Вакансии" },
+        { href: "/content", label: "Контент" },
+      ];
+    }
+
+    if (userRole === "employer") {
+      return [
+        { href: "/dashboard", label: "Главная" },
+        { href: "/specialists", label: "Поиск специалистов" },
+        { href: "/jobs", label: "Мои вакансии" },
+        { href: "/content", label: "Контент" },
+      ];
+    }
+
+    if (userRole === "admin") {
+      return [
+        { href: "/admin", label: "Панель управления" },
+        { href: "/specialists", label: "Специалисты" },
+        { href: "/jobs", label: "Вакансии" },
+        { href: "/content", label: "Контент" },
+      ];
+    }
+
+    return [
+      { href: "/specialists", label: "Банк специалистов" },
+      { href: "/jobs", label: "Вакансии" },
+      { href: "/content", label: "Контент" },
+    ];
+  };
+
+  const navLinks = getNavLinks();
+
   return (
     <header className="sticky top-0 z-50 w-full">
       {/* Top bar */}
-      <div className="bg-primary-darker text-white py-2 text-center text-sm">
-        <span className="font-medium">
-          🏆 Найди работу мечты в спорте — присоединяйся к платформе!
-        </span>
-      </div>
+      {!user && (
+        <div className="bg-primary-darker text-white py-2 text-center text-sm">
+          <span className="font-medium">
+            🏆 Найди работу мечты в спорте — присоединяйся к платформе!
+          </span>
+        </div>
+      )}
 
       {/* Main navigation */}
       <nav className="bg-white border-b border-border">
         <div className="container">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
+            <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
                   <span className="text-white font-display font-bold text-xl">P</span>
@@ -73,10 +114,6 @@ export function Header() {
 
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center gap-4">
-              <Button variant="ghost" size="icon">
-                <Search className="h-5 w-5" />
-              </Button>
-              
               {user && userRole === "employer" && access && (
                 <Link to="/pricing" className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                   <Eye className="h-4 w-4" />
@@ -89,14 +126,23 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-2">
                       <User className="h-4 w-4" />
-                      {userRole === "specialist" ? "Профиль" : "Кабинет"}
+                      {userRole === "specialist" ? "Мой профиль" : "Кабинет"}
                     </Button>
                   </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                     {userRole === "specialist" && (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link to="/profile/edit">Мой профиль</Link>
+                          <Link to="/dashboard">
+                            <Home className="h-4 w-4 mr-2" />
+                            Главная
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/profile/edit">
+                            <User className="h-4 w-4 mr-2" />
+                            Редактировать профиль
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link to="/my-applications">
@@ -109,7 +155,16 @@ export function Header() {
                     {userRole === "employer" && (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link to="/company/edit">Моя компания</Link>
+                          <Link to="/dashboard">
+                            <Home className="h-4 w-4 mr-2" />
+                            Главная
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/company/edit">
+                            <Briefcase className="h-4 w-4 mr-2" />
+                            Моя компания
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link to="/employer/applications">
@@ -165,7 +220,7 @@ export function Header() {
         <div
           className={cn(
             "lg:hidden overflow-hidden transition-all duration-300 border-t border-border",
-            isMenuOpen ? "max-h-[400px]" : "max-h-0"
+            isMenuOpen ? "max-h-[500px]" : "max-h-0"
           )}
         >
           <div className="container py-4 space-y-4">
@@ -186,7 +241,8 @@ export function Header() {
                     <>
                       <Link to="/profile/edit" onClick={() => setIsMenuOpen(false)}>
                         <Button variant="outline" className="w-full">
-                          Мой профиль
+                          <User className="h-4 w-4 mr-2" />
+                          Редактировать профиль
                         </Button>
                       </Link>
                       <Link to="/my-applications" onClick={() => setIsMenuOpen(false)}>
