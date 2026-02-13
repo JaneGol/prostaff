@@ -107,9 +107,10 @@ export default function Auth() {
         } else {
           trackEvent("signup", "auth", userType, email);
           toast({
-            title: "Проверьте почту",
-            description: "Мы отправили ссылку для подтверждения на " + email
+            title: "Регистрация успешна!",
+            description: "Добро пожаловать на платформу ProStaff"
           });
+          navigate("/");
         }
       } else {
         const { error } = await signIn(email, password);
