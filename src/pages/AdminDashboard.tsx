@@ -11,7 +11,7 @@ import {
   Users, Briefcase, Eye, MousePointer, TrendingUp,
   Monitor, Smartphone, Tablet, Globe, Clock, BarChart3,
   FileText, Send, Building2, ArrowUpRight, ArrowDownRight,
-  Activity, UserPlus, Target
+  Activity, UserPlus, Target, Lock, Unlock
 } from "lucide-react";
 import ArticleEditor from "@/components/admin/ArticleEditor";
 
@@ -41,6 +41,8 @@ export default function AdminDashboard() {
   const [applicationsCount, setApplicationsCount] = useState(0);
   const [userRoles, setUserRoles] = useState<any[]>([]);
   const [profilesWithRoles, setProfilesWithRoles] = useState<any[]>([]);
+  const [profileViews, setProfileViews] = useState<any[]>([]);
+  const [clubAccess, setClubAccess] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export default function AdminDashboard() {
     const dateFilter = getDateFilter(dateRange);
 
     // Parallel fetches
-    const [pvRes, evRes, prRes, coRes, joRes, apRes, urRes, prRolesRes] = await Promise.all([
+    const [pvRes, evRes, prRes, coRes, joRes, apRes, urRes, prRolesRes, pvViewsRes, caRes] = await Promise.all([
       dateFilter
         ? supabase.from("page_views").select("*").gte("created_at", dateFilter).order("created_at", { ascending: false }).limit(1000)
         : supabase.from("page_views").select("*").order("created_at", { ascending: false }).limit(1000),
@@ -72,6 +74,10 @@ export default function AdminDashboard() {
       supabase.from("applications").select("id", { count: "exact", head: true }),
       supabase.from("user_roles").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("id, first_name, last_name, specialist_roles(name), created_at").order("created_at", { ascending: false }).limit(500),
+      dateFilter
+        ? supabase.from("profile_views").select("*").gte("viewed_at", dateFilter).order("viewed_at", { ascending: false }).limit(500)
+        : supabase.from("profile_views").select("*").order("viewed_at", { ascending: false }).limit(500),
+      supabase.from("club_access").select("*").order("updated_at", { ascending: false }),
     ]);
 
     setPageViews(pvRes.data || []);
@@ -82,6 +88,8 @@ export default function AdminDashboard() {
     setApplicationsCount(apRes.count || 0);
     setUserRoles(urRes.data || []);
     setProfilesWithRoles(prRolesRes.data || []);
+    setProfileViews(pvViewsRes.data || []);
+    setClubAccess(caRes.data || []);
     setLoadingData(false);
   };
 
@@ -289,6 +297,7 @@ export default function AdminDashboard() {
             <TabsList className="w-full justify-start overflow-x-auto">
               <TabsTrigger value="pages">Страницы</TabsTrigger>
               <TabsTrigger value="registrations">Регистрации</TabsTrigger>
+              <TabsTrigger value="profile-views">Просмотры</TabsTrigger>
               <TabsTrigger value="devices">Устройства</TabsTrigger>
               <TabsTrigger value="activity">Активность</TabsTrigger>
               <TabsTrigger value="events">События</TabsTrigger>
@@ -475,6 +484,146 @@ export default function AdminDashboard() {
                       <p className="text-muted-foreground text-sm text-center py-4 col-span-2">Нет данных</p>
                     )}
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="profile-views" className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <SummaryCard icon={<Eye />} label="Просмотров профилей" value={profileViews.length} />
+                <SummaryCard icon={<Unlock />} label="Уникальных клубов" value={new Set(profileViews.map(v => v.viewer_user_id)).size} accent />
+                <SummaryCard icon={<Users />} label="Просмотренных профилей" value={new Set(profileViews.map(v => v.profile_id)).size} />
+              </div>
+
+              {/* Club quotas */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-primary" />
+                    Квоты клубов
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {clubAccess.length === 0 ? (
+                    <p className="text-muted-foreground text-sm text-center py-8">Нет данных о квотах клубов</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Клуб (user_id)</th>
+                            <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Остаток</th>
+                            <th className="text-left py-2 pr-4 font-medium text-muted-foreground">В неделю</th>
+                            <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Trial до</th>
+                            <th className="text-left py-2 font-medium text-muted-foreground">Подписка</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {clubAccess.map(ca => (
+                            <tr key={ca.id} className="border-b border-border/50">
+                              <td className="py-2 pr-4 font-mono text-xs">{ca.user_id.substring(0, 8)}...</td>
+                              <td className="py-2 pr-4">
+                                <Badge variant={ca.free_views_remaining > 10 ? "secondary" : ca.free_views_remaining > 0 ? "outline" : "destructive"}>
+                                  {ca.free_views_remaining}
+                                </Badge>
+                              </td>
+                              <td className="py-2 pr-4">{ca.free_views_per_week}</td>
+                              <td className="py-2 pr-4 text-muted-foreground">
+                                {new Date(ca.trial_expires_at).toLocaleDateString("ru-RU")}
+                              </td>
+                              <td className="py-2">
+                                <Badge variant={ca.is_subscribed ? "default" : "outline"}>
+                                  {ca.is_subscribed ? "Да" : "Нет"}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Recent views log */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Eye className="h-5 w-5 text-accent" />
+                    Последние просмотры профилей
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {profileViews.length === 0 ? (
+                    <p className="text-muted-foreground text-sm text-center py-8">Нет просмотров за выбранный период</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Кто смотрел</th>
+                            <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Профиль</th>
+                            <th className="text-left py-2 font-medium text-muted-foreground">Когда</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {profileViews.slice(0, 30).map(pv => (
+                            <tr key={pv.id} className="border-b border-border/50">
+                              <td className="py-2 pr-4 font-mono text-xs">{pv.viewer_user_id.substring(0, 8)}...</td>
+                              <td className="py-2 pr-4 font-mono text-xs">{pv.profile_id.substring(0, 8)}...</td>
+                              <td className="py-2 text-muted-foreground">
+                                {new Date(pv.viewed_at).toLocaleString("ru-RU")}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Top viewed profiles */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    Самые просматриваемые профили
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const viewCounts: Record<string, number> = {};
+                    profileViews.forEach(pv => {
+                      viewCounts[pv.profile_id] = (viewCounts[pv.profile_id] || 0) + 1;
+                    });
+                    const sorted = Object.entries(viewCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+                    if (sorted.length === 0) return <p className="text-muted-foreground text-sm text-center py-8">Нет данных</p>;
+                    return (
+                      <div className="space-y-3">
+                        {sorted.map(([profileId, count], i) => {
+                          const pct = profileViews.length > 0 ? (count / profileViews.length) * 100 : 0;
+                          return (
+                            <div key={profileId} className="flex items-center gap-3">
+                              <span className="text-sm font-medium text-muted-foreground w-6">{i + 1}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-sm font-mono">{profileId.substring(0, 12)}...</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-semibold">{count}</span>
+                                    <Badge variant="outline" className="text-xs">{pct.toFixed(1)}%</Badge>
+                                  </div>
+                                </div>
+                                <div className="w-full bg-muted rounded-full h-2">
+                                  <div className="bg-accent rounded-full h-2 transition-all" style={{ width: `${pct}%` }} />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </TabsContent>
