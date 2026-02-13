@@ -480,37 +480,47 @@ export default function ProfileEdit() {
     );
   }
 
+  const roleName = roles.find(r => r.id === roleId)?.name;
+
   return (
     <Layout>
-      <div className="container py-8 md:py-12">
-        <div className="flex gap-6 lg:gap-8 relative">
-          {/* Sidebar - sticky left */}
-          <div className="hidden lg:block w-48 shrink-0">
-            <div className="sticky top-24">
-              <ProfileSidebar activeSection={activeSection} onSectionClick={scrollToSection} />
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1 min-w-0 max-w-3xl space-y-6">
-            <div className="flex items-center justify-between">
-              <h1 className="font-display text-2xl md:text-3xl font-bold uppercase">
-                {profileId ? "Редактирование профиля" : "Создание профиля"}
-              </h1>
-              <Button variant="outline" onClick={() => navigate(-1)}>
-                <X className="h-4 w-4 mr-2" />Отмена
-              </Button>
+      <div className="bg-secondary/30 min-h-screen">
+        <div className="container py-8 md:py-12">
+          <div className="flex gap-8 lg:gap-10 relative">
+            {/* Sidebar - sticky left */}
+            <div className="hidden lg:block w-52 shrink-0">
+              <div className="sticky top-24 space-y-6">
+                <ProfileSidebar activeSection={activeSection} onSectionClick={scrollToSection} />
+              </div>
             </div>
 
-            {/* Progress visible on mobile/tablet, hidden on xl */}
-            <div className="xl:hidden">
-              <ProfileProgress fields={profileFields} />
-            </div>
+            {/* Main Content */}
+            <div className="flex-1 min-w-0 max-w-3xl space-y-8">
+              {/* Page Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl md:text-[28px] font-medium tracking-tight">
+                    {profileId ? "Редактирование профиля" : "Создание профиля"}
+                  </h1>
+                  <p className="text-muted-foreground text-[15px] mt-1">Заполните профиль — и клубы смогут вас найти</p>
+                </div>
+                <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate(-1)}>
+                  <X className="h-4 w-4 mr-1.5" />Отмена
+                </Button>
+              </div>
 
-            {/* BASIC */}
-            <div ref={el => { sectionRefs.current["basic"] = el; }}>
-              <Card>
-                <CardContent className="py-6">
+              {/* Progress visible on mobile/tablet, hidden on xl */}
+              <div className="xl:hidden">
+                <ProfileProgress fields={profileFields} onFieldClick={(key) => {
+                  const sectionMap: Record<string, string> = { avatar: "basic", role: "basic", about: "about", location: "status", skills: "skills", experience: "experience", education: "education", sports: "sports", contacts: "contacts" };
+                  scrollToSection(sectionMap[key] || key);
+                }} />
+              </div>
+
+              {/* BASIC — Photo + Info */}
+              <div ref={el => { sectionRefs.current["basic"] = el; }} className="space-y-5">
+                {/* Photo */}
+                <div className="bg-card rounded-2xl p-6 shadow-card">
                   <div className="flex items-center gap-6">
                     <ImageUpload
                       currentImageUrl={avatarUrl}
@@ -526,112 +536,117 @@ export default function ProfileEdit() {
                       }
                     />
                     <div>
-                      <h3 className="font-semibold mb-1">Фото профиля</h3>
-                      <p className="text-sm text-muted-foreground">400×400 px рекомендуется</p>
+                      <h3 className="text-[16px] font-medium mb-1">Фото профиля</h3>
+                      <p className="text-[13px] text-muted-foreground mb-3">Рекомендуемый размер 400×400 px</p>
+                      <Button variant="outline" size="sm" className="text-[13px]" onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}>
+                        📷 Загрузить фото
+                      </Button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
 
-              <Card className="mt-4">
-                <CardHeader>
-                  <CardTitle className="font-display uppercase">Основная информация</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[15px]">Имя *</Label>
-                      <Input className="text-base" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[15px]">Фамилия *</Label>
-                      <Input className="text-base" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
+                {/* Basic Info */}
+                <div className="bg-card rounded-2xl p-6 shadow-card space-y-6">
+                  <h2 className="text-[18px] font-medium">Основная информация</h2>
+
+                  {/* Personal */}
+                  <div>
+                    <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider mb-3">Личные данные</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-[14px]">Имя *</Label>
+                        <Input className="text-[15px]" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[14px]">Фамилия *</Label>
+                        <Input className="text-[15px]" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[15px]">Основная специализация</Label>
-                      <Select value={roleId} onValueChange={setRoleId}>
-                        <SelectTrigger className="text-base"><SelectValue placeholder="Выберите роль" /></SelectTrigger>
+                  {/* Professional */}
+                  <div>
+                    <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider mb-3">Профессиональное</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-[14px]">Основная специализация</Label>
+                        <Select value={roleId} onValueChange={setRoleId}>
+                          <SelectTrigger className="text-[15px]"><SelectValue placeholder="Выберите роль" /></SelectTrigger>
+                          <SelectContent>
+                            {roles.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[14px]">Смежная специализация</Label>
+                        <Select value={secondaryRoleId} onValueChange={setSecondaryRoleId} disabled={!roleId}>
+                          <SelectTrigger className="text-[15px]"><SelectValue placeholder="Опционально" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Нет</SelectItem>
+                            {secondaryRoleOptions.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-[12px] text-muted-foreground max-w-[320px]">Помогает клубам находить вас шире</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mt-4">
+                      <Label className="text-[14px]">Уровень</Label>
+                      <Select value={level} onValueChange={setLevel}>
+                        <SelectTrigger className="text-[15px] max-w-xs"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {roles.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
+                          {levels.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ABOUT */}
+              <div ref={el => { sectionRefs.current["about"] = el; }}>
+                <AboutEditor
+                  bio={bio} aboutUseful={aboutUseful} aboutStyle={aboutStyle} aboutGoals={aboutGoals}
+                  onBioChange={setBio} onAboutUsefulChange={setAboutUseful}
+                  onAboutStyleChange={setAboutStyle} onAboutGoalsChange={setAboutGoals}
+                  roleName={primaryRoleName}
+                />
+              </div>
+
+              {/* STATUS & PRIVACY */}
+              <div ref={el => { sectionRefs.current["status"] = el; }}>
+                <div className="bg-card rounded-2xl p-6 shadow-card space-y-6">
+                  <h2 className="text-[18px] font-medium">Локация, статус и приватность</h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-[15px]">Смежная специализация</Label>
-                      <Select value={secondaryRoleId} onValueChange={setSecondaryRoleId} disabled={!roleId}>
-                        <SelectTrigger className="text-base"><SelectValue placeholder="Опционально" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Нет</SelectItem>
-                          {secondaryRoleOptions.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-sm text-muted-foreground">Смежная роль помогает клубам находить вас шире. Выберите, если реально выполняете задачи этой роли.</p>
+                      <Label className="text-[14px]">Город</Label>
+                      <Input className="text-[15px]" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Москва" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[14px]">Страна</Label>
+                      <Input className="text-[15px]" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Россия" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-[15px]">Уровень</Label>
-                    <Select value={level} onValueChange={setLevel}>
-                      <SelectTrigger className="text-base"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {levels.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* ABOUT */}
-            <div ref={el => { sectionRefs.current["about"] = el; }}>
-              <AboutEditor
-                bio={bio} aboutUseful={aboutUseful} aboutStyle={aboutStyle} aboutGoals={aboutGoals}
-                onBioChange={setBio} onAboutUsefulChange={setAboutUseful}
-                onAboutStyleChange={setAboutStyle} onAboutGoalsChange={setAboutGoals}
-                roleName={primaryRoleName}
-              />
-            </div>
-
-            {/* STATUS & PRIVACY */}
-            <div ref={el => { sectionRefs.current["status"] = el; }}>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-display uppercase">Локация, статус и приватность</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[15px]">Город</Label>
-                      <Input className="text-base" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Москва" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[15px]">Страна</Label>
-                      <Input className="text-base" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Россия" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-[15px]">Статус поиска</Label>
+                    <Label className="text-[14px]">Статус поиска</Label>
                     <Select value={searchStatus} onValueChange={setSearchStatus}>
-                      <SelectTrigger className="text-base"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="text-[15px]"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {searchStatuses.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Desired role preferences */}
                   {searchStatus !== "not_looking" && (
-                    <div className="border-t pt-4 space-y-4">
-                      <h4 className="font-medium text-[15px]">Что ищу</h4>
+                    <div className="border-t border-border pt-5 space-y-4">
+                      <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Что ищу</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label className="text-[15px]">Формат</Label>
+                          <Label className="text-[14px]">Формат</Label>
                           <Select value={desiredContractType} onValueChange={setDesiredContractType}>
-                            <SelectTrigger className="text-base"><SelectValue placeholder="Любой" /></SelectTrigger>
+                            <SelectTrigger className="text-[15px]"><SelectValue placeholder="Любой" /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="any">Любой</SelectItem>
                               <SelectItem value="full_time">Полная занятость</SelectItem>
@@ -642,154 +657,188 @@ export default function ProfileEdit() {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[15px]">Желаемый город</Label>
-                          <Input className="text-base" value={desiredCity} onChange={(e) => setDesiredCity(e.target.value)} placeholder="Любой" />
+                          <Label className="text-[14px]">Желаемый город</Label>
+                          <Input className="text-[15px]" value={desiredCity} onChange={(e) => setDesiredCity(e.target.value)} placeholder="Любой" />
                         </div>
                       </div>
                     </div>
                   )}
 
-                  <div className="flex flex-col gap-3 border-t pt-4">
+                  <div className="flex flex-col gap-4 border-t border-border pt-5">
                     <div className="flex items-center justify-between">
-                      <Label className="text-[15px]">Готов к релокации</Label>
+                      <Label className="text-[14px]">Готов к релокации</Label>
                       <Switch checked={isRelocatable} onCheckedChange={setIsRelocatable} />
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label className="text-[15px]">Удалённая работа</Label>
+                      <Label className="text-[14px]">Удалённая работа</Label>
                       <Switch checked={isRemoteAvailable} onCheckedChange={setIsRemoteAvailable} />
                     </div>
                   </div>
 
-                  {/* Visibility */}
-                  <div className="border-t pt-4 space-y-3">
-                    <h4 className="font-medium text-[15px]">Видимость профиля</h4>
+                  <div className="border-t border-border pt-5 space-y-3">
+                    <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Видимость профиля</p>
                     <Select value={visibilityLevel} onValueChange={setVisibilityLevel}>
-                      <SelectTrigger className="text-base"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="text-[15px]"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {visibilityLevels.map(v => <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div className="border-t pt-4 space-y-3">
-                    <h4 className="font-medium text-[15px]">Настройки приватности</h4>
-                    <div className="flex flex-col gap-3">
+                  <div className="border-t border-border pt-5 space-y-4">
+                    <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Настройки приватности</p>
+                    <div className="flex flex-col gap-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label className="text-[15px]">Показывать имя клубам</Label>
-                          <p className="text-sm text-muted-foreground">Если выключено — клубы увидят только роль</p>
+                          <Label className="text-[14px]">Показывать имя клубам</Label>
+                          <p className="text-[12px] text-muted-foreground mt-0.5">Если выключено — клубы увидят только роль</p>
                         </div>
                         <Switch checked={showName} onCheckedChange={setShowName} />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label className="text-[15px]">Показывать контакты</Label>
-                          <p className="text-sm text-muted-foreground">Контакты видны только после разблокировки</p>
+                          <Label className="text-[14px]">Показывать контакты</Label>
+                          <p className="text-[12px] text-muted-foreground mt-0.5">Видны только после разблокировки</p>
                         </div>
                         <Switch checked={showContacts} onCheckedChange={setShowContacts} />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label className="text-[15px]">Скрыть текущую организацию</Label>
-                          <p className="text-sm text-muted-foreground">В публичном профиле название текущей работы будет скрыто</p>
+                          <Label className="text-[14px]">Скрыть текущую организацию</Label>
+                          <p className="text-[12px] text-muted-foreground mt-0.5">Название текущей работы будет скрыто</p>
                         </div>
                         <Switch checked={hideCurrentOrg} onCheckedChange={setHideCurrentOrg} />
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </div>
 
-            {/* SKILLS */}
-            <div ref={el => { sectionRefs.current["skills"] = el; }}>
-              <SkillsEditor
-                allSkills={allSkills}
-                selectedSkills={selectedSkills}
-                onChange={setSelectedSkills}
-                primaryRoleName={primaryRoleName}
-              />
-            </div>
+              {/* SKILLS */}
+              <div ref={el => { sectionRefs.current["skills"] = el; }}>
+                <SkillsEditor
+                  allSkills={allSkills}
+                  selectedSkills={selectedSkills}
+                  onChange={setSelectedSkills}
+                  primaryRoleName={primaryRoleName}
+                />
+              </div>
 
-            {/* SPORTS */}
-            <div ref={el => { sectionRefs.current["sports"] = el; }}>
-              <SportsEditor
-                profileId={profileId}
-                sportsExperience={sportsExperience}
-                sportsOpenTo={sportsOpenTo}
-                onExperienceChange={setSportsExperience}
-                onOpenToChange={setSportsOpenTo}
-              />
-            </div>
+              {/* SPORTS */}
+              <div ref={el => { sectionRefs.current["sports"] = el; }}>
+                <SportsEditor
+                  profileId={profileId}
+                  sportsExperience={sportsExperience}
+                  sportsOpenTo={sportsOpenTo}
+                  onExperienceChange={setSportsExperience}
+                  onOpenToChange={setSportsOpenTo}
+                />
+              </div>
 
-            {/* EXPERIENCE */}
-            <div ref={el => { sectionRefs.current["experience"] = el; }}>
-              <ExperienceEditor experiences={experiences} onChange={setExperiences} />
-            </div>
+              {/* EXPERIENCE */}
+              <div ref={el => { sectionRefs.current["experience"] = el; }}>
+                <ExperienceEditor experiences={experiences} onChange={setExperiences} />
+              </div>
 
-            {/* EDUCATION */}
-            <div ref={el => { sectionRefs.current["education"] = el; }}>
-              <EducationEditor
-                education={education}
-                certificates={certificates}
-                onEducationChange={setEducation}
-                onCertificatesChange={setCertificates}
-              />
-            </div>
+              {/* EDUCATION */}
+              <div ref={el => { sectionRefs.current["education"] = el; }}>
+                <EducationEditor
+                  education={education}
+                  certificates={certificates}
+                  onEducationChange={setEducation}
+                  onCertificatesChange={setCertificates}
+                />
+              </div>
 
-            {/* PORTFOLIO */}
-            <div ref={el => { sectionRefs.current["portfolio"] = el; }}>
-              <PortfolioEditor items={portfolio} onChange={setPortfolio} />
-            </div>
+              {/* PORTFOLIO */}
+              <div ref={el => { sectionRefs.current["portfolio"] = el; }}>
+                <PortfolioEditor items={portfolio} onChange={setPortfolio} />
+              </div>
 
-            {/* CONTACTS */}
-            <div ref={el => { sectionRefs.current["contacts"] = el; }}>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-display uppercase">Контакты</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-5">
+              {/* CONTACTS */}
+              <div ref={el => { sectionRefs.current["contacts"] = el; }}>
+                <div className="bg-card rounded-2xl p-6 shadow-card space-y-5">
+                  <h2 className="text-[18px] font-medium">Контакты</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-[15px]">Email</Label>
-                      <Input className="text-base" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ivan@example.com" />
+                      <Label className="text-[14px]">Email</Label>
+                      <Input className="text-[15px]" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ivan@example.com" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[15px]">Телефон</Label>
-                      <Input className="text-base" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 (999) 123-45-67" />
+                      <Label className="text-[14px]">Телефон</Label>
+                      <Input className="text-[15px]" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 (999) 123-45-67" />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-[15px]">Telegram</Label>
-                      <Input className="text-base" value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
+                      <Label className="text-[14px]">Telegram</Label>
+                      <Input className="text-[15px]" value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[15px]">LinkedIn</Label>
-                      <Input className="text-base" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/username" />
+                      <Label className="text-[14px]">LinkedIn</Label>
+                      <Input className="text-[15px]" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/username" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[15px]">Портфолио / Сайт</Label>
-                    <Input className="text-base" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} placeholder="https://example.com" />
+                    <Label className="text-[14px]">Портфолио / Сайт</Label>
+                    <Input className="text-[15px]" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} placeholder="https://example.com" />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+
+              {/* Save — clear hierarchy */}
+              <div className="flex justify-end gap-3 pb-10 pt-2">
+                <Button variant="ghost" className="text-muted-foreground" onClick={() => navigate(-1)}>Отмена</Button>
+                <Button onClick={handleSave} disabled={saving} size="lg" className="px-8 text-[15px]">
+                  {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Сохранение...</> : <><Save className="h-4 w-4 mr-2" />Сохранить профиль</>}
+                </Button>
+              </div>
             </div>
 
-            {/* Save */}
-            <div className="flex justify-end gap-4 pb-8">
-              <Button variant="outline" onClick={() => navigate(-1)}>Отмена</Button>
-              <Button onClick={handleSave} disabled={saving}>
-                {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Сохранение...</> : <><Save className="h-4 w-4 mr-2" />Сохранить</>}
-              </Button>
-            </div>
-          </div>
+            {/* Right column — sticky progress + mini-preview */}
+            <div className="hidden xl:block w-64 shrink-0">
+              <div className="sticky top-24 space-y-5">
+                {/* Mini Preview Card */}
+                <div className="bg-card rounded-2xl p-5 shadow-card">
+                  <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Как вас видят клубы</p>
+                  <div className="flex flex-col items-center text-center">
+                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden mb-3">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-lg font-medium text-muted-foreground">
+                          {firstName?.[0] || "?"}{lastName?.[0] || "?"}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[15px] font-medium text-foreground">
+                      {firstName || "Имя"} {lastName || "Фамилия"}
+                    </p>
+                    {roleName && (
+                      <p className="text-[13px] text-muted-foreground mt-0.5">{roleName}</p>
+                    )}
+                    {level && (
+                      <span className="inline-block text-[11px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-2">
+                        {levels.find(l => l.value === level)?.label || level}
+                      </span>
+                    )}
+                    {(city || country) && (
+                      <p className="text-[12px] text-muted-foreground mt-2">
+                        {[city, country].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
-          {/* Progress - sticky right, visible only on xl */}
-          <div className="hidden xl:block w-64 shrink-0">
-            <div className="sticky top-24">
-              <ProfileProgress fields={profileFields} />
+                {/* Progress */}
+                <ProfileProgress
+                  fields={profileFields}
+                  onFieldClick={(key) => {
+                    const sectionMap: Record<string, string> = { avatar: "basic", role: "basic", about: "about", location: "status", skills: "skills", experience: "experience", education: "education", sports: "sports", contacts: "contacts" };
+                    scrollToSection(sectionMap[key] || key);
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
