@@ -17,6 +17,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { trackEvent } from "@/hooks/useAnalytics";
 import { 
   MapPin, 
   Building2,
@@ -230,6 +231,9 @@ export default function JobDetails() {
       } else {
         setHasApplied(true);
         setShowApplyModal(false);
+        trackEvent("application_submit", "job", job?.title || "", id, {
+          company: job?.companies?.name || "unknown",
+        });
         toast({
           title: "Отклик отправлен!",
           description: "Работодатель получит ваш отклик и свяжется с вами"

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Users, Building2 } from "lucide-react";
+import { trackEvent } from "@/hooks/useAnalytics";
 
 export function CTASection() {
   return (
@@ -40,7 +41,7 @@ export function CTASection() {
                   Уведомления о просмотрах профиля
                 </li>
               </ul>
-              <Link to="/auth?mode=signup&role=specialist">
+              <Link to="/auth?mode=signup&role=specialist" onClick={() => trackEvent("cta_click", "cta_section", "Создать профиль (специалист)")}>
                 <Button size="lg" className="w-full sm:w-auto">
                   Создать профиль
                 </Button>
@@ -82,7 +83,7 @@ export function CTASection() {
                   Прямая связь с кандидатами
                 </li>
               </ul>
-              <Link to="/auth?mode=signup&role=company">
+              <Link to="/auth?mode=signup&role=company" onClick={() => trackEvent("cta_click", "cta_section", "Зарегистрировать клуб")}>
                 <Button size="lg" className="w-full sm:w-auto">
                   Зарегистрировать клуб
                 </Button>
