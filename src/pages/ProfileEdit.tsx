@@ -485,17 +485,17 @@ export default function ProfileEdit() {
   return (
     <Layout>
       <div className="bg-secondary/30 min-h-screen">
-        <div className="container py-8 md:py-12">
-          <div className="flex gap-8 lg:gap-10 relative">
+        <div className="container py-6 md:py-8">
+          <div className="flex gap-6 lg:gap-8 relative">
             {/* Sidebar - sticky left */}
-            <div className="hidden lg:block w-52 shrink-0">
+            <div className="hidden lg:block w-48 shrink-0">
               <div className="sticky top-24 space-y-6">
                 <ProfileSidebar activeSection={activeSection} onSectionClick={scrollToSection} />
               </div>
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 min-w-0 max-w-3xl space-y-8">
+            <div className="flex-1 min-w-0 space-y-6">
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
@@ -796,7 +796,7 @@ export default function ProfileEdit() {
             </div>
 
             {/* Right column — sticky progress + mini-preview */}
-            <div className="hidden xl:block w-64 shrink-0">
+            <div className="hidden xl:block w-72 shrink-0">
               <div className="sticky top-24 space-y-5">
                 {/* Mini Preview Card */}
                 <div className="bg-card rounded-2xl p-5 shadow-card">
