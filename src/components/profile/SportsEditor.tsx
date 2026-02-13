@@ -135,7 +135,7 @@ export function SportsEditor({
     sports.find((s) => s.id === sportId)?.icon || null;
 
   return (
-    <>
+    <div className="space-y-6">
       {/* Sport Experience */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -318,6 +318,6 @@ export function SportsEditor({
           )}
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }

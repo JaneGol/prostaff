@@ -81,7 +81,8 @@ interface SportExp {
 }
 
 interface SportOpen {
-  sport_id: string;
+  sport_id: string | null;
+  sport_group: string | null;
   sport: { id: string; name: string; icon: string | null } | null;
 }
 
@@ -212,7 +213,7 @@ export default function Profile() {
         supabase.from("experiences").select("*").eq("profile_id", id!).order("start_date", { ascending: false }),
         supabase.from("profile_skills").select(`skill_id, proficiency, is_top, is_custom, custom_name, skills (id, name, category)`).eq("profile_id", id!),
         supabase.from("profile_sports_experience").select("sport_id, years, level, context_level, sports:sport_id (id, name, icon)").eq("profile_id", id!),
-        supabase.from("profile_sports_open_to").select("sport_id, sports:sport_id (id, name, icon)").eq("profile_id", id!),
+        supabase.from("profile_sports_open_to").select("sport_id, sport_group, sports:sport_id (id, name, icon)").eq("profile_id", id!),
         supabase.from("candidate_education").select("*").eq("profile_id", id!).order("start_year", { ascending: false }),
         supabase.from("candidate_certificates").select("*").eq("profile_id", id!).order("year", { ascending: false }),
         supabase.from("candidate_portfolio").select("*").eq("profile_id", id!),
@@ -231,7 +232,7 @@ export default function Profile() {
         })));
       }
       if (sportsExpRes.data) setSportsExp(sportsExpRes.data.map((s: any) => ({ ...s, sport: s.sports })));
-      if (sportsOpenRes.data) setSportsOpen(sportsOpenRes.data.map((s: any) => ({ ...s, sport: s.sports })));
+      if (sportsOpenRes.data) setSportsOpen(sportsOpenRes.data.map((s: any) => ({ sport_id: s.sport_id, sport_group: s.sport_group, sport: s.sports })));
       if (eduRes.data) setEducationItems(eduRes.data as any);
       if (certRes.data) setCertificateItems(certRes.data as any);
       if (portRes.data) setPortfolioItems(portRes.data.map((p: any) => ({ ...p, tags: Array.isArray(p.tags) ? p.tags : [] })));
@@ -496,13 +497,35 @@ export default function Profile() {
                   <Handshake className="h-5 w-5" />Готов работать в
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  {sportsOpen.map(s => {
-                    const Icon = getSportIcon(s.sport?.icon);
-                    return (
-                      <Badge key={s.sport_id} variant="outline" className="flex items-center gap-1.5 py-1.5 px-3">
-                        <Icon className="h-3.5 w-3.5" />{s.sport?.name}
-                      </Badge>
-                    );
+                  {sportsOpen.map((s, i) => {
+                    if (s.sport_group) {
+                      const groupLabels: Record<string, string> = {
+                        any: "Любой вид спорта",
+                        team: "Командные",
+                        individual: "Индивидуальные",
+                        game: "Игровые",
+                        cyclic: "Циклические",
+                        combat: "Единоборства",
+                        power: "Силовые",
+                        coordination: "Координационные",
+                        technical: "Технические",
+                        mixed: "Смешанные",
+                      };
+                      return (
+                        <Badge key={`group-${s.sport_group}`} variant="default" className="py-1.5 px-3">
+                          {groupLabels[s.sport_group] || s.sport_group}
+                        </Badge>
+                      );
+                    }
+                    if (s.sport_id && s.sport) {
+                      const Icon = getSportIcon(s.sport.icon);
+                      return (
+                        <Badge key={s.sport_id} variant="outline" className="flex items-center gap-1.5 py-1.5 px-3">
+                          <Icon className="h-3.5 w-3.5" />{s.sport.name}
+                        </Badge>
+                      );
+                    }
+                    return null;
                   })}
                 </div>
               </CardContent>
