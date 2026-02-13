@@ -11,7 +11,7 @@ import {
   Users, Briefcase, Eye, MousePointer, TrendingUp,
   Monitor, Smartphone, Tablet, Globe, Clock, BarChart3,
   FileText, Send, Building2, ArrowUpRight, ArrowDownRight,
-  Activity
+  Activity, UserPlus, Target
 } from "lucide-react";
 
 type DateRange = "today" | "7d" | "30d" | "all";
@@ -38,6 +38,8 @@ export default function AdminDashboard() {
   const [companiesCount, setCompaniesCount] = useState(0);
   const [jobsCount, setJobsCount] = useState(0);
   const [applicationsCount, setApplicationsCount] = useState(0);
+  const [userRoles, setUserRoles] = useState<any[]>([]);
+  const [profilesWithRoles, setProfilesWithRoles] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export default function AdminDashboard() {
     const dateFilter = getDateFilter(dateRange);
 
     // Parallel fetches
-    const [pvRes, evRes, prRes, coRes, joRes, apRes] = await Promise.all([
+    const [pvRes, evRes, prRes, coRes, joRes, apRes, urRes, prRolesRes] = await Promise.all([
       dateFilter
         ? supabase.from("page_views").select("*").gte("created_at", dateFilter).order("created_at", { ascending: false }).limit(1000)
         : supabase.from("page_views").select("*").order("created_at", { ascending: false }).limit(1000),
@@ -67,6 +69,8 @@ export default function AdminDashboard() {
       supabase.from("companies").select("id", { count: "exact", head: true }),
       supabase.from("jobs").select("id", { count: "exact", head: true }),
       supabase.from("applications").select("id", { count: "exact", head: true }),
+      supabase.from("user_roles").select("*").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("id, first_name, last_name, specialist_roles(name), created_at").order("created_at", { ascending: false }).limit(500),
     ]);
 
     setPageViews(pvRes.data || []);
@@ -75,6 +79,8 @@ export default function AdminDashboard() {
     setCompaniesCount(coRes.count || 0);
     setJobsCount(joRes.count || 0);
     setApplicationsCount(apRes.count || 0);
+    setUserRoles(urRes.data || []);
+    setProfilesWithRoles(prRolesRes.data || []);
     setLoadingData(false);
   };
 
@@ -138,6 +144,43 @@ export default function AdminDashboard() {
       ? (pageViews.length / uniqueSessions).toFixed(1)
       : "0";
 
+    // Registration by role
+    const roleCountMap: Record<string, number> = {};
+    userRoles.forEach(ur => {
+      roleCountMap[ur.role] = (roleCountMap[ur.role] || 0) + 1;
+    });
+
+    // Specialties breakdown
+    const specialtyMap: Record<string, number> = {};
+    profilesWithRoles.forEach((p: any) => {
+      const roleName = p.specialist_roles?.name || "Не указана";
+      specialtyMap[roleName] = (specialtyMap[roleName] || 0) + 1;
+    });
+    const topSpecialties = Object.entries(specialtyMap)
+      .sort((a, b) => b[1] - a[1]);
+
+    // Signup events from analytics
+    const signupEvents = events.filter(e => e.event_type === "signup");
+    const signupByRole: Record<string, number> = {};
+    signupEvents.forEach(e => {
+      const role = e.event_label || "unknown";
+      signupByRole[role] = (signupByRole[role] || 0) + 1;
+    });
+
+    // CTA clicks
+    const ctaEvents = events.filter(e => e.event_type === "cta_click");
+    const ctaByLabel: Record<string, number> = {};
+    ctaEvents.forEach(e => {
+      const label = e.event_label || "unknown";
+      ctaByLabel[label] = (ctaByLabel[label] || 0) + 1;
+    });
+
+    // Profile views
+    const profileViewEvents = events.filter(e => e.event_type === "profile_view");
+    
+    // Applications
+    const applicationEvents = events.filter(e => e.event_type === "application_submit");
+
     return {
       totalViews: pageViews.length,
       uniqueSessions,
@@ -149,8 +192,15 @@ export default function AdminDashboard() {
       categoryMap,
       avgPagesPerSession,
       totalEvents: events.length,
+      roleCountMap,
+      topSpecialties,
+      signupByRole,
+      ctaByLabel,
+      profileViewCount: profileViewEvents.length,
+      applicationEventCount: applicationEvents.length,
+      ctaClickCount: ctaEvents.length,
     };
-  }, [pageViews, events]);
+  }, [pageViews, events, userRoles, profilesWithRoles]);
 
   const pageNameMap: Record<string, string> = {
     "/": "Главная",
@@ -217,7 +267,7 @@ export default function AdminDashboard() {
       <section className="py-8">
         <div className="container space-y-8">
           {/* Summary cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <SummaryCard icon={<Eye />} label="Просмотры" value={analytics.totalViews} />
             <SummaryCard icon={<Globe />} label="Сессии" value={analytics.uniqueSessions} />
             <SummaryCard icon={<BarChart3 />} label="Стр/сессия" value={analytics.avgPagesPerSession} />
@@ -226,9 +276,18 @@ export default function AdminDashboard() {
             <SummaryCard icon={<Briefcase />} label="Вакансии" value={jobsCount} accent />
           </div>
 
+          {/* Quick metrics row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <SummaryCard icon={<Target />} label="CTA клики" value={analytics.ctaClickCount} />
+            <SummaryCard icon={<Eye />} label="Просмотры профилей" value={analytics.profileViewCount} />
+            <SummaryCard icon={<Send />} label="Отклики (события)" value={analytics.applicationEventCount} accent />
+            <SummaryCard icon={<UserPlus />} label="Регистрации (события)" value={Object.values(analytics.signupByRole).reduce((a, b) => a + b, 0)} accent />
+          </div>
+
           <Tabs defaultValue="pages" className="w-full">
             <TabsList className="w-full justify-start overflow-x-auto">
               <TabsTrigger value="pages">Страницы</TabsTrigger>
+              <TabsTrigger value="registrations">Регистрации</TabsTrigger>
               <TabsTrigger value="devices">Устройства</TabsTrigger>
               <TabsTrigger value="activity">Активность</TabsTrigger>
               <TabsTrigger value="events">События</TabsTrigger>
@@ -272,6 +331,146 @@ export default function AdminDashboard() {
                     })}
                     {analytics.topPages.length === 0 && (
                       <p className="text-muted-foreground text-sm text-center py-8">Нет данных за выбранный период</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="registrations" className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Roles distribution */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <UserPlus className="h-5 w-5 text-primary" />
+                      Роли пользователей
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {Object.entries(analytics.roleCountMap).map(([role, count]) => {
+                        const total = userRoles.length || 1;
+                        const pct = (count / total) * 100;
+                        const roleNames: Record<string, string> = {
+                          specialist: "Специалисты",
+                          employer: "Работодатели",
+                          admin: "Админы",
+                        };
+                        return (
+                          <div key={role}>
+                            <div className="flex justify-between mb-1">
+                              <span className="text-sm font-medium">{roleNames[role] || role}</span>
+                              <span className="text-sm font-semibold">{count} ({pct.toFixed(0)}%)</span>
+                            </div>
+                            <div className="w-full bg-muted rounded-full h-2.5">
+                              <div className="bg-primary rounded-full h-2.5" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {Object.keys(analytics.roleCountMap).length === 0 && (
+                        <p className="text-muted-foreground text-sm text-center py-4">Нет данных</p>
+                      )}
+                      <div className="pt-2 border-t">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Всего пользователей</span>
+                          <span className="font-bold">{userRoles.length}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* CTA clicks breakdown */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Target className="h-5 w-5 text-accent" />
+                      Клики по CTA кнопкам
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {Object.entries(analytics.ctaByLabel)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([label, count]) => (
+                          <div key={label} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                            <span className="text-sm font-medium">{label}</span>
+                            <Badge variant="secondary">{count}</Badge>
+                          </div>
+                        ))}
+                      {Object.keys(analytics.ctaByLabel).length === 0 && (
+                        <p className="text-muted-foreground text-sm text-center py-4">Нет кликов</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Signup events by role */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <UserPlus className="h-5 w-5 text-accent" />
+                      Регистрации (по событиям)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {Object.entries(analytics.signupByRole)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([role, count]) => {
+                          const roleNames: Record<string, string> = {
+                            specialist: "Специалист",
+                            employer: "Работодатель",
+                          };
+                          return (
+                            <div key={role} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                              <span className="text-sm font-medium">{roleNames[role] || role}</span>
+                              <Badge>{count}</Badge>
+                            </div>
+                          );
+                        })}
+                      {Object.keys(analytics.signupByRole).length === 0 && (
+                        <p className="text-muted-foreground text-sm text-center py-4">Нет событий регистрации</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Specialties breakdown */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-primary" />
+                    Специалисты по специальностям
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {analytics.topSpecialties.map(([name, count]) => {
+                      const total = profilesWithRoles.length || 1;
+                      const pct = (count / total) * 100;
+                      return (
+                        <div key={name} className="flex items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm font-medium truncate">{name}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold">{count}</span>
+                                <Badge variant="outline" className="text-xs">{pct.toFixed(0)}%</Badge>
+                              </div>
+                            </div>
+                            <div className="w-full bg-muted rounded-full h-2">
+                              <div className="bg-accent rounded-full h-2 transition-all" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {analytics.topSpecialties.length === 0 && (
+                      <p className="text-muted-foreground text-sm text-center py-4 col-span-2">Нет данных</p>
                     )}
                   </div>
                 </CardContent>

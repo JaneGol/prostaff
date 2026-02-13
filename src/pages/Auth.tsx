@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { trackEvent } from "@/hooks/useAnalytics";
 import { z } from "zod";
 import { User, Building2, Mail, Lock, UserCircle, Loader2 } from "lucide-react";
 
@@ -104,6 +105,7 @@ export default function Auth() {
             });
           }
         } else {
+          trackEvent("signup", "auth", userType, email);
           toast({
             title: "Проверьте почту",
             description: "Мы отправили ссылку для подтверждения на " + email
@@ -127,6 +129,7 @@ export default function Auth() {
             });
           }
         } else {
+          trackEvent("login", "auth", "success", email);
           navigate("/");
         }
       }

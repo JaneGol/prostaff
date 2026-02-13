@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Users, Building2, Search, ArrowRight } from "lucide-react";
+import { trackEvent } from "@/hooks/useAnalytics";
 
 export function HeroSection() {
   return (
@@ -49,13 +50,13 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
             >
-              <Link to="/auth?mode=signup&role=specialist">
+              <Link to="/auth?mode=signup&role=specialist" onClick={() => trackEvent("cta_click", "hero", "Создать профиль", "/auth?mode=signup&role=specialist")}>
                 <Button size="lg" className="w-full sm:w-auto">
                   <Users className="h-5 w-5 mr-2" />
                   Создать профиль
                 </Button>
               </Link>
-              <Link to="/specialists">
+              <Link to="/specialists" onClick={() => trackEvent("cta_click", "hero", "Найти специалиста", "/specialists")}>
                 <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white/10">
                   <Search className="h-5 w-5 mr-2" />
                   Найти специалиста

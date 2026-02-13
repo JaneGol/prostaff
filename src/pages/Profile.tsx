@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { trackEvent } from "@/hooks/useAnalytics";
 import { 
   MapPin, 
   Mail, 
@@ -110,8 +111,12 @@ export default function Profile() {
       }
 
       setProfile(profileData);
-
-      // Fetch experiences
+      
+      // Track profile view
+      trackEvent("profile_view", "specialist", profileData.first_name + " " + profileData.last_name, profileData.id, {
+        role: profileData.specialist_roles?.name || "unknown",
+        level: profileData.level || "unknown",
+      });
       const { data: experiencesData } = await supabase
         .from("experiences")
         .select("*")
@@ -260,7 +265,7 @@ export default function Profile() {
                 {/* Contact button */}
                 {!isOwner && (
                   <div className="flex gap-3 pt-2">
-                    <Button>
+                    <Button onClick={() => trackEvent("contact_click", "profile", fullName, profile.id)}>
                       <MessageCircle className="h-4 w-4 mr-2" />
                       Связаться
                     </Button>
