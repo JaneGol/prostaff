@@ -27,7 +27,8 @@ export interface SportExperience {
 
 export interface SportOpenTo {
   id?: string;
-  sport_id: string;
+  sport_id?: string;
+  sport_group?: string;
   sport?: Sport;
 }
 
@@ -38,6 +39,21 @@ interface SportsEditorProps {
   onExperienceChange: (items: SportExperience[]) => void;
   onOpenToChange: (items: SportOpenTo[]) => void;
 }
+
+const participationGroups = [
+  { value: "team", label: "Командные" },
+  { value: "individual", label: "Индивидуальные" },
+];
+
+const activityGroups = [
+  { value: "game", label: "Игровые" },
+  { value: "cyclic", label: "Циклические" },
+  { value: "combat", label: "Единоборства" },
+  { value: "power", label: "Силовые" },
+  { value: "coordination", label: "Координационные" },
+  { value: "technical", label: "Технические" },
+  { value: "mixed", label: "Смешанные" },
+];
 
 const levelOptions = [
   { value: "beginner", label: "Начинающий" },
@@ -72,6 +88,18 @@ export function SportsEditor({
   const availableSportsForOpen = sports.filter(
     (s) => !sportsOpenTo.some((o) => o.sport_id === s.id)
   );
+
+  const selectedGroups = sportsOpenTo
+    .filter((o) => o.sport_group)
+    .map((o) => o.sport_group!);
+
+  const toggleGroup = (group: string) => {
+    if (selectedGroups.includes(group)) {
+      onOpenToChange(sportsOpenTo.filter((o) => o.sport_group !== group));
+    } else {
+      onOpenToChange([...sportsOpenTo, { sport_group: group }]);
+    }
+  };
 
   const addExperience = (sportId: string) => {
     const sport = sports.find((s) => s.id === sportId);
@@ -191,27 +219,66 @@ export function SportsEditor({
             Готов работать в
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           <p className="text-sm text-muted-foreground">
-            Выберите виды спорта, в которых вы готовы работать (включая новые для вас)
+            Быстро выберите группы или конкретные виды спорта
           </p>
 
-          <div className="flex flex-wrap gap-2">
-            {sportsOpenTo.map((item, index) => {
-              const Icon = getSportIcon(getSportIconName(item.sport_id));
-              return (
+          {/* Group chips — Participation */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">По типу</Label>
+            <div className="flex flex-wrap gap-2">
+              {participationGroups.map((g) => (
                 <Badge
-                  key={index}
-                  variant="secondary"
-                  className="flex items-center gap-1.5 py-1.5 px-3 cursor-pointer hover:bg-destructive/10"
-                  onClick={() => removeOpenTo(index)}
+                  key={g.value}
+                  variant={selectedGroups.includes(g.value) ? "default" : "outline"}
+                  className="cursor-pointer py-1.5 px-3 transition-colors"
+                  onClick={() => toggleGroup(g.value)}
                 >
-                  <Icon className="h-3.5 w-3.5" />
-                  {getSportName(item.sport_id)}
-                  <Trash2 className="h-3 w-3 ml-1" />
+                  {g.label}
                 </Badge>
-              );
-            })}
+              ))}
+            </div>
+          </div>
+
+          {/* Group chips — Activity */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">По активности</Label>
+            <div className="flex flex-wrap gap-2">
+              {activityGroups.map((g) => (
+                <Badge
+                  key={g.value}
+                  variant={selectedGroups.includes(g.value) ? "default" : "outline"}
+                  className="cursor-pointer py-1.5 px-3 transition-colors"
+                  onClick={() => toggleGroup(g.value)}
+                >
+                  {g.label}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          {/* Individual sports */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Или конкретные виды</Label>
+            <div className="flex flex-wrap gap-2">
+              {sportsOpenTo.filter(item => item.sport_id).map((item, index) => {
+                const Icon = getSportIcon(getSportIconName(item.sport_id!));
+                const originalIndex = sportsOpenTo.indexOf(item);
+                return (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="flex items-center gap-1.5 py-1.5 px-3 cursor-pointer hover:bg-destructive/10"
+                    onClick={() => removeOpenTo(originalIndex)}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {getSportName(item.sport_id!)}
+                    <Trash2 className="h-3 w-3 ml-1" />
+                  </Badge>
+                );
+              })}
+            </div>
           </div>
 
           {availableSportsForOpen.length > 0 && (

@@ -197,7 +197,7 @@ export default function ProfileEdit() {
           supabase.from("candidate_certificates").select("*").eq("profile_id", profile.id).order("year", { ascending: false }),
           supabase.from("candidate_portfolio").select("*").eq("profile_id", profile.id),
           supabase.from("profile_sports_experience").select("id, sport_id, years, level, sports:sport_id (id, name, icon)").eq("profile_id", profile.id),
-          supabase.from("profile_sports_open_to").select("id, sport_id, sports:sport_id (id, name, icon)").eq("profile_id", profile.id),
+          supabase.from("profile_sports_open_to").select("id, sport_id, sport_group, sports:sport_id (id, name, icon)").eq("profile_id", profile.id),
         ]);
 
         if (skillsData.data) {
@@ -273,7 +273,7 @@ export default function ProfileEdit() {
 
         if (sportsOpenData.data) {
           setSportsOpenTo(sportsOpenData.data.map((s: any) => ({
-            id: s.id, sport_id: s.sport_id, sport: s.sports,
+            id: s.id, sport_id: s.sport_id || undefined, sport_group: s.sport_group || undefined, sport: s.sports || undefined,
           })));
         }
       } else {
@@ -435,7 +435,11 @@ export default function ProfileEdit() {
         await supabase.from("profile_sports_open_to").delete().eq("profile_id", newProfileId);
         if (sportsOpenTo.length > 0) {
           await supabase.from("profile_sports_open_to").insert(
-            sportsOpenTo.map(s => ({ profile_id: newProfileId!, sport_id: s.sport_id }))
+            sportsOpenTo.map(s => ({
+              profile_id: newProfileId!,
+              sport_id: s.sport_id || null,
+              sport_group: s.sport_group || null,
+            }))
           );
         }
       }
