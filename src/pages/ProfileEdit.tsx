@@ -483,12 +483,16 @@ export default function ProfileEdit() {
   return (
     <Layout>
       <div className="container py-8 md:py-12">
-        <div className="flex gap-8">
-          {/* Sidebar */}
-          <ProfileSidebar activeSection={activeSection} onSectionClick={scrollToSection} />
+        <div className="flex gap-6 lg:gap-8 relative">
+          {/* Sidebar - sticky left */}
+          <div className="hidden lg:block w-48 shrink-0">
+            <div className="sticky top-24">
+              <ProfileSidebar activeSection={activeSection} onSectionClick={scrollToSection} />
+            </div>
+          </div>
 
           {/* Main Content */}
-          <div className="flex-1 max-w-3xl space-y-6">
+          <div className="flex-1 min-w-0 max-w-3xl space-y-6">
             <div className="flex items-center justify-between">
               <h1 className="font-display text-2xl md:text-3xl font-bold uppercase">
                 {profileId ? "Редактирование профиля" : "Создание профиля"}
@@ -498,7 +502,10 @@ export default function ProfileEdit() {
               </Button>
             </div>
 
-            <ProfileProgress fields={profileFields} />
+            {/* Progress visible on mobile/tablet, hidden on xl */}
+            <div className="xl:hidden">
+              <ProfileProgress fields={profileFields} />
+            </div>
 
             {/* BASIC */}
             <div ref={el => { sectionRefs.current["basic"] = el; }}>
@@ -530,45 +537,45 @@ export default function ProfileEdit() {
                 <CardHeader>
                   <CardTitle className="font-display uppercase">Основная информация</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Имя *</Label>
-                      <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
+                      <Label className="text-[15px]">Имя *</Label>
+                      <Input className="text-base" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Фамилия *</Label>
-                      <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
+                      <Label className="text-[15px]">Фамилия *</Label>
+                      <Input className="text-base" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Основная специализация</Label>
+                      <Label className="text-[15px]">Основная специализация</Label>
                       <Select value={roleId} onValueChange={setRoleId}>
-                        <SelectTrigger><SelectValue placeholder="Выберите роль" /></SelectTrigger>
+                        <SelectTrigger className="text-base"><SelectValue placeholder="Выберите роль" /></SelectTrigger>
                         <SelectContent>
                           {roles.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Смежная специализация</Label>
+                      <Label className="text-[15px]">Смежная специализация</Label>
                       <Select value={secondaryRoleId} onValueChange={setSecondaryRoleId} disabled={!roleId}>
-                        <SelectTrigger><SelectValue placeholder="Опционально" /></SelectTrigger>
+                        <SelectTrigger className="text-base"><SelectValue placeholder="Опционально" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">Нет</SelectItem>
                           {secondaryRoleOptions.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">Смежная роль помогает клубам находить вас шире. Выберите, если реально выполняете задачи этой роли.</p>
+                      <p className="text-sm text-muted-foreground">Смежная роль помогает клубам находить вас шире. Выберите, если реально выполняете задачи этой роли.</p>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Уровень</Label>
+                    <Label className="text-[15px]">Уровень</Label>
                     <Select value={level} onValueChange={setLevel}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="text-base"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {levels.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
                       </SelectContent>
@@ -594,22 +601,22 @@ export default function ProfileEdit() {
                 <CardHeader>
                   <CardTitle className="font-display uppercase">Локация, статус и приватность</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Город</Label>
-                      <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Москва" />
+                      <Label className="text-[15px]">Город</Label>
+                      <Input className="text-base" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Москва" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Страна</Label>
-                      <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Россия" />
+                      <Label className="text-[15px]">Страна</Label>
+                      <Input className="text-base" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Россия" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Статус поиска</Label>
+                    <Label className="text-[15px]">Статус поиска</Label>
                     <Select value={searchStatus} onValueChange={setSearchStatus}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="text-base"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {searchStatuses.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                       </SelectContent>
@@ -619,12 +626,12 @@ export default function ProfileEdit() {
                   {/* Desired role preferences */}
                   {searchStatus !== "not_looking" && (
                     <div className="border-t pt-4 space-y-4">
-                      <h4 className="font-medium text-sm">Что ищу</h4>
+                      <h4 className="font-medium text-[15px]">Что ищу</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Формат</Label>
+                          <Label className="text-[15px]">Формат</Label>
                           <Select value={desiredContractType} onValueChange={setDesiredContractType}>
-                            <SelectTrigger><SelectValue placeholder="Любой" /></SelectTrigger>
+                            <SelectTrigger className="text-base"><SelectValue placeholder="Любой" /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="any">Любой</SelectItem>
                               <SelectItem value="full_time">Полная занятость</SelectItem>
@@ -635,8 +642,8 @@ export default function ProfileEdit() {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label>Желаемый город</Label>
-                          <Input value={desiredCity} onChange={(e) => setDesiredCity(e.target.value)} placeholder="Любой" />
+                          <Label className="text-[15px]">Желаемый город</Label>
+                          <Input className="text-base" value={desiredCity} onChange={(e) => setDesiredCity(e.target.value)} placeholder="Любой" />
                         </div>
                       </div>
                     </div>
@@ -644,20 +651,20 @@ export default function ProfileEdit() {
 
                   <div className="flex flex-col gap-3 border-t pt-4">
                     <div className="flex items-center justify-between">
-                      <Label>Готов к релокации</Label>
+                      <Label className="text-[15px]">Готов к релокации</Label>
                       <Switch checked={isRelocatable} onCheckedChange={setIsRelocatable} />
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label>Удалённая работа</Label>
+                      <Label className="text-[15px]">Удалённая работа</Label>
                       <Switch checked={isRemoteAvailable} onCheckedChange={setIsRemoteAvailable} />
                     </div>
                   </div>
 
                   {/* Visibility */}
                   <div className="border-t pt-4 space-y-3">
-                    <h4 className="font-medium text-sm">Видимость профиля</h4>
+                    <h4 className="font-medium text-[15px]">Видимость профиля</h4>
                     <Select value={visibilityLevel} onValueChange={setVisibilityLevel}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="text-base"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {visibilityLevels.map(v => <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>)}
                       </SelectContent>
@@ -665,26 +672,26 @@ export default function ProfileEdit() {
                   </div>
 
                   <div className="border-t pt-4 space-y-3">
-                    <h4 className="font-medium text-sm">Настройки приватности</h4>
+                    <h4 className="font-medium text-[15px]">Настройки приватности</h4>
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label>Показывать имя клубам</Label>
-                          <p className="text-xs text-muted-foreground">Если выключено — клубы увидят только роль</p>
+                          <Label className="text-[15px]">Показывать имя клубам</Label>
+                          <p className="text-sm text-muted-foreground">Если выключено — клубы увидят только роль</p>
                         </div>
                         <Switch checked={showName} onCheckedChange={setShowName} />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label>Показывать контакты</Label>
-                          <p className="text-xs text-muted-foreground">Контакты видны только после разблокировки</p>
+                          <Label className="text-[15px]">Показывать контакты</Label>
+                          <p className="text-sm text-muted-foreground">Контакты видны только после разблокировки</p>
                         </div>
                         <Switch checked={showContacts} onCheckedChange={setShowContacts} />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label>Скрыть текущую организацию</Label>
-                          <p className="text-xs text-muted-foreground">В публичном профиле название текущей работы будет скрыто</p>
+                          <Label className="text-[15px]">Скрыть текущую организацию</Label>
+                          <p className="text-sm text-muted-foreground">В публичном профиле название текущей работы будет скрыто</p>
                         </div>
                         <Switch checked={hideCurrentOrg} onCheckedChange={setHideCurrentOrg} />
                       </div>
@@ -741,30 +748,30 @@ export default function ProfileEdit() {
                 <CardHeader>
                   <CardTitle className="font-display uppercase">Контакты</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Email</Label>
-                      <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ivan@example.com" />
+                      <Label className="text-[15px]">Email</Label>
+                      <Input className="text-base" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ivan@example.com" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Телефон</Label>
-                      <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 (999) 123-45-67" />
+                      <Label className="text-[15px]">Телефон</Label>
+                      <Input className="text-base" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 (999) 123-45-67" />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Telegram</Label>
-                      <Input value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
+                      <Label className="text-[15px]">Telegram</Label>
+                      <Input className="text-base" value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
                     </div>
                     <div className="space-y-2">
-                      <Label>LinkedIn</Label>
-                      <Input value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/username" />
+                      <Label className="text-[15px]">LinkedIn</Label>
+                      <Input className="text-base" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/username" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Портфолио / Сайт</Label>
-                    <Input value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} placeholder="https://example.com" />
+                    <Label className="text-[15px]">Портфолио / Сайт</Label>
+                    <Input className="text-base" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} placeholder="https://example.com" />
                   </div>
                 </CardContent>
               </Card>
@@ -776,6 +783,13 @@ export default function ProfileEdit() {
               <Button onClick={handleSave} disabled={saving}>
                 {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Сохранение...</> : <><Save className="h-4 w-4 mr-2" />Сохранить</>}
               </Button>
+            </div>
+          </div>
+
+          {/* Progress - sticky right, visible only on xl */}
+          <div className="hidden xl:block w-64 shrink-0">
+            <div className="sticky top-24">
+              <ProfileProgress fields={profileFields} />
             </div>
           </div>
         </div>
