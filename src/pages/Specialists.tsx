@@ -15,10 +15,7 @@ import {
   Filter,
   ChevronRight,
   Users,
-  CheckCircle,
-  Clock,
   Trophy,
-  Star,
   Monitor,
   X
 } from "lucide-react";
@@ -390,9 +387,9 @@ export default function Specialists() {
 
           {/* Results Grid */}
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="h-64 rounded-2xl" />
+                <Skeleton key={i} className="h-56 rounded-lg" />
               ))}
             </div>
           ) : filteredProfiles.length === 0 ? (
@@ -405,104 +402,93 @@ export default function Specialists() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredProfiles.map(profile => {
-                const statusColor = profile.search_status === "actively_looking"
-                  ? "bg-success"
-                  : profile.search_status === "open_to_offers"
-                    ? "bg-warning"
-                    : "bg-muted";
+                const isActive = profile.search_status === "actively_looking";
+                const isOpen = profile.search_status === "open_to_offers";
+                const statusLabel = isActive ? "Ищет работу" : isOpen ? "Открыт к предложениям" : null;
 
                 return (
                   <Link key={profile.id} to={`/profile/${profile.id}`}>
-                    <Card className="h-full hover:shadow-card-hover transition-all group overflow-hidden">
-                      {/* Status color strip */}
-                      <div className={`h-1 ${statusColor}`} />
+                    <Card className="h-full rounded-lg border border-border hover:border-primary/40 hover:shadow-card-hover transition-all group overflow-hidden">
+                      {/* Thin status strip — brand colors only */}
+                      <div className={`h-1 ${isActive ? "bg-primary" : isOpen ? "bg-primary/40" : "bg-border"}`} />
 
-                      <CardContent className="p-5">
-                        {/* Role title */}
-                        <h3 className="font-display font-semibold text-lg leading-tight group-hover:text-accent transition-colors mb-1">
-                          {profile.specialist_roles?.name || "Специалист"}
-                        </h3>
-
-                        {/* Location */}
-                        {(profile.city || profile.country) && (
-                          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                            <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
-                            <span className="truncate">{[profile.city, profile.country].filter(Boolean).join(", ")}</span>
-                          </div>
-                        )}
-
-                        {/* Status & Level badges */}
-                        <div className="flex flex-wrap gap-1.5 mt-3">
-                          {profile.search_status === "actively_looking" && (
-                            <Badge className="text-xs bg-success/15 text-success border-success/30 hover:bg-success/20">
-                              <CheckCircle className="h-3 w-3 mr-1" />Ищет работу
-                            </Badge>
-                          )}
-                          {profile.search_status === "open_to_offers" && (
-                            <Badge className="text-xs bg-warning/15 text-warning border-warning/30 hover:bg-warning/20">
-                              <Clock className="h-3 w-3 mr-1" />Открыт к предложениям
-                            </Badge>
-                          )}
+                      <CardContent className="p-4">
+                        {/* Header: role + level inline */}
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h3 className="font-display font-semibold text-base leading-snug group-hover:text-primary transition-colors">
+                            {profile.specialist_roles?.name || "Специалист"}
+                          </h3>
                           {profile.level && (
-                            <Badge variant="outline" className="text-xs font-medium">
+                            <span className="text-xs font-medium text-primary bg-primary/8 px-2 py-0.5 rounded-sm whitespace-nowrap">
                               {levelLabels[profile.level] || profile.level}
-                            </Badge>
-                          )}
-                          {profile.is_relocatable && (
-                            <Badge variant="outline" className="text-xs">
-                              <MapPin className="h-3 w-3 mr-0.5" />Релокация
-                            </Badge>
-                          )}
-                          {profile.is_remote_available && (
-                            <Badge variant="outline" className="text-xs">
-                              <Monitor className="h-3 w-3 mr-0.5" />Удалённо
-                            </Badge>
+                            </span>
                           )}
                         </div>
 
-                        {/* Top Skills */}
+                        {/* Location line */}
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
+                          {(profile.city || profile.country) && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3.5 w-3.5" />
+                              {[profile.city, profile.country].filter(Boolean).join(", ")}
+                            </span>
+                          )}
+                          {profile.is_relocatable && (
+                            <span className="flex items-center gap-0.5 text-xs">
+                              <Trophy className="h-3 w-3" />Релок.
+                            </span>
+                          )}
+                          {profile.is_remote_available && (
+                            <span className="flex items-center gap-0.5 text-xs">
+                              <Monitor className="h-3 w-3" />Удал.
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Status — subtle text, not a loud badge */}
+                        {statusLabel && (
+                          <div className="flex items-center gap-1.5 mb-3">
+                            <span className={`h-2 w-2 rounded-full ${isActive ? "bg-primary" : "bg-primary/40"}`} />
+                            <span className="text-xs text-muted-foreground">{statusLabel}</span>
+                          </div>
+                        )}
+
+                        {/* Skills — inline text, no heavy badges */}
                         {profileSkills[profile.id]?.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-border/60">
+                          <div className="text-xs text-foreground/80 mb-2">
                             {profileSkills[profile.id].slice(0, 3).map((s, i) => (
-                              <Badge key={i} variant="secondary" className="text-xs flex items-center gap-1">
-                                <Star className="h-2.5 w-2.5 text-gold" />
+                              <span key={i}>
+                                {i > 0 && <span className="text-border mx-1">·</span>}
                                 {getSkillName(s)}
-                              </Badge>
+                              </span>
                             ))}
                             {profileSkills[profile.id].length > 3 && (
-                              <Badge variant="secondary" className="text-xs">
-                                +{profileSkills[profile.id].length - 3}
-                              </Badge>
+                              <span className="text-muted-foreground ml-1">+{profileSkills[profile.id].length - 3}</span>
                             )}
                           </div>
                         )}
 
-                        {/* Sports */}
+                        {/* Sports — compact inline */}
                         {profileSports[profile.id]?.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-2">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             {profileSports[profile.id].slice(0, 3).map((s) => {
                               const Icon = getSportIcon(s.sports?.icon || null);
                               return (
-                                <Badge key={s.sport_id} variant="outline" className="text-xs flex items-center gap-1">
+                                <span key={s.sport_id} className="flex items-center gap-1">
                                   <Icon className="h-3 w-3" />
                                   {s.sports?.name}
-                                  <span className="text-muted-foreground">({s.years}г)</span>
-                                </Badge>
+                                  <span className="opacity-60">{s.years}г</span>
+                                </span>
                               );
                             })}
-                            {profileSports[profile.id].length > 3 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{profileSports[profile.id].length - 3}
-                              </Badge>
-                            )}
                           </div>
                         )}
 
-                        {/* Arrow */}
-                        <div className="flex justify-end mt-3">
-                          <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
+                        {/* Subtle arrow */}
+                        <div className="flex justify-end mt-2">
+                          <ChevronRight className="h-4 w-4 text-border group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                         </div>
                       </CardContent>
                     </Card>
