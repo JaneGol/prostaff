@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AnalyticsProvider } from "@/components/shared/AnalyticsProvider";
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import Specialists from "./pages/Specialists";
 import Profile from "./pages/Profile";
@@ -34,6 +35,7 @@ const App = () => (
           <AnalyticsProvider />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/specialists" element={<Specialists />} />
             <Route path="/profile/:id" element={<Profile />} />

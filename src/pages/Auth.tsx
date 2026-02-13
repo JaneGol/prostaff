@@ -36,7 +36,7 @@ export default function Auth() {
 
   useEffect(() => {
     if (user && !loading) {
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [user, loading, navigate]);
 
@@ -110,7 +110,7 @@ export default function Auth() {
             title: "Регистрация успешна!",
             description: "Добро пожаловать на платформу ProStaff"
           });
-          navigate("/");
+          navigate("/dashboard");
         }
       } else {
         const { error } = await signIn(email, password);
@@ -131,7 +131,7 @@ export default function Auth() {
           }
         } else {
           trackEvent("login", "auth", "success", email);
-          navigate("/");
+          navigate("/dashboard");
         }
       }
     } finally {
