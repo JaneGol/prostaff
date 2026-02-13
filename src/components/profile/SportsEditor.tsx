@@ -224,6 +224,17 @@ export function SportsEditor({
             Быстро выберите группы или конкретные виды спорта
           </p>
 
+          {/* Any sport */}
+          <div className="flex flex-wrap gap-2">
+            <Badge
+              variant={selectedGroups.includes("any") ? "default" : "outline"}
+              className="cursor-pointer py-1.5 px-3 transition-colors"
+              onClick={() => toggleGroup("any")}
+            >
+              🌍 Рассматриваю любой вид спорта
+            </Badge>
+          </div>
+
           {/* Group chips — Participation */}
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground uppercase tracking-wider">По типу</Label>
