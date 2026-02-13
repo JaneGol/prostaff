@@ -333,7 +333,7 @@ export default function Profile() {
                 </div>
               )}
 
-              <div className="pt-14 md:pt-20 space-y-4">
+              <div className="pt-20 md:pt-24 space-y-4">
                 <div>
                   <h1 className="font-display text-2xl md:text-3xl font-bold uppercase">{displayName}</h1>
                   <div className="flex flex-wrap items-center gap-2 mt-1">

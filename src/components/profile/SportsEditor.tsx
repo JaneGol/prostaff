@@ -152,9 +152,11 @@ export function SportsEditor({
           {sportsExperience.map((exp, index) => {
             const IconComponent = getSportIcon(getSportIconName(exp.sport_id));
             return (
-              <div key={index} className="flex items-center gap-3 border rounded-lg p-3">
-                <IconComponent className="h-5 w-5 text-primary flex-shrink-0" />
-                <span className="font-medium min-w-[120px]">{getSportName(exp.sport_id)}</span>
+              <div key={index} className="flex flex-wrap items-center gap-2 md:gap-3 border rounded-lg p-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <IconComponent className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-medium truncate">{getSportName(exp.sport_id)}</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
@@ -162,7 +164,7 @@ export function SportsEditor({
                     max={50}
                     value={exp.years}
                     onChange={(e) => updateExperience(index, "years", parseInt(e.target.value) || 1)}
-                    className="w-20"
+                    className="w-16 md:w-20"
                   />
                   <span className="text-sm text-muted-foreground whitespace-nowrap">лет</span>
                 </div>
@@ -170,7 +172,7 @@ export function SportsEditor({
                   value={exp.level}
                   onValueChange={(v) => updateExperience(index, "level", v)}
                 >
-                  <SelectTrigger className="w-[140px]">
+                  <SelectTrigger className="w-[120px] md:w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
