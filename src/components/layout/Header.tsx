@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Search, User, LogOut, Send, Users } from "lucide-react";
+import { Menu, X, Search, User, LogOut, Send, Users, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/hooks/useAnalytics";
 import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
@@ -61,6 +62,7 @@ export function Header() {
                   key={link.href}
                   to={link.href}
                   className="text-foreground/80 hover:text-accent font-medium transition-colors"
+                  onClick={() => trackEvent("nav_click", "navigation", link.label, link.href)}
                 >
                   {link.label}
                 </Link>
@@ -107,6 +109,14 @@ export function Header() {
                           </Link>
                         </DropdownMenuItem>
                       </>
+                    )}
+                    {userRole === "admin" && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin">
+                          <BarChart3 className="h-4 w-4 mr-2" />
+                          Панель управления
+                        </Link>
+                      </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
@@ -192,11 +202,19 @@ export function Header() {
                         </Button>
                       </Link>
                     </>
-                  )}
-                  <Button variant="ghost" className="w-full text-destructive" onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Выйти
-                  </Button>
+                   )}
+                   {userRole === "admin" && (
+                     <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
+                       <Button variant="ghost" className="w-full">
+                         <BarChart3 className="h-4 w-4 mr-2" />
+                         Панель управления
+                       </Button>
+                     </Link>
+                   )}
+                   <Button variant="ghost" className="w-full text-destructive" onClick={handleSignOut}>
+                     <LogOut className="h-4 w-4 mr-2" />
+                     Выйти
+                   </Button>
                 </>
               ) : (
                 <>
