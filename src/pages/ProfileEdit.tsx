@@ -73,6 +73,8 @@ export default function ProfileEdit() {
   const [isRemoteAvailable, setIsRemoteAvailable] = useState(false);
   const [searchStatus, setSearchStatus] = useState("open_to_offers");
   const [isPublic, setIsPublic] = useState(true);
+  const [showName, setShowName] = useState(true);
+  const [showContacts, setShowContacts] = useState(true);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [telegram, setTelegram] = useState("");
@@ -127,6 +129,8 @@ export default function ProfileEdit() {
         setIsRemoteAvailable(profile.is_remote_available || false);
         setSearchStatus(profile.search_status || "open_to_offers");
         setIsPublic(profile.is_public !== false);
+        setShowName((profile as any).show_name !== false);
+        setShowContacts((profile as any).show_contacts !== false);
         setEmail(profile.email || user!.email || "");
         setPhone(profile.phone || "");
         setTelegram(profile.telegram || "");
@@ -206,13 +210,15 @@ export default function ProfileEdit() {
         is_remote_available: isRemoteAvailable,
         search_status: searchStatus as any,
         is_public: isPublic,
+        show_name: showName,
+        show_contacts: showContacts,
         email: email.trim() || null,
         phone: phone.trim() || null,
         telegram: telegram.trim() || null,
         linkedin_url: linkedinUrl.trim() || null,
         portfolio_url: portfolioUrl.trim() || null,
         avatar_url: avatarUrl || null
-      };
+      } as any;
 
       let newProfileId = profileId;
 
@@ -569,6 +575,38 @@ export default function ProfileEdit() {
                     checked={isPublic}
                     onCheckedChange={setIsPublic}
                   />
+                </div>
+              </div>
+
+              {/* Privacy toggles */}
+              <div className="border-t pt-4 mt-4 space-y-1">
+                <h4 className="font-medium text-sm mb-3">Настройки приватности</h4>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Контролируйте, какую информацию видят работодатели до подтверждения доступа
+                </p>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="showName">Показывать имя клубам</Label>
+                      <p className="text-xs text-muted-foreground">Если выключено, клубы увидят только роль и навыки</p>
+                    </div>
+                    <Switch
+                      id="showName"
+                      checked={showName}
+                      onCheckedChange={setShowName}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="showContacts">Показывать контакты</Label>
+                      <p className="text-xs text-muted-foreground">Email, телефон, Telegram будут скрыты для новых просмотров</p>
+                    </div>
+                    <Switch
+                      id="showContacts"
+                      checked={showContacts}
+                      onCheckedChange={setShowContacts}
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
