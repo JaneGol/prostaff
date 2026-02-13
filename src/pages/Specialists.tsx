@@ -251,44 +251,41 @@ export default function Specialists() {
         }
       }
 
-      setProfiles(profilesList);
+      // Always include mock profiles for demo
+      const mergedProfiles = [...profilesList, ...MOCK_PROFILES];
+      setProfiles(mergedProfiles);
 
-      // Fetch sports & top skills for displayed profiles
-      const allIds = profilesList.map(p => p.id);
-      if (allIds.length > 0) {
+      // Fetch sports & top skills for real profiles
+      const realIds = profilesList.map(p => p.id);
+      if (realIds.length > 0) {
         const [sportsData, skillsData] = await Promise.all([
           supabase
             .from("profile_sports_experience")
             .select("profile_id, sport_id, years, sports:sport_id (name, icon)")
-            .in("profile_id", allIds)
+            .in("profile_id", realIds)
             .order("years", { ascending: false }),
           supabase
             .from("profile_skills")
             .select("profile_id, skill_id, is_top, custom_name, is_custom")
-            .in("profile_id", allIds)
+            .in("profile_id", realIds)
             .eq("is_top", true),
         ]);
 
-        if (sportsData.data) {
-          const grouped: Record<string, ProfileSportExp[]> = {};
-          for (const s of sportsData.data as any[]) {
-            if (!grouped[s.profile_id]) grouped[s.profile_id] = [];
-            grouped[s.profile_id].push({ sport_id: s.sport_id, years: s.years, sports: s.sports });
-          }
-          setProfileSports(grouped);
+        const groupedSports: Record<string, ProfileSportExp[]> = {};
+        for (const s of (sportsData.data || []) as any[]) {
+          if (!groupedSports[s.profile_id]) groupedSports[s.profile_id] = [];
+          groupedSports[s.profile_id].push({ sport_id: s.sport_id, years: s.years, sports: s.sports });
         }
 
-        if (skillsData.data) {
-          const grouped: Record<string, ProfileSkillRow[]> = {};
-          for (const s of skillsData.data as any[]) {
-            if (!grouped[s.profile_id]) grouped[s.profile_id] = [];
-            grouped[s.profile_id].push(s);
-          }
-          setProfileSkills(grouped);
+        const groupedSkills: Record<string, ProfileSkillRow[]> = {};
+        for (const s of (skillsData.data || []) as any[]) {
+          if (!groupedSkills[s.profile_id]) groupedSkills[s.profile_id] = [];
+          groupedSkills[s.profile_id].push(s);
         }
+
+        setProfileSports({ ...MOCK_SPORTS, ...groupedSports });
+        setProfileSkills({ ...MOCK_SKILLS, ...groupedSkills });
       } else {
-        // Use mock data when no real profiles
-        setProfiles(MOCK_PROFILES);
         setProfileSports(MOCK_SPORTS);
         setProfileSkills(MOCK_SKILLS);
       }
