@@ -143,6 +143,39 @@ export type Database = {
         }
         Relationships: []
       }
+      club_access: {
+        Row: {
+          created_at: string
+          free_views_per_week: number
+          free_views_remaining: number
+          id: string
+          is_subscribed: boolean
+          trial_expires_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          free_views_per_week?: number
+          free_views_remaining?: number
+          id?: string
+          is_subscribed?: boolean
+          trial_expires_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          free_views_per_week?: number
+          free_views_remaining?: number
+          id?: string
+          is_subscribed?: boolean
+          trial_expires_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           city: string | null
@@ -442,6 +475,35 @@ export type Database = {
           },
         ]
       }
+      profile_views: {
+        Row: {
+          id: string
+          profile_id: string
+          viewed_at: string
+          viewer_user_id: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          viewed_at?: string
+          viewer_user_id: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          viewed_at?: string
+          viewer_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_views_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -462,6 +524,8 @@ export type Database = {
           portfolio_url: string | null
           role_id: string | null
           search_status: Database["public"]["Enums"]["search_status"] | null
+          show_contacts: boolean
+          show_name: boolean
           telegram: string | null
           updated_at: string | null
           user_id: string
@@ -485,6 +549,8 @@ export type Database = {
           portfolio_url?: string | null
           role_id?: string | null
           search_status?: Database["public"]["Enums"]["search_status"] | null
+          show_contacts?: boolean
+          show_name?: boolean
           telegram?: string | null
           updated_at?: string | null
           user_id: string
@@ -508,6 +574,8 @@ export type Database = {
           portfolio_url?: string | null
           role_id?: string | null
           search_status?: Database["public"]["Enums"]["search_status"] | null
+          show_contacts?: boolean
+          show_name?: boolean
           telegram?: string | null
           updated_at?: string | null
           user_id?: string

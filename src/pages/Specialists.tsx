@@ -29,6 +29,7 @@ interface ProfileCard {
   search_status: string | null;
   is_relocatable: boolean;
   is_remote_available: boolean;
+  show_name: boolean;
   specialist_roles: { id: string; name: string } | null;
 }
 
@@ -92,6 +93,7 @@ export default function Specialists() {
           search_status,
           is_relocatable,
           is_remote_available,
+          show_name,
           specialist_roles (id, name)
         `)
         .eq("is_public", true)
@@ -248,7 +250,7 @@ export default function Specialists() {
                       <div className="flex items-start gap-4">
                         {/* Avatar */}
                         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
-                          {profile.avatar_url ? (
+                          {profile.show_name !== false && profile.avatar_url ? (
                             <img 
                               src={profile.avatar_url} 
                               alt=""
@@ -256,7 +258,7 @@ export default function Specialists() {
                             />
                           ) : (
                             <span className="text-xl font-display font-bold text-muted-foreground">
-                              {profile.first_name[0]}{profile.last_name[0]}
+                              {profile.show_name !== false ? `${profile.first_name[0]}${profile.last_name[0]}` : "??"}
                             </span>
                           )}
                         </div>
@@ -264,9 +266,11 @@ export default function Specialists() {
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-lg truncate group-hover:text-accent transition-colors">
-                            {profile.first_name} {profile.last_name}
+                            {profile.show_name !== false
+                              ? `${profile.first_name} ${profile.last_name}`
+                              : (profile.specialist_roles?.name || "Специалист")}
                           </h3>
-                          {profile.specialist_roles && (
+                          {profile.specialist_roles && profile.show_name !== false && (
                             <p className="text-muted-foreground truncate">
                               {profile.specialist_roles.name}
                             </p>
