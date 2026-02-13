@@ -143,6 +143,144 @@ export type Database = {
         }
         Relationships: []
       }
+      candidate_certificates: {
+        Row: {
+          created_at: string | null
+          id: string
+          issuer: string | null
+          name: string
+          profile_id: string
+          url: string | null
+          year: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          issuer?: string | null
+          name: string
+          profile_id: string
+          url?: string | null
+          year?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          issuer?: string | null
+          name?: string
+          profile_id?: string
+          url?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_certificates_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidate_education: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string | null
+          degree: string | null
+          end_year: number | null
+          field_of_study: string | null
+          id: string
+          institution: string
+          is_current: boolean | null
+          profile_id: string
+          start_year: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          degree?: string | null
+          end_year?: number | null
+          field_of_study?: string | null
+          id?: string
+          institution: string
+          is_current?: boolean | null
+          profile_id: string
+          start_year?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          degree?: string | null
+          end_year?: number | null
+          field_of_study?: string | null
+          id?: string
+          institution?: string
+          is_current?: boolean | null
+          profile_id?: string
+          start_year?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_education_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidate_portfolio: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          profile_id: string
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string | null
+          url: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          profile_id: string
+          tags?: string[] | null
+          title: string
+          type?: string
+          updated_at?: string | null
+          url: string
+          visibility?: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          profile_id?: string
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          url?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_portfolio_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       club_access: {
         Row: {
           created_at: string
@@ -223,45 +361,63 @@ export type Database = {
       }
       experiences: {
         Row: {
+          achievements: Json | null
           company_name: string
           created_at: string | null
           description: string | null
+          employment_type: string | null
           end_date: string | null
+          hide_org: boolean | null
           id: string
           is_current: boolean | null
+          is_remote: boolean | null
           league: string | null
           position: string
           profile_id: string
+          sport_ids: string[] | null
           start_date: string
           team_level: string | null
+          tools: Json | null
           updated_at: string | null
         }
         Insert: {
+          achievements?: Json | null
           company_name: string
           created_at?: string | null
           description?: string | null
+          employment_type?: string | null
           end_date?: string | null
+          hide_org?: boolean | null
           id?: string
           is_current?: boolean | null
+          is_remote?: boolean | null
           league?: string | null
           position: string
           profile_id: string
+          sport_ids?: string[] | null
           start_date: string
           team_level?: string | null
+          tools?: Json | null
           updated_at?: string | null
         }
         Update: {
+          achievements?: Json | null
           company_name?: string
           created_at?: string | null
           description?: string | null
+          employment_type?: string | null
           end_date?: string | null
+          hide_org?: boolean | null
           id?: string
           is_current?: boolean | null
+          is_remote?: boolean | null
           league?: string | null
           position?: string
           profile_id?: string
+          sport_ids?: string[] | null
           start_date?: string
           team_level?: string | null
+          tools?: Json | null
           updated_at?: string | null
         }
         Relationships: [
@@ -442,21 +598,39 @@ export type Database = {
       profile_skills: {
         Row: {
           created_at: string | null
+          custom_group: string | null
+          custom_name: string | null
           id: string
+          is_custom: boolean | null
+          is_top: boolean | null
+          proficiency: number | null
           profile_id: string
-          skill_id: string
+          skill_id: string | null
+          status: string | null
         }
         Insert: {
           created_at?: string | null
+          custom_group?: string | null
+          custom_name?: string | null
           id?: string
+          is_custom?: boolean | null
+          is_top?: boolean | null
+          proficiency?: number | null
           profile_id: string
-          skill_id: string
+          skill_id?: string | null
+          status?: string | null
         }
         Update: {
           created_at?: string | null
+          custom_group?: string | null
+          custom_name?: string | null
           id?: string
+          is_custom?: boolean | null
+          is_top?: boolean | null
+          proficiency?: number | null
           profile_id?: string
-          skill_id?: string
+          skill_id?: string | null
+          status?: string | null
         }
         Relationships: [
           {
@@ -477,26 +651,32 @@ export type Database = {
       }
       profile_sports_experience: {
         Row: {
+          context_level: string | null
           created_at: string | null
           id: string
           level: string | null
           profile_id: string
+          role_in_sport: string | null
           sport_id: string
           years: number | null
         }
         Insert: {
+          context_level?: string | null
           created_at?: string | null
           id?: string
           level?: string | null
           profile_id: string
+          role_in_sport?: string | null
           sport_id: string
           years?: number | null
         }
         Update: {
+          context_level?: string | null
           created_at?: string | null
           id?: string
           level?: string | null
           profile_id?: string
+          role_in_sport?: string | null
           sport_id?: string
           years?: number | null
         }
@@ -522,19 +702,22 @@ export type Database = {
           created_at: string | null
           id: string
           profile_id: string
-          sport_id: string
+          sport_group: string | null
+          sport_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
           profile_id: string
-          sport_id: string
+          sport_group?: string | null
+          sport_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
           profile_id?: string
-          sport_id?: string
+          sport_group?: string | null
+          sport_id?: string | null
         }
         Relationships: [
           {
@@ -584,13 +767,21 @@ export type Database = {
       }
       profiles: {
         Row: {
+          about_goals: string | null
+          about_style: string | null
+          about_useful: string | null
           avatar_url: string | null
           bio: string | null
           city: string | null
           country: string | null
           created_at: string | null
+          desired_city: string | null
+          desired_contract_type: string | null
+          desired_country: string | null
+          desired_role_ids: string[] | null
           email: string | null
           first_name: string
+          hide_current_org: boolean
           id: string
           is_public: boolean | null
           is_relocatable: boolean | null
@@ -602,20 +793,30 @@ export type Database = {
           portfolio_url: string | null
           role_id: string | null
           search_status: Database["public"]["Enums"]["search_status"] | null
+          secondary_role_id: string | null
           show_contacts: boolean
           show_name: boolean
           telegram: string | null
           updated_at: string | null
           user_id: string
+          visibility_level: string
         }
         Insert: {
+          about_goals?: string | null
+          about_style?: string | null
+          about_useful?: string | null
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
           country?: string | null
           created_at?: string | null
+          desired_city?: string | null
+          desired_contract_type?: string | null
+          desired_country?: string | null
+          desired_role_ids?: string[] | null
           email?: string | null
           first_name: string
+          hide_current_org?: boolean
           id?: string
           is_public?: boolean | null
           is_relocatable?: boolean | null
@@ -627,20 +828,30 @@ export type Database = {
           portfolio_url?: string | null
           role_id?: string | null
           search_status?: Database["public"]["Enums"]["search_status"] | null
+          secondary_role_id?: string | null
           show_contacts?: boolean
           show_name?: boolean
           telegram?: string | null
           updated_at?: string | null
           user_id: string
+          visibility_level?: string
         }
         Update: {
+          about_goals?: string | null
+          about_style?: string | null
+          about_useful?: string | null
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
           country?: string | null
           created_at?: string | null
+          desired_city?: string | null
+          desired_contract_type?: string | null
+          desired_country?: string | null
+          desired_role_ids?: string[] | null
           email?: string | null
           first_name?: string
+          hide_current_org?: boolean
           id?: string
           is_public?: boolean | null
           is_relocatable?: boolean | null
@@ -652,16 +863,64 @@ export type Database = {
           portfolio_url?: string | null
           role_id?: string | null
           search_status?: Database["public"]["Enums"]["search_status"] | null
+          secondary_role_id?: string | null
           show_contacts?: boolean
           show_name?: boolean
           telegram?: string | null
           updated_at?: string | null
           user_id?: string
+          visibility_level?: string
         }
         Relationships: [
           {
             foreignKeyName: "profiles_role_id_fkey"
             columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "specialist_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_secondary_role_id_fkey"
+            columns: ["secondary_role_id"]
+            isOneToOne: false
+            referencedRelation: "specialist_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_relations: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_allowed: boolean
+          primary_role_id: string
+          secondary_role_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_allowed?: boolean
+          primary_role_id: string
+          secondary_role_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_allowed?: boolean
+          primary_role_id?: string
+          secondary_role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_relations_primary_role_id_fkey"
+            columns: ["primary_role_id"]
+            isOneToOne: false
+            referencedRelation: "specialist_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_relations_secondary_role_id_fkey"
+            columns: ["secondary_role_id"]
             isOneToOne: false
             referencedRelation: "specialist_roles"
             referencedColumns: ["id"]
@@ -811,7 +1070,11 @@ export type Database = {
         | "freelance"
       experience_level: "intern" | "junior" | "middle" | "senior" | "head"
       job_status: "draft" | "active" | "paused" | "closed"
-      search_status: "actively_looking" | "open_to_offers" | "not_looking"
+      search_status:
+        | "actively_looking"
+        | "open_to_offers"
+        | "not_looking"
+        | "not_looking_but_open"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -957,7 +1220,12 @@ export const Constants = {
       ],
       experience_level: ["intern", "junior", "middle", "senior", "head"],
       job_status: ["draft", "active", "paused", "closed"],
-      search_status: ["actively_looking", "open_to_offers", "not_looking"],
+      search_status: [
+        "actively_looking",
+        "open_to_offers",
+        "not_looking",
+        "not_looking_but_open",
+      ],
     },
   },
 } as const

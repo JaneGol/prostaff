@@ -112,7 +112,7 @@ export default function Specialists() {
           is_relocatable,
           is_remote_available,
           show_name,
-          specialist_roles (id, name)
+          specialist_roles!profiles_role_id_fkey (id, name)
         `)
         .eq("is_public", true)
         .order("updated_at", { ascending: false });
