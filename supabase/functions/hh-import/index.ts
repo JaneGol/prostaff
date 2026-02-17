@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
                 .insert({
                   name: vacancy.employer.name,
                   logo_url: vacancy.employer.logo_urls?.original || null,
-                  user_id: "00000000-0000-0000-0000-000000000000",
+                  // user_id is nullable for auto-imported companies
                   country: "Россия",
                 })
                 .select("id")

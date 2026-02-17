@@ -159,28 +159,36 @@ export default function AdminHHSources() {
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
                   <div>
-                    <Label>Название</Label>
-                    <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Например: ФК Зенит" />
+                    <Label>Название источника</Label>
+                    <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Любое имя, например: Тренеры по теннису" />
+                    <p className="text-xs text-muted-foreground mt-1">Просто название для вас, чтобы различать источники</p>
                   </div>
                   <div>
-                    <Label>Тип</Label>
+                    <Label>Тип поиска</Label>
                     <Select value={newType} onValueChange={setNewType}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="employer">По работодателю (employer_id)</SelectItem>
-                        <SelectItem value="search">По поисковому запросу</SelectItem>
+                        <SelectItem value="employer">По ID работодателя на HH.ru</SelectItem>
+                        <SelectItem value="search">По ключевым словам</SelectItem>
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {newType === "search"
+                        ? "Введите запрос как в поиске HH.ru — система найдёт вакансии по этим словам"
+                        : "Укажите числовой ID работодателя с HH.ru (из URL страницы компании)"}
+                    </p>
                   </div>
                   {newType === "employer" ? (
                     <div>
-                      <Label>Employer ID на HH</Label>
-                      <Input value={newEmployerId} onChange={e => setNewEmployerId(e.target.value)} placeholder="Например: 1455" />
+                      <Label>ID работодателя на HH.ru</Label>
+                      <Input value={newEmployerId} onChange={e => setNewEmployerId(e.target.value)} placeholder="Например: 1455 (число из URL)" />
+                      <p className="text-xs text-muted-foreground mt-1">Найдите на hh.ru/employer/ЧИСЛО — это число и есть ID</p>
                     </div>
                   ) : (
                     <div>
                       <Label>Поисковый запрос</Label>
-                      <Input value={newSearchQuery} onChange={e => setNewSearchQuery(e.target.value)} placeholder="Например: спортивный аналитик" />
+                      <Input value={newSearchQuery} onChange={e => setNewSearchQuery(e.target.value)} placeholder="Например: тренер по теннису" />
+                      <p className="text-xs text-muted-foreground mt-1">Пишите как искали бы на HH.ru: «тренер по теннису», «спортивный аналитик», «врач ФК»</p>
                     </div>
                   )}
                   <div>
