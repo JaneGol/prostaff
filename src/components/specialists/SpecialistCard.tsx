@@ -65,7 +65,7 @@ export function SpecialistCard({
 
           <CardContent className="px-3 py-3 flex flex-col flex-1">
             {/* Role + Level */}
-            <div className="flex items-start justify-between gap-2 mb-1.5">
+            <div className="flex items-start justify-between gap-2 mb-3">
               <h3 className="font-display font-semibold text-lg leading-snug group-hover:text-primary transition-colors line-clamp-2">
                 {roleName || "Без специализации"}
               </h3>
