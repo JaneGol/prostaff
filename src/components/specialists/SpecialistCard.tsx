@@ -63,9 +63,9 @@ export function SpecialistCard({
           {/* Status strip — left side */}
           <div className={`w-1 shrink-0 rounded-l-lg ${isActive ? "bg-primary" : isOpen ? "bg-primary/40" : "bg-border"}`} />
 
-          <CardContent className="p-4 flex flex-col h-full flex-1">
+          <CardContent className="px-3 py-3 flex flex-col flex-1">
             {/* Role + Level */}
-            <div className="flex items-start justify-between gap-2 mb-2">
+            <div className="flex items-start justify-between gap-2 mb-1.5">
               <h3 className="font-display font-semibold text-lg leading-snug group-hover:text-primary transition-colors line-clamp-2">
                 {roleName || "Без специализации"}
               </h3>
@@ -78,7 +78,7 @@ export function SpecialistCard({
 
             {/* Status */}
             {statusLabel && (
-              <div className="flex items-center gap-1.5 mb-2">
+              <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={`h-2 w-2 rounded-full shrink-0 ${isActive ? "bg-primary" : "bg-primary/40"}`} />
                 <span className="text-xs text-muted-foreground">{statusLabel}</span>
               </div>
@@ -86,7 +86,7 @@ export function SpecialistCard({
 
             {/* Location + format — single line */}
             {locationLine && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
+              <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                 <MapPin className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{locationLine}</span>
               </div>
@@ -94,7 +94,7 @@ export function SpecialistCard({
 
             {/* Skills — max 2 chips */}
             {skills.length > 0 && (
-              <div className="flex items-center gap-1.5 flex-wrap mb-2">
+              <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
                 {skills.slice(0, 2).map((s, i) => (
                   <span key={i} className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-sm">
                     {s.name}
@@ -108,7 +108,7 @@ export function SpecialistCard({
 
             {/* Sports — max 2, inline */}
             {sports.length > 0 && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 {sports.slice(0, 2).map((s) => {
                   const Icon = getSportIcon(s.sports?.icon || null);
                   return (
@@ -120,11 +120,6 @@ export function SpecialistCard({
                 })}
               </div>
             )}
-
-            {/* Arrow */}
-            <div className="flex justify-end mt-2">
-              <ChevronRight className="h-4 w-4 text-border group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-            </div>
           </CardContent>
         </div>
       </Card>
