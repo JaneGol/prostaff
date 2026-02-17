@@ -308,7 +308,7 @@ export default function AdminDashboard() {
                   <Card className="cursor-pointer hover:border-primary transition-colors">
                     <CardContent className="py-3 px-4 flex items-center gap-2">
                       <ExternalLink className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium">Источники импорта</span>
+                      <span className="text-sm font-medium">Источники HH.ru</span>
                     </CardContent>
                   </Card>
                 </Link>
