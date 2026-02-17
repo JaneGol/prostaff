@@ -316,7 +316,7 @@ export default function Profile() {
             <div className="bg-gradient-to-r from-primary to-primary-dark h-24 md:h-32" />
             <CardContent className="relative pt-0 pb-6">
               <div className="absolute -top-12 left-6 md:left-8">
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-card bg-muted flex items-center justify-center overflow-hidden">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-card bg-card flex items-center justify-center overflow-hidden">
                   {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt={displayName} className="w-full h-full object-cover" />
                   ) : (
