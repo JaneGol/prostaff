@@ -97,6 +97,8 @@ export default function AdminHHSources() {
 
   const filteredSources = sources.filter(s => matchesCategory(s.name, categoryFilter));
 
+  const [batchImporting, setBatchImporting] = useState(false);
+
   useEffect(() => {
     if (userRole === "admin") fetchData();
   }, [userRole]);
@@ -144,6 +146,7 @@ export default function AdminHHSources() {
     fetchData();
   };
 
+
   const runImport = async (sourceId: string) => {
     setImporting(sourceId);
     try {
@@ -158,6 +161,30 @@ export default function AdminHHSources() {
     } finally {
       setImporting(null);
     }
+  };
+
+  const runBatchImport = async () => {
+    const enabledSources = filteredSources.filter(s => s.is_enabled);
+    if (enabledSources.length === 0) return toast.error("Нет включённых источников в этой категории");
+    setBatchImporting(true);
+    let totalCreated = 0, totalUpdated = 0, failed = 0;
+    for (const src of enabledSources) {
+      setImporting(src.id);
+      try {
+        const { data, error } = await supabase.functions.invoke("hh-import", {
+          body: { source_id: src.id },
+        });
+        if (error) throw error;
+        totalCreated += data?.results?.[0]?.items_created || 0;
+        totalUpdated += data?.results?.[0]?.items_updated || 0;
+      } catch {
+        failed++;
+      }
+      setImporting(null);
+    }
+    setBatchImporting(false);
+    toast.success(`Импорт ${enabledSources.length} источников: +${totalCreated} создано, ↻${totalUpdated} обновлено${failed ? `, ${failed} ошибок` : ""}`);
+    fetchData();
   };
 
   const statusIcon = (status: string) => {
@@ -181,7 +208,7 @@ export default function AdminHHSources() {
           </div>
 
           {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             {(Object.keys(categoryLabels) as CategoryFilter[]).map(cat => {
               const count = sources.filter(s => matchesCategory(s.name, cat)).length;
               return (
@@ -196,6 +223,18 @@ export default function AdminHHSources() {
                 </Button>
               );
             })}
+            <div className="ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={runBatchImport}
+                disabled={batchImporting || importing !== null}
+                className="gap-1.5"
+              >
+                {batchImporting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+                Импорт «{categoryLabels[categoryFilter]}»
+              </Button>
+            </div>
           </div>
 
           {/* Sources */}
