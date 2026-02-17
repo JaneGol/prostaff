@@ -95,14 +95,20 @@ Deno.serve(async (req) => {
         // Build HH API URL
         let searchUrl = `${HH_API}/vacancies?per_page=100`;
 
+        // Parse filters first
+        const filters = source.filters_json || {};
+
         if (source.type === "employer" && source.employer_id) {
           searchUrl += `&employer_id=${source.employer_id}`;
         } else if (source.type === "search" && source.search_query) {
           searchUrl += `&text=${encodeURIComponent(source.search_query)}`;
+          // Search field: name only, description, or everywhere
+          if (filters.search_field && filters.search_field !== "all") {
+            searchUrl += `&search_field=${filters.search_field}`;
+          }
         }
 
-        // Add filters from filters_json
-        const filters = source.filters_json || {};
+        // Add other filters
         if (filters.area) searchUrl += `&area=${filters.area}`;
         if (filters.professional_role) searchUrl += `&professional_role=${filters.professional_role}`;
         if (filters.schedule) searchUrl += `&schedule=${filters.schedule}`;

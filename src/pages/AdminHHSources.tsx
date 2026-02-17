@@ -57,6 +57,7 @@ export default function AdminHHSources() {
   const [newEmployerId, setNewEmployerId] = useState("");
   const [newSearchQuery, setNewSearchQuery] = useState("");
   const [newModeration, setNewModeration] = useState("draft_review");
+  const [newSearchField, setNewSearchField] = useState("name");
 
   const fetchData = async () => {
     setLoading(true);
@@ -78,12 +79,18 @@ export default function AdminHHSources() {
   const createSource = async () => {
     if (!newName.trim()) return toast.error("Введите название");
 
+    const filtersJson: Record<string, string> = {};
+    if (newType === "search" && newSearchField) {
+      filtersJson.search_field = newSearchField;
+    }
+
     const { error } = await supabase.from("hh_sources").insert({
       name: newName,
       type: newType,
       employer_id: newType === "employer" ? newEmployerId : null,
       search_query: newType === "search" ? newSearchQuery : null,
       moderation_mode: newModeration,
+      filters_json: filtersJson,
     });
 
     if (error) {
@@ -185,11 +192,26 @@ export default function AdminHHSources() {
                       <p className="text-xs text-muted-foreground mt-1">Найдите на hh.ru/employer/ЧИСЛО — это число и есть ID</p>
                     </div>
                   ) : (
-                    <div>
-                      <Label>Поисковый запрос</Label>
-                      <Input value={newSearchQuery} onChange={e => setNewSearchQuery(e.target.value)} placeholder="Например: тренер по теннису" />
-                      <p className="text-xs text-muted-foreground mt-1">Пишите как искали бы на HH.ru: «тренер по теннису», «спортивный аналитик», «врач ФК»</p>
-                    </div>
+                    <>
+                      <div>
+                        <Label>Поисковый запрос</Label>
+                        <Input value={newSearchQuery} onChange={e => setNewSearchQuery(e.target.value)} placeholder="Например: тренер по теннису" />
+                        <p className="text-xs text-muted-foreground mt-1">Пишите как искали бы на HH.ru: «тренер по теннису», «спортивный аналитик», «врач ФК»</p>
+                      </div>
+                      <div>
+                        <Label>Где искать</Label>
+                        <Select value={newSearchField} onValueChange={setNewSearchField}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="name">Только в названии вакансии</SelectItem>
+                            <SelectItem value="company_name">В названии компании</SelectItem>
+                            <SelectItem value="description">В описании</SelectItem>
+                            <SelectItem value="all">Везде (по умолчанию HH)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">«Только в названии» — самый точный режим, отсекает нерелевантные вакансии</p>
+                      </div>
+                    </>
                   )}
                   <div>
                     <Label>Модерация</Label>
