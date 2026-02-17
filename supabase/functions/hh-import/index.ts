@@ -252,6 +252,7 @@ Deno.serve(async (req) => {
             external_url: vacancy.alternate_url || `https://hh.ru/vacancy/${vacancy.id}`,
             source_id: source.id,
             moderation_status: moderationStatus,
+            role_id: source.role_id || null,
           };
 
           const existing = existingMap.get(vacancy.id);
