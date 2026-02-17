@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Plus, Play, Trash2, RefreshCw, CheckCircle, XCircle, Clock, ArrowLeft } from "lucide-react";
+import { Plus, Play, Trash2, RefreshCw, CheckCircle, XCircle, Clock, ArrowLeft, FileCheck } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
 
 interface HHSource {
@@ -43,6 +43,27 @@ interface ImportRun {
   error_message: string | null;
 }
 
+type CategoryFilter = "all" | "coaches" | "analytics" | "medical" | "other";
+
+const categoryLabels: Record<CategoryFilter, string> = {
+  all: "Все",
+  coaches: "Тренеры",
+  analytics: "Аналитики и скауты",
+  medical: "Медицина",
+  other: "Другие специалисты",
+};
+
+const matchesCategory = (name: string, cat: CategoryFilter): boolean => {
+  const lower = name.toLowerCase();
+  if (cat === "all") return true;
+  if (cat === "coaches") return lower.includes("тренер");
+  if (cat === "analytics")
+    return ["аналитик", "видеоаналитик", "скаут", "селекционер"].some(k => lower.includes(k));
+  if (cat === "medical")
+    return ["врач", "массажист", "физиотерапевт", "реабилитолог", "диетолог", "нутрициолог", "лфк", "психолог"].some(k => lower.includes(k));
+  return !matchesCategory(name, "coaches") && !matchesCategory(name, "analytics") && !matchesCategory(name, "medical");
+};
+
 export default function AdminHHSources() {
   const { userRole } = useAuth();
   const [sources, setSources] = useState<HHSource[]>([]);
@@ -50,8 +71,8 @@ export default function AdminHHSources() {
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
 
-  // New source form
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("search");
   const [newEmployerId, setNewEmployerId] = useState("");
@@ -63,12 +84,18 @@ export default function AdminHHSources() {
     setLoading(true);
     const [{ data: srcData }, { data: runData }] = await Promise.all([
       supabase.from("hh_sources").select("*").order("created_at", { ascending: false }),
-      supabase.from("import_runs").select("*").order("started_at", { ascending: false }).limit(50),
+      supabase.from("import_runs").select("*").order("started_at", { ascending: false }).limit(200),
     ]);
     if (srcData) setSources(srcData as HHSource[]);
     if (runData) setRuns(runData as ImportRun[]);
     setLoading(false);
   };
+
+  const getLastRun = (sourceId: string): ImportRun | undefined => {
+    return runs.find(r => r.source_id === sourceId);
+  };
+
+  const filteredSources = sources.filter(s => matchesCategory(s.name, categoryFilter));
 
   useEffect(() => {
     if (userRole === "admin") fetchData();
@@ -153,9 +180,30 @@ export default function AdminHHSources() {
             <h1 className="font-display text-2xl font-bold uppercase">Источники HH.ru</h1>
           </div>
 
+          {/* Category Filter */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {(Object.keys(categoryLabels) as CategoryFilter[]).map(cat => {
+              const count = sources.filter(s => matchesCategory(s.name, cat)).length;
+              return (
+                <Button
+                  key={cat}
+                  variant={categoryFilter === cat ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCategoryFilter(cat)}
+                >
+                  {categoryLabels[cat]}
+                  <span className="ml-1.5 text-xs opacity-70">({count})</span>
+                </Button>
+              );
+            })}
+          </div>
+
           {/* Sources */}
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Источники импорта</h2>
+            <h2 className="text-lg font-semibold">
+              Источники импорта
+              <span className="text-muted-foreground font-normal text-sm ml-2">({filteredSources.length})</span>
+            </h2>
             <Dialog open={showCreate} onOpenChange={setShowCreate}>
               <DialogTrigger asChild>
                 <Button className="gap-2"><Plus className="h-4 w-4" /> Добавить источник</Button>
@@ -233,42 +281,63 @@ export default function AdminHHSources() {
             <div className="space-y-3">
               {[1,2,3].map(i => <Skeleton key={i} className="h-20 rounded-xl" />)}
             </div>
-          ) : sources.length === 0 ? (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">Нет источников. Добавьте первый.</CardContent></Card>
+          ) : filteredSources.length === 0 ? (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">
+              {sources.length === 0 ? "Нет источников. Добавьте первый." : "Нет источников в этой категории."}
+            </CardContent></Card>
           ) : (
             <div className="space-y-3 mb-8">
-              {sources.map(src => (
-                <Card key={src.id}>
-                  <CardContent className="py-4 flex items-center gap-4">
-                    <Switch checked={src.is_enabled} onCheckedChange={v => toggleSource(src.id, v)} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{src.name}</span>
-                        <Badge variant="outline">{src.type === "employer" ? "Работодатель" : "Поиск"}</Badge>
-                        <Badge variant={src.moderation_mode === "auto_publish" ? "default" : "secondary"}>
-                          {src.moderation_mode === "auto_publish" ? "Авто" : "Черновик"}
-                        </Badge>
+              {filteredSources.map(src => {
+                const lastRun = getLastRun(src.id);
+                return (
+                  <Card key={src.id}>
+                    <CardContent className="py-4 flex items-center gap-4">
+                      <Switch checked={src.is_enabled} onCheckedChange={v => toggleSource(src.id, v)} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium">{src.name}</span>
+                          <Badge variant="outline">{src.type === "employer" ? "Работодатель" : "Поиск"}</Badge>
+                          <Badge variant={src.moderation_mode === "auto_publish" ? "default" : "secondary"}>
+                            {src.moderation_mode === "auto_publish" ? "Авто" : "Черновик"}
+                          </Badge>
+                          {lastRun?.status === "success" && (
+                            <Badge variant="outline" className="gap-1 text-green-700 border-green-300 bg-green-50">
+                              <FileCheck className="h-3 w-3" />
+                              +{lastRun.items_created} / ↻{lastRun.items_updated}
+                            </Badge>
+                          )}
+                          {lastRun?.status === "failed" && (
+                            <Badge variant="destructive" className="gap-1">
+                              <XCircle className="h-3 w-3" /> Ошибка
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          {src.type === "employer" ? `ID: ${src.employer_id}` : `Запрос: ${src.search_query}`}
+                          {lastRun?.status === "success" && (
+                            <span className="ml-2 text-xs">
+                              · {new Date(lastRun.started_at).toLocaleDateString("ru-RU")}
+                            </span>
+                          )}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        {src.type === "employer" ? `ID: ${src.employer_id}` : `Запрос: ${src.search_query}`}
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => runImport(src.id)}
-                      disabled={importing === src.id}
-                      className="gap-1"
-                    >
-                      {importing === src.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-                      Импорт
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => deleteSource(src.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => runImport(src.id)}
+                        disabled={importing === src.id}
+                        className="gap-1"
+                      >
+                        {importing === src.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+                        Импорт
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => deleteSource(src.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
 
