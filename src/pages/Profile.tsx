@@ -16,7 +16,6 @@ import {
   Star, Award, FileText, Wrench, User
 } from "lucide-react";
 import { PdfResumeModal } from "@/components/profile/PdfResumeModal";
-import defaultAvatar from "@/assets/default-avatar.png";
 
 interface ProfileData {
   id: string;
@@ -317,11 +316,11 @@ export default function Profile() {
             <div className="bg-gradient-to-r from-primary to-primary-dark h-24 md:h-32" />
             <CardContent className="relative pt-0 pb-6">
               <div className="absolute -top-12 left-6 md:left-8">
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-card bg-muted flex items-center justify-center overflow-hidden">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-card bg-primary/10 flex items-center justify-center overflow-hidden">
                   {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt={displayName} className="w-full h-full object-cover" />
                   ) : (
-                    <img src={defaultAvatar} alt="Силуэт профиля" className="w-full h-full object-cover" />
+                    <User className="w-10 h-10 md:w-14 md:h-14 text-primary/40" />
                   )}
                 </div>
               </div>
