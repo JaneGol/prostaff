@@ -2,3 +2,6 @@ project_id = "emnobhffpmhptfnrzitr"
 
 [functions.view-profile]
 verify_jwt = false
+
+[functions.hh-import]
+verify_jwt = false

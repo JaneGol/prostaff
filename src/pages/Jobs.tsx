@@ -18,7 +18,8 @@ import {
   Building2,
   Clock,
   DollarSign,
-  Plus
+  Plus,
+  ExternalLink
 } from "lucide-react";
 
 interface JobCard {
@@ -34,6 +35,8 @@ interface JobCard {
   salary_currency: string | null;
   is_remote: boolean;
   created_at: string;
+  external_source: string | null;
+  external_url: string | null;
   companies: {
     id: string;
     name: string;
@@ -115,6 +118,8 @@ export default function Jobs() {
           salary_currency,
           is_remote,
           created_at,
+          external_source,
+          external_url,
           companies (id, name, logo_url),
           specialist_roles (id, name)
         `)
@@ -338,6 +343,11 @@ export default function Jobs() {
                             )}
                             {job.is_remote && (
                               <Badge variant="outline">Удалённо</Badge>
+                            )}
+                            {job.external_source === "hh" && (
+                              <Badge className="bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20">
+                                HH
+                              </Badge>
                             )}
                           </div>
 

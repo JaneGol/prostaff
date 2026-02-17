@@ -430,6 +430,109 @@ export type Database = {
           },
         ]
       }
+      hh_sources: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          employer_id: string | null
+          filters_json: Json | null
+          id: string
+          import_interval_minutes: number
+          is_enabled: boolean
+          moderation_mode: string
+          name: string
+          search_query: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          employer_id?: string | null
+          filters_json?: Json | null
+          id?: string
+          import_interval_minutes?: number
+          is_enabled?: boolean
+          moderation_mode?: string
+          name: string
+          search_query?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          employer_id?: string | null
+          filters_json?: Json | null
+          id?: string
+          import_interval_minutes?: number
+          is_enabled?: boolean
+          moderation_mode?: string
+          name?: string
+          search_query?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hh_sources_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_runs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          items_closed: number | null
+          items_created: number | null
+          items_found: number | null
+          items_updated: number | null
+          source_id: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          items_closed?: number | null
+          items_created?: number | null
+          items_found?: number | null
+          items_updated?: number | null
+          source_id: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          items_closed?: number | null
+          items_created?: number | null
+          items_found?: number | null
+          items_updated?: number | null
+          source_id?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_runs_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "hh_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_skills: {
         Row: {
           created_at: string | null
@@ -479,16 +582,21 @@ export type Database = {
           created_at: string | null
           description: string
           expires_at: string | null
+          external_id: string | null
+          external_source: string | null
+          external_url: string | null
           id: string
           is_relocatable: boolean | null
           is_remote: boolean | null
           level: Database["public"]["Enums"]["experience_level"] | null
+          moderation_status: string | null
           requirements: string | null
           responsibilities: string | null
           role_id: string | null
           salary_currency: string | null
           salary_max: number | null
           salary_min: number | null
+          source_id: string | null
           status: Database["public"]["Enums"]["job_status"] | null
           title: string
           updated_at: string | null
@@ -503,16 +611,21 @@ export type Database = {
           created_at?: string | null
           description: string
           expires_at?: string | null
+          external_id?: string | null
+          external_source?: string | null
+          external_url?: string | null
           id?: string
           is_relocatable?: boolean | null
           is_remote?: boolean | null
           level?: Database["public"]["Enums"]["experience_level"] | null
+          moderation_status?: string | null
           requirements?: string | null
           responsibilities?: string | null
           role_id?: string | null
           salary_currency?: string | null
           salary_max?: number | null
           salary_min?: number | null
+          source_id?: string | null
           status?: Database["public"]["Enums"]["job_status"] | null
           title: string
           updated_at?: string | null
@@ -527,16 +640,21 @@ export type Database = {
           created_at?: string | null
           description?: string
           expires_at?: string | null
+          external_id?: string | null
+          external_source?: string | null
+          external_url?: string | null
           id?: string
           is_relocatable?: boolean | null
           is_remote?: boolean | null
           level?: Database["public"]["Enums"]["experience_level"] | null
+          moderation_status?: string | null
           requirements?: string | null
           responsibilities?: string | null
           role_id?: string | null
           salary_currency?: string | null
           salary_max?: number | null
           salary_min?: number | null
+          source_id?: string | null
           status?: Database["public"]["Enums"]["job_status"] | null
           title?: string
           updated_at?: string | null
@@ -555,6 +673,13 @@ export type Database = {
             columns: ["role_id"]
             isOneToOne: false
             referencedRelation: "specialist_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "hh_sources"
             referencedColumns: ["id"]
           },
         ]
