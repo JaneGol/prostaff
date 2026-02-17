@@ -13,9 +13,10 @@ import {
   MapPin, Mail, Phone, Globe, Briefcase, GraduationCap,
   Calendar, ExternalLink, Edit, MessageCircle, CheckCircle,
   Clock, Lock, Eye, AlertTriangle, Trophy, Handshake, FolderOpen,
-  Star, Award, FileText
+  Star, Award, FileText, Wrench, User
 } from "lucide-react";
 import { PdfResumeModal } from "@/components/profile/PdfResumeModal";
+import defaultAvatar from "@/assets/default-avatar.png";
 
 interface ProfileData {
   id: string;
@@ -292,8 +293,8 @@ export default function Profile() {
     );
   }
 
-  const displayName = canSeeName ? `${profile.first_name} ${profile.last_name}` : (profile.specialist_roles?.name || "Специалист");
-  const initials = canSeeName ? `${profile.first_name[0]}${profile.last_name[0]}` : "??";
+  const roleName = profile.specialist_roles?.name || "Без специализации";
+  const displayName = canSeeName ? `${profile.first_name} ${profile.last_name}` : roleName;
   const location = [profile.city, profile.country].filter(Boolean).join(", ");
   const statusInfo = profile.search_status ? statusLabels[profile.search_status] : null;
 
@@ -317,10 +318,10 @@ export default function Profile() {
             <CardContent className="relative pt-0 pb-6">
               <div className="absolute -top-12 left-6 md:left-8">
                 <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-card bg-muted flex items-center justify-center overflow-hidden">
-                  {canSeeName && profile.avatar_url ? (
+                  {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt={displayName} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-3xl md:text-4xl font-display font-bold text-muted-foreground">{initials}</span>
+                    <img src={defaultAvatar} alt="Силуэт профиля" className="w-full h-full object-cover" />
                   )}
                 </div>
               </div>
@@ -378,7 +379,7 @@ export default function Profile() {
                 )}
                 {!isOwner && accessLevel === "login_required" && (
                   <div className="flex gap-3 pt-2">
-                    <Link to="/auth"><Button><Lock className="h-4 w-4 mr-2" />Войдите, чтобы увидеть контакты</Button></Link>
+                    <Link to="/auth"><Button><Lock className="h-4 w-4 mr-2" />Зарегистрируйтесь как работодатель, чтобы увидеть полную информацию о кандидате</Button></Link>
                   </div>
                 )}
                 {!isOwner && accessLevel === "full" && (
@@ -407,7 +408,10 @@ export default function Profile() {
           {(profile.bio || profile.about_useful || profile.about_style || profile.about_goals) && (
             <Card>
               <CardContent className="py-6 space-y-4">
-                <h2 className="font-display text-lg font-bold uppercase">О себе</h2>
+                <h2 className="text-base font-semibold flex items-center gap-2">
+                  <User className="h-5 w-5 text-muted-foreground" />
+                  О себе
+                </h2>
                 {profile.bio && <p className="text-foreground whitespace-pre-wrap">{profile.bio}</p>}
                 {profile.about_useful && (
                   <div>
@@ -567,7 +571,7 @@ export default function Profile() {
                             <ul className="mt-2 space-y-1">
                               {exp.achievements.map((ach, i) => (
                                 <li key={i} className="text-sm flex items-start gap-2">
-                                  <CheckCircle className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                                  <CheckCircle className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
                                   {ach}
                                 </li>
                               ))}
@@ -664,7 +668,10 @@ export default function Profile() {
           {canSeeContacts && (profile.email || profile.phone || profile.telegram || profile.linkedin_url || profile.portfolio_url) && (
             <Card>
               <CardContent className="py-6">
-                <h2 className="font-display text-lg font-bold uppercase mb-4">Контакты</h2>
+                <h2 className="text-base font-semibold flex items-center gap-2 mb-4">
+                  <Mail className="h-5 w-5 text-muted-foreground" />
+                  Контакты
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {profile.email && <a href={`mailto:${profile.email}`} className="flex items-center gap-3 hover:text-accent transition-colors"><Mail className="h-5 w-5 text-muted-foreground" />{profile.email}</a>}
                   {profile.phone && <a href={`tel:${profile.phone}`} className="flex items-center gap-3 hover:text-accent transition-colors"><Phone className="h-5 w-5 text-muted-foreground" />{profile.phone}</a>}
@@ -681,7 +688,7 @@ export default function Profile() {
               <CardContent className="py-6 text-center">
                 <Lock className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                 <p className="text-muted-foreground text-sm">
-                  {accessLevel === "login_required" ? "Войдите как работодатель, чтобы увидеть контакты" :
+                  {accessLevel === "login_required" ? "Зарегистрируйтесь как работодатель, чтобы увидеть полную информацию о кандидате" :
                    accessLevel === "paywall" ? "Оформите подписку для доступа к контактам" :
                    "Откройте полный профиль, чтобы увидеть контакты"}
                 </p>
