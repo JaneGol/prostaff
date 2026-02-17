@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Building2, Clock, DollarSign, ChevronRight } from "lucide-react";
+import { MapPin, Clock, Building2 } from "lucide-react";
 
 export interface JobCardData {
   id: string;
@@ -29,7 +27,7 @@ export interface JobCardData {
   } | null;
 }
 
-const levelLabels: Record<string, string> = {
+export const levelLabels: Record<string, string> = {
   intern: "Стажёр",
   junior: "Junior",
   middle: "Middle",
@@ -37,7 +35,7 @@ const levelLabels: Record<string, string> = {
   head: "Head",
 };
 
-const contractLabels: Record<string, string> = {
+export const contractLabels: Record<string, string> = {
   full_time: "Полная занятость",
   part_time: "Частичная занятость",
   contract: "Контракт",
@@ -45,21 +43,26 @@ const contractLabels: Record<string, string> = {
   freelance: "Фриланс",
 };
 
-export { levelLabels, contractLabels };
-
-const formatSalary = (min: number | null, max: number | null, currency: string | null) => {
+const formatSalary = (
+  min: number | null,
+  max: number | null,
+  currency: string | null,
+) => {
   if (!min && !max) return null;
-  const curr = currency || "RUB";
-  if (min && max) return `${min.toLocaleString()} – ${max.toLocaleString()} ${curr}`;
-  if (min) return `от ${min.toLocaleString()} ${curr}`;
-  if (max) return `до ${max.toLocaleString()} ${curr}`;
+  const curr = currency === "RUB" ? "₽" : currency || "₽";
+  if (min && max)
+    return `${min.toLocaleString("ru-RU")} – ${max.toLocaleString("ru-RU")} ${curr}`;
+  if (min) return `от ${min.toLocaleString("ru-RU")} ${curr}`;
+  if (max) return `до ${max.toLocaleString("ru-RU")} ${curr}`;
   return null;
 };
 
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
   const now = new Date();
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
+  );
   if (diffDays === 0) return "Сегодня";
   if (diffDays === 1) return "Вчера";
   if (diffDays < 7) return `${diffDays} дн. назад`;
@@ -67,76 +70,89 @@ const formatDate = (dateStr: string) => {
 };
 
 export function JobCardItem({ job }: { job: JobCardData }) {
+  const salary = formatSalary(
+    job.salary_min,
+    job.salary_max,
+    job.salary_currency,
+  );
+  const location = [job.city, job.country].filter(Boolean).join(", ");
+  const contract = job.contract_type
+    ? contractLabels[job.contract_type] || job.contract_type
+    : null;
+
+  // Build subtitle parts
+  const subtitleParts: string[] = [];
+  if (location) subtitleParts.push(location);
+  if (contract) subtitleParts.push(contract);
+  if (job.is_remote) subtitleParts.push("Удалённо");
+
   return (
-    <Link to={`/jobs/${job.id}`}>
-      <Card className="hover:shadow-lg transition-shadow group">
-        <CardContent className="p-4 md:p-5">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
-              {job.companies?.logo_url ? (
-                <img src={job.companies.logo_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <Building2 className="h-4 w-4 text-muted-foreground" />
+    <Link to={`/jobs/${job.id}`} className="block group">
+      <div className="rounded-2xl bg-card p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-150">
+        <div className="flex items-start gap-4">
+          {/* Company logo */}
+          <div className="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0 overflow-hidden">
+            {job.companies?.logo_url ? (
+              <img
+                src={job.companies.logo_url}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Building2 className="h-5 w-5 text-muted-foreground" />
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            {/* Title */}
+            <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1 mb-0.5">
+              {job.title}
+            </h3>
+
+            {/* Company */}
+            {job.companies && (
+              <p className="text-sm text-muted-foreground mb-2">
+                {job.companies.name}
+              </p>
+            )}
+
+            {/* Meta line */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mb-2">
+              {location && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {location}
+                </span>
+              )}
+              {contract && <span>{contract}</span>}
+              {job.is_remote && (
+                <span className="text-primary font-medium">Удалённо</span>
               )}
             </div>
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-sm group-hover:text-accent transition-colors line-clamp-1">
-                    {job.title}
-                  </h3>
-                  {job.companies && (
-                    <p className="text-xs text-muted-foreground">{job.companies.name}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
-                  <Clock className="h-3 w-3" />
-                  {formatDate(job.created_at)}
-                </div>
-              </div>
+            {/* Salary — visual anchor */}
+            {salary && (
+              <p className="text-base font-semibold text-foreground mb-2">
+                {salary}
+              </p>
+            )}
 
-              <div className="flex flex-wrap gap-1 mt-1.5">
-                {job.level && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                    {levelLabels[job.level] || job.level}
-                  </Badge>
-                )}
-                {job.contract_type && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                    {contractLabels[job.contract_type] || job.contract_type}
-                  </Badge>
-                )}
-                {job.is_remote && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">Удалённо</Badge>
-                )}
-                {job.external_source === "hh" && (
-                  <Badge className="text-[10px] px-1.5 py-0 bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20">
-                    HH
-                  </Badge>
-                )}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs">
-                {(job.city || job.country) && (
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
-                    {[job.city, job.country].filter(Boolean).join(", ")}
-                  </span>
-                )}
-                {formatSalary(job.salary_min, job.salary_max, job.salary_currency) && (
-                  <span className="flex items-center gap-1 text-foreground font-medium">
-                    <DollarSign className="h-3 w-3" />
-                    {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors hidden md:block flex-shrink-0 mt-1" />
+            {/* Description snippet */}
+            {job.description && (
+              <p className="text-sm text-muted-foreground line-clamp-1">
+                {job.description}
+              </p>
+            )}
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Date */}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 whitespace-nowrap">
+            <Clock className="h-3 w-3" />
+            {formatDate(job.created_at)}
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }

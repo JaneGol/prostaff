@@ -23,6 +23,8 @@ export interface SectionProfile {
   isRemoteAvailable: boolean;
   skills: SkillDisplay[];
   sports: SportDisplay[];
+  avatarUrl?: string | null;
+  displayName?: string | null;
 }
 
 interface SpecialistSectionProps {
@@ -32,24 +34,28 @@ interface SpecialistSectionProps {
   totalCount: number;
 }
 
-export function SpecialistSection({ title, sectionKey, profiles, totalCount }: SpecialistSectionProps) {
+export function SpecialistSection({
+  title,
+  sectionKey,
+  profiles,
+  totalCount,
+}: SpecialistSectionProps) {
   if (profiles.length === 0) return null;
 
-  // Show max 3 on desktop (CSS handles responsive)
   const displayProfiles = profiles.slice(0, 3);
 
   return (
-    <section className="py-2 md:py-4 first:pt-0">
+    <section className="py-4 first:pt-0">
       {/* Section header */}
-      <div className="flex items-baseline justify-between gap-4 mb-6">
-        <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground">
+      <div className="flex items-baseline justify-between gap-4 mb-5">
+        <h2 className="text-lg md:text-xl font-semibold text-foreground">
           {title}
         </h2>
         <Link
           to={`/specialists?section=${sectionKey}`}
           className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors whitespace-nowrap shrink-0"
         >
-          Смотреть всех ({totalCount})
+          Все ({totalCount})
           <ChevronRight className="h-4 w-4" />
         </Link>
       </div>
