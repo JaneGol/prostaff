@@ -58,12 +58,6 @@ export default function AdminHHSources() {
   const [newSearchQuery, setNewSearchQuery] = useState("");
   const [newModeration, setNewModeration] = useState("draft_review");
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  if (userRole !== "admin") return <Navigate to="/" />;
-
   const fetchData = async () => {
     setLoading(true);
     const [{ data: srcData }, { data: runData }] = await Promise.all([
@@ -74,6 +68,12 @@ export default function AdminHHSources() {
     if (runData) setRuns(runData as ImportRun[]);
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (userRole === "admin") fetchData();
+  }, [userRole]);
+
+  if (userRole !== "admin") return <Navigate to="/" />;
 
   const createSource = async () => {
     if (!newName.trim()) return toast.error("Введите название");
