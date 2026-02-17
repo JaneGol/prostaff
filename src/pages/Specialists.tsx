@@ -255,7 +255,31 @@ export default function Specialists() {
         }
       }
 
-      const mergedProfiles = [...profilesList, ...MOCK_PROFILES];
+      // Apply same filters to mock profiles
+      let filteredMocks = [...MOCK_PROFILES];
+      if (selectedRole && selectedRole !== "all") {
+        if (includeSecondaryRole) {
+          filteredMocks = filteredMocks.filter(p => p.specialist_roles?.id === selectedRole || p.secondary_role_id === selectedRole);
+        } else {
+          filteredMocks = filteredMocks.filter(p => p.specialist_roles?.id === selectedRole);
+        }
+      }
+      if (selectedLevel && selectedLevel !== "all") {
+        filteredMocks = filteredMocks.filter(p => p.level === selectedLevel);
+      }
+      if (selectedSport && selectedSport !== "all") {
+        filteredMocks = filteredMocks.filter(p => {
+          const mockSports = MOCK_SPORTS[p.id] || [];
+          return mockSports.some(s => s.sport_id === selectedSport);
+        });
+      }
+      if (selectedSkill && selectedSkill !== "all") {
+        filteredMocks = filteredMocks.filter(p => {
+          const mockSkillRows = MOCK_SKILLS[p.id] || [];
+          return mockSkillRows.some(s => s.skill_id === selectedSkill || s.custom_name?.toLowerCase() === skills.find(sk => sk.id === selectedSkill)?.name?.toLowerCase());
+        });
+      }
+      const mergedProfiles = [...profilesList, ...filteredMocks];
       setProfiles(mergedProfiles);
 
       // Fetch sports & skills
