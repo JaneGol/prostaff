@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,7 +12,7 @@ import {
   Users, Briefcase, Eye, MousePointer, TrendingUp,
   Monitor, Smartphone, Tablet, Globe, Clock, BarChart3,
   FileText, Send, Building2, ArrowUpRight, ArrowDownRight,
-  Activity, UserPlus, Target, Lock, Unlock
+  Activity, UserPlus, Target, Lock, Unlock, ExternalLink
 } from "lucide-react";
 import ArticleEditor from "@/components/admin/ArticleEditor";
 
@@ -291,6 +292,18 @@ export default function AdminDashboard() {
             <SummaryCard icon={<Eye />} label="Просмотры профилей" value={analytics.profileViewCount} />
             <SummaryCard icon={<Send />} label="Отклики (события)" value={analytics.applicationEventCount} accent />
             <SummaryCard icon={<UserPlus />} label="Регистрации (события)" value={Object.values(analytics.signupByRole).reduce((a, b) => a + b, 0)} accent />
+          </div>
+
+          {/* Admin quick links */}
+          <div className="flex flex-wrap gap-3">
+            <Link to="/admin/hh-sources">
+              <Card className="cursor-pointer hover:border-primary transition-colors">
+                <CardContent className="py-3 px-4 flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Источники HH.ru</span>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
           <Tabs defaultValue="pages" className="w-full">
