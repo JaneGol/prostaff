@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,16 +9,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportIcon } from "@/lib/sportIcons";
-import { 
-  Search, 
-  MapPin, 
+import { SECTIONS, getSectionForRole } from "@/lib/specialistSections";
+import { SpecialistSection, type SectionProfile } from "@/components/specialists/SpecialistSection";
+import { SpecialistCard } from "@/components/specialists/SpecialistCard";
+import {
+  Search,
+  MapPin,
   Filter,
   ChevronRight,
   Users,
-  Trophy,
-  Monitor,
   ArrowUpDown,
-  X
+  X,
+  ArrowLeft,
 } from "lucide-react";
 
 interface ProfileCard {
@@ -73,28 +75,27 @@ const levelLabels: Record<string, string> = {
   junior: "Junior",
   middle: "Middle",
   senior: "Senior",
-  head: "Head"
+  head: "Head",
 };
 
-// Mock data for demo when no real profiles exist
+// Mock data for demo
 const MOCK_PROFILES: ProfileCard[] = [
-  { id: "mock-1", first_name: "", last_name: "", avatar_url: null, city: "Москва", country: "Россия", level: "senior", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "1", name: "Аналитик данных" }, secondary_role_id: null },
-  { id: "mock-2", first_name: "", last_name: "", avatar_url: null, city: "Санкт-Петербург", country: "Россия", level: "middle", search_status: "open_to_offers", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "2", name: "Видеоаналитик" }, secondary_role_id: null },
-  { id: "mock-3", first_name: "", last_name: "", avatar_url: null, city: "Алматы", country: "Казахстан", level: "junior", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "3", name: "Скаут" }, secondary_role_id: null },
-  { id: "mock-4", first_name: "", last_name: "", avatar_url: null, city: "Минск", country: "Беларусь", level: "head", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "4", name: "Главный тренер" }, secondary_role_id: null },
-  { id: "mock-5", first_name: "", last_name: "", avatar_url: null, city: "Казань", country: "Россия", level: "middle", search_status: "actively_looking", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "5", name: "S&C специалист" }, secondary_role_id: null },
-  { id: "mock-6", first_name: "", last_name: "", avatar_url: null, city: "Краснодар", country: "Россия", level: "senior", search_status: "not_looking", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "6", name: "Спортивный врач" }, secondary_role_id: null },
-  { id: "mock-7", first_name: "", last_name: "", avatar_url: null, city: "Астана", country: "Казахстан", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "7", name: "Тренер вратарей" }, secondary_role_id: null },
-  { id: "mock-8", first_name: "", last_name: "", avatar_url: null, city: "Екатеринбург", country: "Россия", level: "junior", search_status: "open_to_offers", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "8", name: "Нутрициолог" }, secondary_role_id: null },
-  { id: "mock-9", first_name: "", last_name: "", avatar_url: null, city: "Сочи", country: "Россия", level: "senior", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "9", name: "Реабилитолог" }, secondary_role_id: null },
-  { id: "mock-10", first_name: "", last_name: "", avatar_url: null, city: "Гомель", country: "Беларусь", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "10", name: "Аналитик GPS/отслеживания" }, secondary_role_id: null },
+  { id: "mock-1", first_name: "", last_name: "", avatar_url: null, city: "Москва", country: "Россия", level: "senior", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "b79fbfc7-3c12-44aa-8606-fcba449c9373", name: "Аналитик данных" }, secondary_role_id: null },
+  { id: "mock-2", first_name: "", last_name: "", avatar_url: null, city: "Санкт-Петербург", country: "Россия", level: "middle", search_status: "open_to_offers", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "c19b18bc-4521-45b4-8ed7-54aa647cb17f", name: "Видеоаналитик" }, secondary_role_id: null },
+  { id: "mock-3", first_name: "", last_name: "", avatar_url: null, city: "Алматы", country: "Казахстан", level: "junior", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "362ad39d-e65d-4f79-ab97-0710ff4b40e7", name: "Скаут" }, secondary_role_id: null },
+  { id: "mock-4", first_name: "", last_name: "", avatar_url: null, city: "Минск", country: "Беларусь", level: "head", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "e74c6476-9b5f-4ccd-a3b8-03faa2988d46", name: "Главный тренер" }, secondary_role_id: null },
+  { id: "mock-5", first_name: "", last_name: "", avatar_url: null, city: "Казань", country: "Россия", level: "middle", search_status: "actively_looking", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "a9620db1-3cf0-4d57-a6bf-28c2961c43e1", name: "S&C специалист" }, secondary_role_id: null },
+  { id: "mock-6", first_name: "", last_name: "", avatar_url: null, city: "Краснодар", country: "Россия", level: "senior", search_status: "not_looking", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "98271286-d569-4074-8d96-16dcf258fdcf", name: "Спортивный врач" }, secondary_role_id: null },
+  { id: "mock-7", first_name: "", last_name: "", avatar_url: null, city: "Астана", country: "Казахстан", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "c7c42a56-6bd1-4080-949a-f7f80e5c5651", name: "Тренер вратарей" }, secondary_role_id: null },
+  { id: "mock-8", first_name: "", last_name: "", avatar_url: null, city: "Екатеринбург", country: "Россия", level: "junior", search_status: "open_to_offers", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "2056f7c5-6c00-491f-a298-bec303ff15cf", name: "Нутрициолог" }, secondary_role_id: null },
+  { id: "mock-9", first_name: "", last_name: "", avatar_url: null, city: "Сочи", country: "Россия", level: "senior", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "0bd7deb6-adca-4ff7-b83f-ca8ad11758ad", name: "Реабилитолог" }, secondary_role_id: null },
+  { id: "mock-10", first_name: "", last_name: "", avatar_url: null, city: "Гомель", country: "Беларусь", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "96069546-82b6-4337-9079-a5473e238b3f", name: "Аналитик GPS/отслеживания" }, secondary_role_id: null },
 ];
 
 const MOCK_SKILLS: Record<string, ProfileSkillRow[]> = {
   "mock-1": [
     { profile_id: "mock-1", skill_id: "s1", is_top: true, custom_name: "Python", is_custom: true },
     { profile_id: "mock-1", skill_id: "s2", is_top: true, custom_name: "Tableau", is_custom: true },
-    { profile_id: "mock-1", skill_id: "s3", is_top: true, custom_name: "SQL", is_custom: true },
   ],
   "mock-2": [
     { profile_id: "mock-2", skill_id: "s1", is_top: true, custom_name: "Hudl", is_custom: true },
@@ -107,16 +108,10 @@ const MOCK_SKILLS: Record<string, ProfileSkillRow[]> = {
   "mock-5": [
     { profile_id: "mock-5", skill_id: "s1", is_top: true, custom_name: "Catapult", is_custom: true },
     { profile_id: "mock-5", skill_id: "s2", is_top: true, custom_name: "Polar", is_custom: true },
-    { profile_id: "mock-5", skill_id: "s3", is_top: true, custom_name: "STATSports", is_custom: true },
-  ],
-  "mock-8": [
-    { profile_id: "mock-8", skill_id: "s1", is_top: true, custom_name: "Спортивное питание", is_custom: true },
   ],
   "mock-10": [
     { profile_id: "mock-10", skill_id: "s1", is_top: true, custom_name: "Catapult", is_custom: true },
-    { profile_id: "mock-10", skill_id: "s2", is_top: true, custom_name: "Kinexon", is_custom: true },
-    { profile_id: "mock-10", skill_id: "s3", is_top: true, custom_name: "Python", is_custom: true },
-    { profile_id: "mock-10", skill_id: "s4", is_top: true, custom_name: "R", is_custom: true },
+    { profile_id: "mock-10", skill_id: "s2", is_top: true, custom_name: "Python", is_custom: true },
   ],
 };
 
@@ -138,8 +133,21 @@ const SORT_LABELS: Record<SortOption, string> = {
   level_asc: "Уровень ↑",
 };
 const LEVEL_ORDER: Record<string, number> = { intern: 0, junior: 1, middle: 2, senior: 3, head: 4 };
+const STATUS_ORDER: Record<string, number> = { actively_looking: 0, open_to_offers: 1, not_looking_but_open: 2, not_looking: 3 };
+
+function sortByRelevance(a: ProfileCard, b: ProfileCard): number {
+  const sa = STATUS_ORDER[a.search_status || "not_looking"] ?? 3;
+  const sb = STATUS_ORDER[b.search_status || "not_looking"] ?? 3;
+  if (sa !== sb) return sa - sb;
+  const la = LEVEL_ORDER[a.level || ""] ?? -1;
+  const lb = LEVEL_ORDER[b.level || ""] ?? -1;
+  return lb - la;
+}
 
 export default function Specialists() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sectionFilter = searchParams.get("section");
+
   const [profiles, setProfiles] = useState<ProfileCard[]>([]);
   const [roles, setRoles] = useState<SpecialistRole[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
@@ -156,6 +164,16 @@ export default function Specialists() {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>("relevance");
 
+  // Determine view mode: showcase (default) vs list (search/filter/section active)
+  const isListMode = !!(
+    sectionFilter ||
+    searchQuery.trim() ||
+    (selectedRole && selectedRole !== "all") ||
+    (selectedLevel && selectedLevel !== "all") ||
+    (selectedSport && selectedSport !== "all") ||
+    (selectedSkill && selectedSkill !== "all")
+  );
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -171,7 +189,6 @@ export default function Specialists() {
         supabase.from("sports").select("id, name, icon").eq("is_active", true).order("sort_order"),
         supabase.from("skills").select("id, name, category").order("name"),
       ]);
-
       if (rolesRes.data) setRoles(rolesRes.data);
       if (sportsRes.data) setSports(sportsRes.data);
       if (skillsRes.data) setSkills(skillsRes.data);
@@ -187,24 +204,14 @@ export default function Specialists() {
       let query = supabase
         .from("profiles")
         .select(`
-          id,
-          first_name,
-          last_name,
-          avatar_url,
-          city,
-          country,
-          level,
-          search_status,
-          is_relocatable,
-          is_remote_available,
-          show_name,
+          id, first_name, last_name, avatar_url, city, country, level,
+          search_status, is_relocatable, is_remote_available, show_name,
           secondary_role_id,
           specialist_roles!profiles_role_id_fkey (id, name)
         `)
         .eq("is_public", true)
         .order("updated_at", { ascending: false });
 
-      // Role filter: match primary OR secondary
       if (selectedRole && selectedRole !== "all") {
         if (includeSecondaryRole) {
           query = query.or(`role_id.eq.${selectedRole},secondary_role_id.eq.${selectedRole}`);
@@ -212,9 +219,8 @@ export default function Specialists() {
           query = query.eq("role_id", selectedRole);
         }
       }
-
       if (selectedLevel && selectedLevel !== "all") {
-        query = query.eq("level", selectedLevel as "intern" | "junior" | "middle" | "senior" | "head");
+        query = query.eq("level", selectedLevel as any);
       }
 
       const { data, error } = await query;
@@ -242,47 +248,38 @@ export default function Specialists() {
         const profileIds = profilesList.map(p => p.id);
         if (profileIds.length > 0) {
           const { data: skillMatches } = await supabase
-            .from("profile_skills")
-            .select("profile_id")
-            .eq("skill_id", selectedSkill)
-            .in("profile_id", profileIds);
+            .from("profile_skills").select("profile_id")
+            .eq("skill_id", selectedSkill).in("profile_id", profileIds);
           const matchIds = new Set((skillMatches || []).map(r => r.profile_id));
           profilesList = profilesList.filter(p => matchIds.has(p.id));
         }
       }
 
-      // Always include mock profiles for demo
       const mergedProfiles = [...profilesList, ...MOCK_PROFILES];
       setProfiles(mergedProfiles);
 
-      // Fetch sports & top skills for real profiles
+      // Fetch sports & skills
       const realIds = profilesList.map(p => p.id);
       if (realIds.length > 0) {
         const [sportsData, skillsData] = await Promise.all([
-          supabase
-            .from("profile_sports_experience")
+          supabase.from("profile_sports_experience")
             .select("profile_id, sport_id, years, sports:sport_id (name, icon)")
-            .in("profile_id", realIds)
-            .order("years", { ascending: false }),
-          supabase
-            .from("profile_skills")
+            .in("profile_id", realIds).order("years", { ascending: false }),
+          supabase.from("profile_skills")
             .select("profile_id, skill_id, is_top, custom_name, is_custom")
-            .in("profile_id", realIds)
-            .eq("is_top", true),
+            .in("profile_id", realIds).eq("is_top", true),
         ]);
 
         const groupedSports: Record<string, ProfileSportExp[]> = {};
         for (const s of (sportsData.data || []) as any[]) {
           if (!groupedSports[s.profile_id]) groupedSports[s.profile_id] = [];
-          groupedSports[s.profile_id].push({ sport_id: s.sport_id, years: s.years, sports: s.sports });
+          groupedSports[s.profile_id].push(s);
         }
-
         const groupedSkills: Record<string, ProfileSkillRow[]> = {};
         for (const s of (skillsData.data || []) as any[]) {
           if (!groupedSkills[s.profile_id]) groupedSkills[s.profile_id] = [];
           groupedSkills[s.profile_id].push(s);
         }
-
         setProfileSports({ ...MOCK_SPORTS, ...groupedSports });
         setProfileSkills({ ...MOCK_SKILLS, ...groupedSkills });
       } else {
@@ -302,24 +299,74 @@ export default function Specialists() {
     return skill?.name || "—";
   };
 
-  // Merge real + mock skills/sports for display
   const displaySkills = { ...MOCK_SKILLS, ...profileSkills };
   const displaySports = { ...MOCK_SPORTS, ...profileSports };
 
-  const filteredProfiles = profiles.filter(profile => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
-    const fullName = `${profile.first_name} ${profile.last_name}`.toLowerCase();
-    const role = profile.specialist_roles?.name.toLowerCase() || "";
-    const location = `${profile.city || ""} ${profile.country || ""}`.toLowerCase();
-    return fullName.includes(q) || role.includes(q) || location.includes(q);
+  // Convert profile to SectionProfile format
+  const toSectionProfile = (p: ProfileCard): SectionProfile => ({
+    id: p.id,
+    roleName: p.specialist_roles?.name || null,
+    level: p.level,
+    city: p.city,
+    country: p.country,
+    searchStatus: p.search_status,
+    isRelocatable: p.is_relocatable,
+    isRemoteAvailable: p.is_remote_available,
+    skills: (displaySkills[p.id] || []).map(s => ({ name: getSkillName(s) })),
+    sports: displaySports[p.id] || [],
   });
 
-  const sortedProfiles = [...filteredProfiles].sort((a, b) => {
-    if (sortBy === "level_desc") return (LEVEL_ORDER[b.level || ""] ?? -1) - (LEVEL_ORDER[a.level || ""] ?? -1);
-    if (sortBy === "level_asc") return (LEVEL_ORDER[a.level || ""] ?? -1) - (LEVEL_ORDER[b.level || ""] ?? -1);
-    return 0;
-  });
+  // Group profiles by section
+  const sectionData = useMemo(() => {
+    const sorted = [...profiles].sort(sortByRelevance);
+    return SECTIONS.map((section) => {
+      const sectionProfiles = sorted.filter((p) => {
+        const roleId = p.specialist_roles?.id || null;
+        const roleName = p.specialist_roles?.name || null;
+        const sKey = getSectionForRole(roleId, roleName);
+        return sKey === section.key;
+      });
+      return {
+        ...section,
+        profiles: sectionProfiles.map(toSectionProfile),
+        totalCount: sectionProfiles.length,
+      };
+    }).filter(s => s.totalCount > 0);
+  }, [profiles, displaySkills, displaySports, skills]);
+
+  // List mode: filtered + searched profiles
+  const listProfiles = useMemo(() => {
+    let result = [...profiles];
+
+    // Section filter from URL
+    if (sectionFilter) {
+      const section = SECTIONS.find(s => s.key === sectionFilter);
+      if (section) {
+        result = result.filter(p => {
+          const roleId = p.specialist_roles?.id || null;
+          const roleName = p.specialist_roles?.name || null;
+          return getSectionForRole(roleId, roleName) === sectionFilter;
+        });
+      }
+    }
+
+    // Text search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(p => {
+        const role = p.specialist_roles?.name?.toLowerCase() || "";
+        const location = `${p.city || ""} ${p.country || ""}`.toLowerCase();
+        return role.includes(q) || location.includes(q);
+      });
+    }
+
+    // Sort
+    if (sortBy === "relevance") result.sort(sortByRelevance);
+    else if (sortBy === "level_desc") result.sort((a, b) => (LEVEL_ORDER[b.level || ""] ?? -1) - (LEVEL_ORDER[a.level || ""] ?? -1));
+    else if (sortBy === "level_asc") result.sort((a, b) => (LEVEL_ORDER[a.level || ""] ?? -1) - (LEVEL_ORDER[b.level || ""] ?? -1));
+
+    return result;
+  }, [profiles, searchQuery, sortBy, sectionFilter]);
 
   const clearFilters = () => {
     setSelectedRole("all");
@@ -327,16 +374,28 @@ export default function Specialists() {
     setSelectedSport("all");
     setSelectedSkill("all");
     setSearchQuery("");
+    setSearchParams({});
   };
 
-  const hasActiveFilters = (selectedRole && selectedRole !== "all") || (selectedLevel && selectedLevel !== "all") || (selectedSport && selectedSport !== "all") || (selectedSkill && selectedSkill !== "all") || searchQuery;
+  const hasActiveFilters = !!(
+    sectionFilter ||
+    (selectedRole && selectedRole !== "all") ||
+    (selectedLevel && selectedLevel !== "all") ||
+    (selectedSport && selectedSport !== "all") ||
+    (selectedSkill && selectedSkill !== "all") ||
+    searchQuery
+  );
+
+  const sectionTitle = sectionFilter
+    ? SECTIONS.find(s => s.key === sectionFilter)?.title || "Специалисты"
+    : null;
 
   return (
     <Layout>
       {/* Hero */}
-      <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-12 md:py-16">
+      <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-10 md:py-14">
         <div className="container">
-          <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold uppercase text-center mb-4">
+          <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold uppercase text-center mb-3">
             Банк специалистов
           </h1>
           <p className="text-white/80 text-center text-lg max-w-2xl mx-auto mb-8">
@@ -349,7 +408,7 @@ export default function Specialists() {
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Поиск по имени, роли или городу..."
+                placeholder="Поиск по роли или городу..."
                 className="pl-12 h-14 text-lg bg-white border-0"
               />
             </div>
@@ -357,18 +416,25 @@ export default function Specialists() {
         </div>
       </section>
 
-      {/* Filters & Results */}
+      {/* Content */}
       <section className="py-8 md:py-12">
         <div className="container">
+          {/* Toolbar: filters, sort, count */}
           <div className="flex flex-wrap items-center gap-4 mb-8">
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
-            >
+            {/* Back to showcase from section filter */}
+            {sectionFilter && (
+              <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setSearchParams({})}>
+                <ArrowLeft className="h-4 w-4" />
+                Все направления
+              </Button>
+            )}
+
+            <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="gap-2">
               <Filter className="h-4 w-4" />
               Фильтры
-              {hasActiveFilters && <Badge variant="default" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs rounded-full">!</Badge>}
+              {hasActiveFilters && (
+                <Badge variant="default" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs rounded-full">!</Badge>
+              )}
             </Button>
 
             {showFilters && (
@@ -454,134 +520,85 @@ export default function Specialists() {
             )}
 
             <div className="ml-auto flex items-center gap-3">
-              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                <SelectTrigger className="w-[180px] h-9 text-sm">
-                  <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(SORT_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {isListMode && (
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                  <SelectTrigger className="w-[180px] h-9 text-sm">
+                    <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SORT_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <Users className="h-4 w-4" />
-                <span>Найдено: {sortedProfiles.length}</span>
+                <span>Найдено: {isListMode ? listProfiles.length : profiles.length}</span>
               </div>
             </div>
           </div>
 
-          {/* Results Grid */}
+          {/* Loading state */}
           {loading ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="h-56 rounded-lg" />
+            <div className="space-y-12">
+              {[1, 2, 3].map(i => (
+                <div key={i}>
+                  <Skeleton className="h-7 w-56 mb-6" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1, 2, 3].map(j => (
+                      <Skeleton key={j} className="h-48 rounded-lg" />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
-          ) : sortedProfiles.length === 0 ? (
-            <div className="text-center py-16">
-              <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Специалисты не найдены</h3>
-              <p className="text-muted-foreground mb-6">Попробуйте изменить параметры поиска</p>
-              {hasActiveFilters && (
-                <Button variant="outline" onClick={clearFilters}>Сбросить фильтры</Button>
+          ) : isListMode ? (
+            /* ======== LIST MODE ======== */
+            <>
+              {sectionTitle && (
+                <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground mb-6">
+                  {sectionTitle}
+                </h2>
               )}
-            </div>
+              {listProfiles.length === 0 ? (
+                <div className="text-center py-16">
+                  <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Специалисты не найдены</h3>
+                  <p className="text-muted-foreground mb-6">Попробуйте изменить параметры поиска</p>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={clearFilters}>Сбросить фильтры</Button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {listProfiles.map(p => (
+                    <SpecialistCard key={p.id} {...toSectionProfile(p)} />
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sortedProfiles.map(profile => {
-                const isActive = profile.search_status === "actively_looking";
-                const isOpen = profile.search_status === "open_to_offers";
-                const statusLabel = isActive ? "Ищет работу" : isOpen ? "Открыт к предложениям" : null;
-
-                return (
-                  <Link key={profile.id} to={`/profile/${profile.id}`}>
-                    <Card className="h-full rounded-lg border border-border hover:border-primary/40 hover:shadow-card-hover transition-all group overflow-hidden">
-                      {/* Thin status strip — brand colors only */}
-                      <div className={`h-1 ${isActive ? "bg-primary" : isOpen ? "bg-primary/40" : "bg-border"}`} />
-
-                      <CardContent className="p-4">
-                        {/* Header: role + level inline */}
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <h3 className="font-display font-semibold text-base leading-snug group-hover:text-primary transition-colors">
-                            {profile.specialist_roles?.name || "Без специализации"}
-                          </h3>
-                          {profile.level && (
-                            <span className="text-xs font-medium text-primary bg-primary/8 px-2 py-0.5 rounded-sm whitespace-nowrap">
-                              {levelLabels[profile.level] || profile.level}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Location line */}
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
-                          {(profile.city || profile.country) && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3.5 w-3.5" />
-                              {[profile.city, profile.country].filter(Boolean).join(", ")}
-                            </span>
-                          )}
-                          {profile.is_relocatable && (
-                            <span className="flex items-center gap-0.5 text-xs">
-                              <Trophy className="h-3 w-3" />Релок.
-                            </span>
-                          )}
-                          {profile.is_remote_available && (
-                            <span className="flex items-center gap-0.5 text-xs">
-                              <Monitor className="h-3 w-3" />Удал.
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Status — subtle text, not a loud badge */}
-                        {statusLabel && (
-                          <div className="flex items-center gap-1.5 mb-3">
-                            <span className={`h-2 w-2 rounded-full ${isActive ? "bg-primary" : "bg-primary/40"}`} />
-                            <span className="text-xs text-muted-foreground">{statusLabel}</span>
-                          </div>
-                        )}
-
-                        {/* Skills — inline text, no heavy badges */}
-                        {displaySkills[profile.id]?.length > 0 && (
-                          <div className="text-xs text-foreground/80 mb-2">
-                            {displaySkills[profile.id].slice(0, 3).map((s, i) => (
-                              <span key={i}>
-                                {i > 0 && <span className="text-border mx-1">·</span>}
-                                {getSkillName(s)}
-                              </span>
-                            ))}
-                            {displaySkills[profile.id].length > 3 && (
-                              <span className="text-muted-foreground ml-1">+{displaySkills[profile.id].length - 3}</span>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Sports — compact inline */}
-                        {displaySports[profile.id]?.length > 0 && (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            {displaySports[profile.id].slice(0, 3).map((s) => {
-                              const Icon = getSportIcon(s.sports?.icon || null);
-                              return (
-                                <span key={s.sport_id} className="flex items-center gap-1">
-                                  <Icon className="h-3 w-3" />
-                                  {s.sports?.name}
-                                  <span className="opacity-60">{s.years}г</span>
-                                </span>
-                              );
-                            })}
-                          </div>
-                        )}
-
-                        {/* Subtle arrow */}
-                        <div className="flex justify-end mt-2">
-                          <ChevronRight className="h-4 w-4 text-border group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
+            /* ======== SHOWCASE MODE ======== */
+            <div className="space-y-4">
+              {sectionData.length === 0 ? (
+                <div className="text-center py-16">
+                  <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Пока нет специалистов</h3>
+                  <p className="text-muted-foreground">Скоро здесь появятся профили</p>
+                </div>
+              ) : (
+                sectionData.map((section) => (
+                  <SpecialistSection
+                    key={section.key}
+                    title={section.title}
+                    sectionKey={section.key}
+                    profiles={section.profiles}
+                    totalCount={section.totalCount}
+                  />
+                ))
+              )}
             </div>
           )}
         </div>
