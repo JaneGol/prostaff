@@ -286,12 +286,12 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Close only draft vacancies that are no longer on HH
-        // Don't touch published, rejected, or manually managed jobs
+        // Close vacancies that are no longer on HH (draft and published)
+        // Don't touch rejected or manually closed jobs
         const currentExternalIds = new Set(externalIds);
         const toClose = (existingJobs || []).filter(
           (j) => j.external_id && !currentExternalIds.has(j.external_id)
-            && j.moderation_status === "draft" && j.status === "draft"
+            && j.moderation_status !== "rejected" && j.status !== "closed"
         );
 
         for (const job of toClose) {
@@ -300,6 +300,22 @@ Deno.serve(async (req) => {
             .update({ status: "closed", updated_at: new Date().toISOString() })
             .eq("id", job.id);
           itemsClosed++;
+        }
+
+        // Delete closed jobs older than 60 days
+        const deleteDate = new Date();
+        deleteDate.setDate(deleteDate.getDate() - 60);
+        const { error: delErr, count: deletedCount } = await supabase
+          .from("jobs")
+          .delete({ count: "exact" })
+          .eq("external_source", "hh")
+          .eq("source_id", source.id)
+          .eq("status", "closed")
+          .lt("updated_at", deleteDate.toISOString());
+
+        if (delErr) console.error(`Delete old jobs error:`, delErr);
+        else if (deletedCount && deletedCount > 0) {
+          console.log(`Deleted ${deletedCount} closed jobs older than 60 days for source ${source.id}`);
         }
       } catch (err) {
         runStatus = "failed";
