@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle, XCircle, ExternalLink, Building2, MapPin, Eye } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ModerationJob {
   id: string;
@@ -31,6 +32,7 @@ export default function AdminJobModeration() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("draft");
   const [acting, setActing] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const fetchJobs = async () => {
     setLoading(true);
@@ -83,7 +85,36 @@ export default function AdminJobModeration() {
     const ids = drafts.map(j => j.id);
     await supabase.from("jobs").update({ status: "active", moderation_status: "published" }).in("id", ids);
     toast.success(`${drafts.length} вакансий опубликовано`);
+    setSelected(new Set());
     fetchJobs();
+  };
+
+  const rejectSelected = async () => {
+    if (selected.size === 0) return;
+    if (!confirm(`Отклонить ${selected.size} вакансий?`)) return;
+    setActing("batch");
+    const ids = Array.from(selected);
+    await supabase.from("jobs").update({ status: "closed", moderation_status: "rejected" }).in("id", ids);
+    toast.success(`${ids.length} вакансий отклонено`);
+    setActing(null);
+    setSelected(new Set());
+    fetchJobs();
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.size === filtered.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(filtered.map(j => j.id)));
+    }
   };
 
   const draftCount = jobs.filter(j => j.status === "draft" || j.moderation_status === "draft").length;
@@ -110,9 +141,16 @@ export default function AdminJobModeration() {
                 <TabsTrigger value="all">Все</TabsTrigger>
               </TabsList>
               {tab === "draft" && draftCount > 0 && (
-                <Button onClick={publishAll} className="gap-1">
-                  <CheckCircle className="h-4 w-4" /> Опубликовать все ({draftCount})
-                </Button>
+                <div className="flex items-center gap-2">
+                  {selected.size > 0 && (
+                    <Button variant="outline" onClick={rejectSelected} disabled={acting === "batch"} className="gap-1">
+                      <XCircle className="h-4 w-4" /> Отклонить ({selected.size})
+                    </Button>
+                  )}
+                  <Button onClick={publishAll} className="gap-1">
+                    <CheckCircle className="h-4 w-4" /> Опубликовать все ({draftCount})
+                  </Button>
+                </div>
               )}
             </div>
 
@@ -128,10 +166,27 @@ export default function AdminJobModeration() {
               </Card>
             ) : (
               <div className="space-y-3">
+                {tab === "draft" && filtered.length > 0 && (
+                  <div className="flex items-center gap-2 px-1">
+                    <Checkbox
+                      checked={selected.size === filtered.length && filtered.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                    <span className="text-xs text-muted-foreground">Выбрать все</span>
+                  </div>
+                )}
                 {filtered.map(job => (
-                  <Card key={job.id}>
+                  <Card key={job.id} className={selected.has(job.id) ? "ring-2 ring-accent/40" : ""}>
                     <CardContent className="py-4">
-                      <div className="flex items-start gap-4">
+                      <div className="flex items-start gap-3">
+                        {tab === "draft" && (
+                          <div className="pt-1 flex-shrink-0">
+                            <Checkbox
+                              checked={selected.has(job.id)}
+                              onCheckedChange={() => toggleSelect(job.id)}
+                            />
+                          </div>
+                        )}
                         {job.company?.logo_url ? (
                           <img src={job.company.logo_url} alt="" className="w-10 h-10 rounded object-contain flex-shrink-0" />
                         ) : (
@@ -168,7 +223,7 @@ export default function AdminJobModeration() {
                               <Button
                                 size="sm"
                                 onClick={() => publishJob(job.id)}
-                                disabled={acting === job.id}
+                                disabled={acting === job.id || acting === "batch"}
                                 className="gap-1"
                               >
                                 <CheckCircle className="h-3.5 w-3.5" /> Да
@@ -177,7 +232,7 @@ export default function AdminJobModeration() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => rejectJob(job.id)}
-                                disabled={acting === job.id}
+                                disabled={acting === job.id || acting === "batch"}
                               >
                                 <XCircle className="h-3.5 w-3.5" />
                               </Button>
