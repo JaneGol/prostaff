@@ -39,7 +39,7 @@ export function SpecialistSection({ title, sectionKey, profiles, totalCount }: S
   const displayProfiles = profiles.slice(0, 3);
 
   return (
-    <section className="py-4 md:py-6 first:pt-0">
+    <section className="py-2 md:py-4 first:pt-0">
       {/* Section header */}
       <div className="flex items-baseline justify-between gap-4 mb-6">
         <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground">
