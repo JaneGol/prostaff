@@ -137,7 +137,26 @@ Deno.serve(async (req) => {
           (existingJobs || []).map((j) => [j.external_id, j.id])
         );
 
+        // Calculate cutoff date: 1 month ago
+        const cutoffDate = new Date();
+        cutoffDate.setMonth(cutoffDate.getMonth() - 1);
+
         for (const vacancy of vacancies) {
+          // Skip archived vacancies
+          if (vacancy.archived) {
+            console.log(`Skipping vacancy ${vacancy.id}: archived`);
+            continue;
+          }
+
+          // Skip vacancies published more than 1 month ago
+          if (vacancy.published_at) {
+            const publishedAt = new Date(vacancy.published_at);
+            if (publishedAt < cutoffDate) {
+              console.log(`Skipping vacancy ${vacancy.id}: published too long ago (${vacancy.published_at})`);
+              continue;
+            }
+          }
+
           // Fetch full details for richer data
           let description = vacancy.snippet?.requirement || "";
           let responsibilities = vacancy.snippet?.responsibility || "";
@@ -171,11 +190,25 @@ Deno.serve(async (req) => {
 
             if (existingCompany) {
               jobCompanyId = existingCompany.id;
-            }
-            // If no company found, skip this vacancy (we need a company_id)
-            if (!jobCompanyId) {
-              console.log(`Skipping vacancy ${vacancy.id}: no matching company for "${vacancy.employer.name}"`);
-              continue;
+            } else {
+              // Auto-create company from HH employer data
+              const { data: newCompany, error: compErr } = await supabase
+                .from("companies")
+                .insert({
+                  name: vacancy.employer.name,
+                  logo_url: vacancy.employer.logo_urls?.original || null,
+                  user_id: "00000000-0000-0000-0000-000000000000",
+                  country: "Россия",
+                })
+                .select("id")
+                .single();
+
+              if (compErr) {
+                console.error(`Failed to create company "${vacancy.employer.name}":`, compErr);
+                continue;
+              }
+              jobCompanyId = newCompany.id;
+              console.log(`Auto-created company "${vacancy.employer.name}" with id ${newCompany.id}`);
             }
           }
 
