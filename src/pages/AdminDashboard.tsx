@@ -294,25 +294,35 @@ export default function AdminDashboard() {
             <SummaryCard icon={<UserPlus />} label="Регистрации (события)" value={Object.values(analytics.signupByRole).reduce((a, b) => a + b, 0)} accent />
           </div>
 
-          {/* Admin quick links */}
-          <div className="flex flex-wrap gap-3">
-            <Link to="/admin/hh-sources">
-              <Card className="cursor-pointer hover:border-primary transition-colors">
-                <CardContent className="py-3 px-4 flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">Источники HH.ru</span>
-                </CardContent>
-              </Card>
-            </Link>
-            <Link to="/admin/job-moderation">
-              <Card className="cursor-pointer hover:border-primary transition-colors">
-                <CardContent className="py-3 px-4 flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">Модерация вакансий</span>
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
+          {/* Vacancy management section */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-primary" />
+                Управление вакансиями
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/admin/hh-sources">
+                  <Card className="cursor-pointer hover:border-primary transition-colors">
+                    <CardContent className="py-3 px-4 flex items-center gap-2">
+                      <ExternalLink className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium">Источники импорта</span>
+                    </CardContent>
+                  </Card>
+                </Link>
+                <Link to="/admin/job-moderation">
+                  <Card className="cursor-pointer hover:border-primary transition-colors">
+                    <CardContent className="py-3 px-4 flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium">Модерация</span>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
 
           <Tabs defaultValue="pages" className="w-full">
             <TabsList className="w-full justify-start overflow-x-auto">
