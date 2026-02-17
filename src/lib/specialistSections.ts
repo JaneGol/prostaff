@@ -1,6 +1,6 @@
 /**
  * Mapping of specialist roles to showcase sections.
- * Each section groups related roles for the vitrine display.
+ * Unified grouping used on both /specialists and /jobs pages.
  */
 
 export interface SectionConfig {
@@ -13,6 +13,25 @@ export interface SectionConfig {
 }
 
 export const SECTIONS: SectionConfig[] = [
+  {
+    key: "coaching",
+    title: "Тренеры по видам спорта",
+    roleIds: [
+      "e74c6476-9b5f-4ccd-a3b8-03faa2988d46", // Главный тренер
+      "bd25686c-1063-4613-8afb-9d1c2aee3047", // Помощник тренера
+      "c7c42a56-6bd1-4080-949a-f7f80e5c5651", // Тренер вратарей
+    ],
+    roleNames: ["Главный тренер", "Помощник тренера", "Тренер вратарей"],
+  },
+  {
+    key: "performance",
+    title: "Тренеры по физподготовке",
+    roleIds: [
+      "a9620db1-3cf0-4d57-a6bf-28c2961c43e1", // S&C специалист
+      "cfd950a8-5ebe-4ba9-b16f-94e05903c4f2", // Тренер по физподготовке
+    ],
+    roleNames: ["S&C специалист", "Тренер по физподготовке"],
+  },
   {
     key: "analytics",
     title: "Аналитика и данные",
@@ -36,60 +55,27 @@ export const SECTIONS: SectionConfig[] = [
     roleNames: ["Спортивный врач", "Реабилитолог", "Массажист", "Физиотерапевт", "Нутрициолог"],
   },
   {
-    key: "coaching",
-    title: "Тренерский штаб",
-    roleIds: [
-      "e74c6476-9b5f-4ccd-a3b8-03faa2988d46", // Главный тренер
-      "bd25686c-1063-4613-8afb-9d1c2aee3047", // Помощник тренера
-      "c7c42a56-6bd1-4080-949a-f7f80e5c5651", // Тренер вратарей
-    ],
-    roleNames: ["Главный тренер", "Помощник тренера", "Тренер вратарей"],
-  },
-  {
-    key: "performance",
-    title: "Физическая подготовка",
-    roleIds: [
-      "a9620db1-3cf0-4d57-a6bf-28c2961c43e1", // S&C специалист
-      "cfd950a8-5ebe-4ba9-b16f-94e05903c4f2", // Тренер по физподготовке
-    ],
-    roleNames: ["S&C специалист", "Тренер по физподготовке"],
-  },
-  {
-    key: "scouting",
-    title: "Скаутинг и рекрутинг",
+    key: "other",
+    title: "Другие специалисты",
     roleIds: [
       "362ad39d-e65d-4f79-ab97-0710ff4b40e7", // Скаут
       "179b0d8c-7a31-49e6-9662-c53c4397cedc", // Спортивный директор
-    ],
-    roleNames: ["Скаут", "Спортивный директор"],
-  },
-  {
-    key: "operations",
-    title: "Операционный персонал",
-    roleIds: [
       "e5ac0126-f293-4664-80eb-a4147d15bd05", // Менеджер команды
       "e1c0d411-0ace-49c8-a1f1-e9f3c7996ce1", // Администратор академии
       "7d84c3f8-6859-4c4e-af48-9d22d111178a", // Медиа-менеджер
       "65ffb93a-82fe-476e-87a9-a6310c25109c", // Переводчик
-    ],
-    roleNames: ["Менеджер команды", "Администратор академии", "Медиа-менеджер", "Переводчик"],
-  },
-  {
-    key: "psychology",
-    title: "Психология и ментальная подготовка",
-    roleIds: [
       "c863d569-2553-42ba-b105-fb6aa73dd52d", // Психолог
     ],
-    roleNames: ["Психолог"],
+    roleNames: ["Скаут", "Спортивный директор", "Менеджер команды", "Администратор академии", "Медиа-менеджер", "Переводчик", "Психолог"],
   },
 ];
 
 /** Get section key for a given role */
-export function getSectionForRole(roleId: string | null, roleName: string | null): string | null {
-  if (!roleId && !roleName) return null;
+export function getSectionForRole(roleId: string | null, roleName: string | null): string {
+  if (!roleId && !roleName) return "other";
   for (const section of SECTIONS) {
     if (roleId && section.roleIds.includes(roleId)) return section.key;
     if (roleName && section.roleNames.includes(roleName)) return section.key;
   }
-  return null;
+  return "other";
 }
