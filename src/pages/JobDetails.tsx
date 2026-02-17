@@ -394,9 +394,10 @@ export default function JobDetails() {
             <Card>
               <CardContent className="p-6">
                 <h2 className="font-display text-lg font-bold uppercase mb-4">Описание</h2>
-                <div className="prose prose-sm max-w-none">
-                  <p className="whitespace-pre-wrap">{job.description}</p>
-                </div>
+                <div 
+                  className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1"
+                  dangerouslySetInnerHTML={{ __html: job.description }}
+                />
               </CardContent>
             </Card>
 
@@ -405,9 +406,10 @@ export default function JobDetails() {
               <Card>
                 <CardContent className="p-6">
                   <h2 className="font-display text-lg font-bold uppercase mb-4">Требования</h2>
-                  <div className="prose prose-sm max-w-none">
-                    <p className="whitespace-pre-wrap">{job.requirements}</p>
-                  </div>
+                  <div 
+                    className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1"
+                    dangerouslySetInnerHTML={{ __html: job.requirements }}
+                  />
                 </CardContent>
               </Card>
             )}
@@ -417,9 +419,10 @@ export default function JobDetails() {
               <Card>
                 <CardContent className="p-6">
                   <h2 className="font-display text-lg font-bold uppercase mb-4">Обязанности</h2>
-                  <div className="prose prose-sm max-w-none">
-                    <p className="whitespace-pre-wrap">{job.responsibilities}</p>
-                  </div>
+                  <div 
+                    className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1"
+                    dangerouslySetInnerHTML={{ __html: job.responsibilities }}
+                  />
                 </CardContent>
               </Card>
             )}
