@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
@@ -173,6 +174,7 @@ export default function Jobs() {
   const [selectedCity, setSelectedCity] = useState<string>("");
   const [selectedContract, setSelectedContract] = useState<string>("");
   const [selectedLevel, setSelectedLevel] = useState<string>("");
+  const [remoteOnly, setRemoteOnly] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -218,6 +220,7 @@ export default function Jobs() {
       if (selectedCity && selectedCity !== "all" && job.city !== selectedCity) return false;
       if (selectedContract && selectedContract !== "all" && job.contract_type !== selectedContract) return false;
       if (selectedLevel && selectedLevel !== "all" && job.level !== selectedLevel) return false;
+      if (remoteOnly && !job.is_remote) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const match =
@@ -229,7 +232,7 @@ export default function Jobs() {
       }
       return true;
     });
-  }, [jobs, selectedRole, selectedCity, selectedContract, selectedLevel, searchQuery]);
+  }, [jobs, selectedRole, selectedCity, selectedContract, selectedLevel, searchQuery, remoteOnly]);
 
   // Group by role
   const grouped = useMemo(() => {
@@ -255,7 +258,7 @@ export default function Jobs() {
     return sorted;
   }, [filteredJobs]);
 
-  const hasActiveFilters = selectedRole || selectedCity || selectedContract || selectedLevel || searchQuery;
+  const hasActiveFilters = selectedRole || selectedCity || selectedContract || selectedLevel || searchQuery || remoteOnly;
 
   const clearFilters = () => {
     setSelectedRole("");
@@ -263,6 +266,7 @@ export default function Jobs() {
     setSelectedContract("");
     setSelectedLevel("");
     setSearchQuery("");
+    setRemoteOnly(false);
   };
 
   // All group keys for default-open accordion
@@ -360,6 +364,17 @@ export default function Jobs() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="flex items-center gap-2 mb-6">
+            <Checkbox
+              id="remote-only"
+              checked={remoteOnly}
+              onCheckedChange={(checked) => setRemoteOnly(checked === true)}
+            />
+            <label htmlFor="remote-only" className="text-sm cursor-pointer select-none">
+              Только удалённая работа
+            </label>
           </div>
 
           {/* Active filters summary */}
