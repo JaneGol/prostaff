@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import DOMPurify from "dompurify";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -396,7 +397,7 @@ export default function JobDetails() {
                 <h2 className="font-display text-lg font-bold uppercase mb-4">Описание</h2>
                 <div 
                   className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1"
-                  dangerouslySetInnerHTML={{ __html: job.description }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(job.description) }}
                 />
               </CardContent>
             </Card>
@@ -408,7 +409,7 @@ export default function JobDetails() {
                   <h2 className="font-display text-lg font-bold uppercase mb-4">Требования</h2>
                   <div 
                     className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1"
-                    dangerouslySetInnerHTML={{ __html: job.requirements }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(job.requirements) }}
                   />
                 </CardContent>
               </Card>
@@ -421,7 +422,7 @@ export default function JobDetails() {
                   <h2 className="font-display text-lg font-bold uppercase mb-4">Обязанности</h2>
                   <div 
                     className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1"
-                    dangerouslySetInnerHTML={{ __html: job.responsibilities }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(job.responsibilities) }}
                   />
                 </CardContent>
               </Card>
