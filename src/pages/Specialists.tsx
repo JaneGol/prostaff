@@ -505,7 +505,7 @@ export default function Specialists() {
                         {/* Header: role + level inline */}
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <h3 className="font-display font-semibold text-base leading-snug group-hover:text-primary transition-colors">
-                            {profile.specialist_roles?.name || "Специалист"}
+                            {profile.specialist_roles?.name || "Без специализации"}
                           </h3>
                           {profile.level && (
                             <span className="text-xs font-medium text-primary bg-primary/8 px-2 py-0.5 rounded-sm whitespace-nowrap">
