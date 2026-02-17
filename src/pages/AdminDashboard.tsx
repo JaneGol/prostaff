@@ -304,6 +304,14 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </Link>
+            <Link to="/admin/job-moderation">
+              <Card className="cursor-pointer hover:border-primary transition-colors">
+                <CardContent className="py-3 px-4 flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Модерация вакансий</span>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
           <Tabs defaultValue="pages" className="w-full">
