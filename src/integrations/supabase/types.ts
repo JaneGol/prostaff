@@ -441,6 +441,7 @@ export type Database = {
           is_enabled: boolean
           moderation_mode: string
           name: string
+          role_id: string | null
           search_query: string | null
           type: string
           updated_at: string
@@ -455,6 +456,7 @@ export type Database = {
           is_enabled?: boolean
           moderation_mode?: string
           name: string
+          role_id?: string | null
           search_query?: string | null
           type?: string
           updated_at?: string
@@ -469,6 +471,7 @@ export type Database = {
           is_enabled?: boolean
           moderation_mode?: string
           name?: string
+          role_id?: string | null
           search_query?: string | null
           type?: string
           updated_at?: string
@@ -479,6 +482,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hh_sources_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "specialist_roles"
             referencedColumns: ["id"]
           },
         ]
