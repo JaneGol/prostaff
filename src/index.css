@@ -189,12 +189,12 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80;
   }
   
-  /* Card shadows */
+  /* Card shadows — premium feel */
   .shadow-card {
-    box-shadow: 0 4px 20px -4px rgba(11, 26, 43, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
   }
   
   .shadow-card-hover {
-    box-shadow: 0 8px 30px -4px rgba(11, 26, 43, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   }
 }
