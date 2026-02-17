@@ -30,7 +30,8 @@ import {
   Edit,
   ArrowLeft,
   CheckCircle,
-  Loader2
+  Loader2,
+  ExternalLink
 } from "lucide-react";
 
 interface JobDetails {
@@ -49,6 +50,8 @@ interface JobDetails {
   is_remote: boolean;
   is_relocatable: boolean;
   created_at: string;
+  external_source: string | null;
+  external_url: string | null;
   companies: {
     id: string;
     name: string;
@@ -469,6 +472,20 @@ export default function JobDetails() {
                     <Send className="h-4 w-4 mr-2" />
                     Откликнуться
                   </Button>
+                )}
+
+                {job.external_source && job.external_url && (
+                  <a
+                    href={job.external_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 block"
+                  >
+                    <Button variant="outline" className="w-full gap-2">
+                      <ExternalLink className="h-4 w-4" />
+                      Открыть на HH
+                    </Button>
+                  </a>
                 )}
               </CardContent>
             </Card>
