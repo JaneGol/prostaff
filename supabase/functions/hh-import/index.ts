@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
 
       try {
         // Build HH API URL
-        let searchUrl = `${HH_API}/vacancies?per_page=100`;
+        let searchUrl = `${HH_API}/vacancies?per_page=50`;
 
         // Parse filters first
         const filters = source.filters_json || {};
@@ -132,15 +132,15 @@ Deno.serve(async (req) => {
         // If no company linked, we'll need to handle per-vacancy
         const externalIds = vacancies.map((v) => v.id);
 
-        // Get existing jobs for this source
+        // Get existing jobs for this source (including rejected/closed — to skip them on re-import)
         const { data: existingJobs } = await supabase
           .from("jobs")
-          .select("id, external_id")
+          .select("id, external_id, moderation_status, status")
           .eq("external_source", "hh")
           .eq("source_id", source.id);
 
         const existingMap = new Map(
-          (existingJobs || []).map((j) => [j.external_id, j.id])
+          (existingJobs || []).map((j) => [j.external_id, { id: j.id, moderation_status: j.moderation_status, status: j.status }])
         );
 
         // Calculate cutoff date: 1 month ago
@@ -254,15 +254,24 @@ Deno.serve(async (req) => {
             moderation_status: moderationStatus,
           };
 
-          if (existingMap.has(vacancy.id)) {
-            // Update
+          const existing = existingMap.get(vacancy.id);
+          if (existing) {
+            // Skip rejected or manually closed jobs — don't re-import them
+            if (existing.moderation_status === "rejected" || existing.status === "closed") {
+              console.log(`Skipping vacancy ${vacancy.id}: already ${existing.moderation_status}/${existing.status}`);
+              continue;
+            }
+            // Update existing active/draft job
             const { error: upErr } = await supabase
               .from("jobs")
               .update({
                 ...jobData,
+                // Don't overwrite moderation_status/status for published jobs
+                status: existing.moderation_status === "published" ? existing.status : jobData.status,
+                moderation_status: existing.moderation_status === "published" ? "published" : jobData.moderation_status,
                 updated_at: new Date().toISOString(),
               })
-              .eq("id", existingMap.get(vacancy.id));
+              .eq("id", existing.id);
 
             if (upErr) console.error(`Update error for ${vacancy.id}:`, upErr);
             else itemsUpdated++;
@@ -277,10 +286,12 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Close vacancies that are no longer on HH
+        // Close only draft vacancies that are no longer on HH
+        // Don't touch published, rejected, or manually managed jobs
         const currentExternalIds = new Set(externalIds);
         const toClose = (existingJobs || []).filter(
           (j) => j.external_id && !currentExternalIds.has(j.external_id)
+            && j.moderation_status === "draft" && j.status === "draft"
         );
 
         for (const job of toClose) {
