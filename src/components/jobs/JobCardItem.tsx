@@ -111,9 +111,26 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
                     <p className="text-xs text-muted-foreground">{job.companies.name}</p>
                   )}
                 </div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
-                  <Clock className="h-3 w-3" />
-                  {formatDate(job.created_at)}
+                <div className="flex items-center gap-2.5 flex-shrink-0">
+                  {onToggleFavorite && (
+                    <button
+                      onClick={handleFavorite}
+                      className="p-1 rounded-full hover:bg-muted transition-colors"
+                      aria-label={isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
+                    >
+                      <Heart
+                        className={`h-5 w-5 transition-colors ${
+                          isFavorite
+                            ? "fill-destructive text-destructive"
+                            : "text-muted-foreground hover:text-destructive"
+                        }`}
+                      />
+                    </button>
+                  )}
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {formatDate(job.created_at)}
+                  </div>
                 </div>
               </div>
 
@@ -176,24 +193,7 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
               )}
             </div>
 
-            <div className="flex flex-col items-center gap-2 flex-shrink-0 mt-1">
-              {onToggleFavorite && (
-                <button
-                  onClick={handleFavorite}
-                  className="p-1 rounded-full hover:bg-muted transition-colors"
-                  aria-label={isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
-                >
-                  <Heart
-                    className={`h-4 w-4 transition-colors ${
-                      isFavorite
-                        ? "fill-destructive text-destructive"
-                        : "text-muted-foreground hover:text-destructive"
-                    }`}
-                  />
-                </button>
-              )}
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors hidden md:block" />
-            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors hidden md:block flex-shrink-0 mt-1" />
           </div>
         </CardContent>
       </Card>
