@@ -16,6 +16,7 @@ import {
   X,
   SlidersHorizontal,
 } from "lucide-react";
+import { SECTION_ICONS } from "@/lib/sectionIcons";
 
 interface ProfileCard {
   id: string;
@@ -465,20 +466,28 @@ export default function Specialists() {
             {tabs.map((tab) => {
               const count = tabCounts[tab.key] || 0;
               const isActive = activeTab === tab.key;
+              const icon = SECTION_ICONS[tab.key];
               return (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={`
-                    px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                    flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap
                     ${isActive
                       ? "bg-white text-primary shadow-md"
                       : "bg-white/15 text-white/90 hover:bg-white/25"
                     }
                   `}
                 >
+                  {icon && (
+                    <img
+                      src={icon}
+                      alt=""
+                      className={`h-4 w-4 object-contain ${isActive ? "" : "brightness-0 invert opacity-90"}`}
+                    />
+                  )}
                   {tab.title}
-                  <span className={`ml-1.5 text-xs ${isActive ? "text-primary/60" : "text-white/50"}`}>
+                  <span className={`text-xs ${isActive ? "text-primary/60" : "text-white/50"}`}>
                     {count}
                   </span>
                 </button>
