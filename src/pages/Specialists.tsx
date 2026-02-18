@@ -450,7 +450,7 @@ export default function Specialists() {
     <Layout>
       {/* Hero */}
       <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-8 md:py-12">
-        <div className="container">
+        <div className="container max-w-6xl">
           <div className="mb-5">
             <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold uppercase">
               Банк специалистов
@@ -490,7 +490,7 @@ export default function Specialists() {
 
       {/* Content */}
       <section className="py-6 md:py-8">
-        <div className="container">
+        <div className="container max-w-6xl">
           {/* Mobile filter toggle */}
           <div className="md:hidden mb-4">
             <Button
