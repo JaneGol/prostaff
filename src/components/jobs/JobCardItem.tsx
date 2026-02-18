@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Building2, Clock, ChevronRight, FileText, ListChecks, Heart, Send } from "lucide-react";
+import { MapPin, Building2, Clock, ChevronRight, FileText, ListChecks, Heart } from "lucide-react";
 
 /** Strip HTML tags and decode HTML entities for plain-text preview */
 const stripHtml = (html: string) => {
@@ -193,11 +193,10 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
                   </div>
                   <Button
                     variant="primary"
-                    size="lg"
-                    className="hidden md:flex gap-2 flex-shrink-0 animate-fade-in"
+                    size="default"
+                    className="hidden md:flex flex-shrink-0 animate-fade-in rounded-lg ml-4 bg-primary/85 hover:bg-primary/75 text-sm"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                   >
-                    <Send className="h-4 w-4" />
                     Откликнуться
                   </Button>
                 </div>
