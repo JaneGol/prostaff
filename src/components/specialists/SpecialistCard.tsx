@@ -57,13 +57,13 @@ export function SpecialistCard({
   const locationLine = [location, ...formats].filter(Boolean).join(" · ");
 
   return (
-    <Link to={`/profile/${id}`} className="block h-full">
-      <Card className="h-full rounded-lg border border-border hover:border-primary/40 hover:shadow-card-hover hover:-translate-y-0.5 transition-all group overflow-hidden">
+    <Link to={`/profile/${id}`} className="block">
+      <Card className="h-[140px] rounded-lg border border-border hover:border-primary/40 hover:shadow-card-hover hover:-translate-y-0.5 transition-all group overflow-hidden">
         <div className="flex h-full">
           {/* Status strip — left side */}
           <div className={`w-1 shrink-0 rounded-l-lg ${isActive ? "bg-primary" : isOpen ? "bg-primary/40" : "bg-border"}`} />
 
-          <CardContent className="px-3 py-3 flex flex-col flex-1">
+          <CardContent className="px-4 py-3 flex flex-col flex-1 justify-center">
             {/* Role + Level */}
             <div className="flex items-start justify-between gap-2 mb-3">
               <h3 className="font-display font-semibold text-lg leading-snug group-hover:text-primary transition-colors line-clamp-2">
