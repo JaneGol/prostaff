@@ -3,8 +3,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Building2, Clock, DollarSign, ChevronRight, FileText, ListChecks } from "lucide-react";
 
-/** Strip HTML tags for plain-text preview */
-const stripHtml = (html: string) => html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+/** Strip HTML tags and decode HTML entities for plain-text preview */
+const stripHtml = (html: string) => {
+  const text = html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ");
+  const el = document.createElement("textarea");
+  el.innerHTML = text;
+  return el.value.trim();
+};
 
 export interface JobCardData {
   id: string;
@@ -142,7 +147,7 @@ export function JobCardItem({ job }: { job: JobCardData }) {
                   {job.description && (
                     <div className="flex items-start gap-1.5">
                       <FileText className="h-3 w-3 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
                         {stripHtml(job.description)}
                       </p>
                     </div>
@@ -150,7 +155,7 @@ export function JobCardItem({ job }: { job: JobCardData }) {
                   {job.requirements && (
                     <div className="flex items-start gap-1.5">
                       <ListChecks className="h-3 w-3 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
                         {stripHtml(job.requirements)}
                       </p>
                     </div>
