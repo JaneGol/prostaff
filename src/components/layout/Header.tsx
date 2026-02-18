@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Search, User, LogOut, Send, Users, BarChart3, Eye, Home, Briefcase, FileText } from "lucide-react";
+import { Menu, X, Search, User, LogOut, Send, Users, BarChart3, Eye, Home, Briefcase, FileText, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/hooks/useAnalytics";
@@ -150,6 +150,12 @@ export function Header() {
                             Мои отклики
                           </Link>
                         </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/favorites">
+                            <Heart className="h-4 w-4 mr-2" />
+                            Избранные вакансии
+                          </Link>
+                        </DropdownMenuItem>
                       </>
                     )}
                     {userRole === "employer" && (
@@ -249,6 +255,12 @@ export function Header() {
                         <Button variant="ghost" className="w-full">
                           <Send className="h-4 w-4 mr-2" />
                           Мои отклики
+                        </Button>
+                      </Link>
+                      <Link to="/favorites" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full">
+                          <Heart className="h-4 w-4 mr-2" />
+                          Избранные вакансии
                         </Button>
                       </Link>
                     </>
