@@ -24,7 +24,6 @@ import {
   MapPin, 
   Building2,
   Clock,
-  DollarSign,
   Briefcase,
   GraduationCap,
   Globe,
@@ -260,10 +259,8 @@ export default function JobDetails() {
 
   const formatSalary = (min: number | null, max: number | null, currency: string | null) => {
     if (!min && !max) return null;
-    const curr = currency || "RUB";
-    if (min && max) {
-      return `${min.toLocaleString()} – ${max.toLocaleString()} ${curr}`;
-    }
+    const curr = currency === "RUR" || currency === "RUB" ? "₽" : currency || "₽";
+    if (min && max) return `${min.toLocaleString()} – ${max.toLocaleString()} ${curr}`;
     if (min) return `от ${min.toLocaleString()} ${curr}`;
     if (max) return `до ${max.toLocaleString()} ${curr}`;
     return null;
@@ -378,7 +375,6 @@ export default function JobDetails() {
                   )}
                   {salary && (
                     <div className="flex items-center gap-2 text-foreground font-semibold">
-                      <DollarSign className="h-4 w-4" />
                       {salary}
                     </div>
                   )}
