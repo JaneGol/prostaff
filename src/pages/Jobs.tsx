@@ -307,7 +307,7 @@ export default function Jobs() {
     <Layout>
       {/* Hero */}
       <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-8 md:py-12">
-        <div className="container">
+        <div className="container max-w-6xl">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
             <div>
               <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold uppercase">
@@ -357,7 +357,7 @@ export default function Jobs() {
 
       {/* Content */}
       <section className="py-6 md:py-8">
-        <div className="container">
+        <div className="container max-w-6xl">
           {/* Mobile filter toggle */}
           <div className="md:hidden mb-4">
             <Button

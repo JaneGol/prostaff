@@ -93,22 +93,22 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
       <Card className="hover:shadow-lg transition-shadow group shadow-sm mb-3">
         <CardContent className="p-4 md:p-5">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
               {job.companies?.logo_url ? (
                 <img src={job.companies.logo_url} alt="" className="w-full h-full object-cover" />
               ) : (
-                <Building2 className="h-4 w-4 text-muted-foreground" />
+                <Building2 className="h-5 w-5 text-muted-foreground" />
               )}
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-sm group-hover:text-accent transition-colors line-clamp-1">
+                  <h3 className="font-semibold text-base group-hover:text-accent transition-colors line-clamp-1">
                     {job.title}
                   </h3>
                   {job.companies && (
-                    <p className="text-xs text-muted-foreground">{job.companies.name}</p>
+                    <p className="text-sm text-muted-foreground">{job.companies.name}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-2.5 flex-shrink-0">
@@ -136,26 +136,26 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
 
               <div className="flex flex-wrap gap-1 mt-1.5">
                 {job.level && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  <Badge variant="outline" className="text-xs px-2 py-0.5">
                     {levelLabels[job.level] || job.level}
                   </Badge>
                 )}
                 {job.contract_type && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  <Badge variant="outline" className="text-xs px-2 py-0.5">
                     {contractLabels[job.contract_type] || job.contract_type}
                   </Badge>
                 )}
                 {job.is_remote && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">Удалённо</Badge>
+                  <Badge variant="outline" className="text-xs px-2 py-0.5">Удалённо</Badge>
                 )}
                 {job.external_source === "hh" && (
-                  <Badge className="text-[10px] px-1.5 py-0 bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20">
+                  <Badge className="text-xs px-2 py-0.5 bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20">
                     HH
                   </Badge>
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs">
+              <div className="flex flex-wrap items-center gap-3 mt-2 text-sm">
                 {(job.city || job.country) && (
                   <span className="flex items-center gap-1 text-muted-foreground">
                     <MapPin className="h-3 w-3" />
@@ -175,16 +175,16 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
                 <div className="mt-2.5 pt-2.5 border-t border-border/50 space-y-1.5">
                   {job.description && (
                     <div className="flex items-start gap-1.5">
-                      <FileText className="h-3 w-3 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                      <FileText className="h-3.5 w-3.5 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
                         {stripHtml(job.description)}
                       </p>
                     </div>
                   )}
                   {job.requirements && (
                     <div className="flex items-start gap-1.5">
-                      <ListChecks className="h-3 w-3 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                      <ListChecks className="h-3.5 w-3.5 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
                         {stripHtml(job.requirements)}
                       </p>
                     </div>

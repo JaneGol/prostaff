@@ -59,26 +59,26 @@ export function SpecialistCard({
         <CardContent className="p-4 md:p-5">
           <div className="flex items-start gap-3">
             {/* Avatar placeholder */}
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-              <User className="h-4 w-4 text-muted-foreground" />
+            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+              <User className="h-5 w-5 text-muted-foreground" />
             </div>
 
             <div className="flex-1 min-w-0">
               {/* Title row */}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-sm group-hover:text-accent transition-colors line-clamp-1">
+                  <h3 className="font-semibold text-base group-hover:text-accent transition-colors line-clamp-1">
                     {roleName || "Без специализации"}
                   </h3>
                   {statusLabel && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
                       <span className={`h-1.5 w-1.5 rounded-full inline-block ${isActive ? "bg-primary" : "bg-primary/40"}`} />
                       {statusLabel}
                     </p>
                   )}
                 </div>
                 {level && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 flex-shrink-0">
+                  <Badge variant="outline" className="text-xs px-2 py-0.5 flex-shrink-0">
                     {levelLabels[level] || level}
                   </Badge>
                 )}
@@ -87,25 +87,25 @@ export function SpecialistCard({
               {/* Badges row */}
               <div className="flex flex-wrap gap-1 mt-1.5">
                 {isRelocatable && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">Релокация</Badge>
+                  <Badge variant="outline" className="text-xs px-2 py-0.5">Релокация</Badge>
                 )}
                 {isRemoteAvailable && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">Удалённо</Badge>
+                  <Badge variant="outline" className="text-xs px-2 py-0.5">Удалённо</Badge>
                 )}
                 {skills.slice(0, 2).map((s, i) => (
-                  <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0">
+                  <Badge key={i} variant="outline" className="text-xs px-2 py-0.5">
                     {s.name}
                   </Badge>
                 ))}
                 {skills.length > 2 && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  <Badge variant="outline" className="text-xs px-2 py-0.5">
                     +{skills.length - 2}
                   </Badge>
                 )}
               </div>
 
               {/* Bottom row: location + sports */}
-              <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs">
+              <div className="flex flex-wrap items-center gap-3 mt-2 text-sm">
                 {location && (
                   <span className="flex items-center gap-1 text-muted-foreground">
                     <MapPin className="h-3 w-3" />
