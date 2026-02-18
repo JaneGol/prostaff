@@ -65,7 +65,7 @@ export default function Jobs() {
           .from("jobs")
           .select(`
             id, title, description, city, country, level, contract_type,
-            salary_min, salary_max, salary_currency, is_remote, created_at,
+            salary_min, salary_max, salary_currency, is_remote, requirements, created_at,
             external_source, external_url,
             companies (id, name, logo_url),
             specialist_roles (id, name)
