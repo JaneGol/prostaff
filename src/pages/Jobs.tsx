@@ -60,7 +60,7 @@ export default function Jobs() {
 
   const fetchData = async () => {
     try {
-      const [{ data: rolesData }, { data: sportsData }, { data: jobsRaw }, { data: companiesData }] = await Promise.all([
+      const [{ data: rolesData }, { data: sportsData }, { data: jobsData }] = await Promise.all([
         supabase.from("specialist_roles").select("id, name").order("name"),
         supabase.from("sports").select("id, name, icon").eq("is_active", true).order("sort_order"),
         supabase
@@ -68,27 +68,16 @@ export default function Jobs() {
           .select(`
             id, title, description, city, country, level, contract_type,
             salary_min, salary_max, salary_currency, is_remote, requirements, created_at,
-            external_source, external_url, company_id, role_id
+            external_source, external_url,
+            companies (id, name, logo_url),
+            specialist_roles (id, name)
           `)
           .eq("status", "active")
           .order("created_at", { ascending: false }),
-        supabase.from("companies").select("id, name, logo_url"),
       ]);
-
       if (rolesData) setRoles(rolesData);
       if (sportsData) setSports(sportsData);
-
-      // Join companies and roles into jobs manually
-      const companiesMap = new Map((companiesData || []).map((c: any) => [c.id, c]));
-      const rolesMap = new Map((rolesData || []).map((r: any) => [r.id, r]));
-
-      const enrichedJobs = (jobsRaw || []).map((j: any) => ({
-        ...j,
-        companies: companiesMap.get(j.company_id) || null,
-        specialist_roles: rolesMap.get(j.role_id) || null,
-      }));
-
-      setJobs(enrichedJobs);
+      setJobs(jobsData || []);
     } catch (err) {
       console.error("Error fetching data:", err);
     } finally {
