@@ -17,6 +17,7 @@ import JobDetails from "./pages/JobDetails";
 import JobEdit from "./pages/JobEdit";
 import EmployerApplications from "./pages/EmployerApplications";
 import MyApplications from "./pages/MyApplications";
+import FavoriteJobs from "./pages/FavoriteJobs";
 import Content from "./pages/Content";
 import About from "./pages/About";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/jobs/:id/edit" element={<JobEdit />} />
             <Route path="/employer/applications" element={<EmployerApplications />} />
             <Route path="/my-applications" element={<MyApplications />} />
+            <Route path="/favorites" element={<FavoriteJobs />} />
             <Route path="/content" element={<Content />} />
             <Route path="/content/:slug" element={<Content />} />
             <Route path="/about" element={<About />} />

@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import {
   User, FileText, Briefcase, Settings, Search, PlusCircle,
   Users, Eye, ChevronRight, Loader2, ArrowRight,
-  CheckCircle2, Circle, Sparkles, TrendingUp, MapPin
+  CheckCircle2, Circle, Sparkles, TrendingUp, MapPin, Heart
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -296,6 +296,12 @@ function SpecialistDashboard({ userId }: { userId: string }) {
                     title="Мой профиль"
                     description="Просмотр и редактирование"
                     to={profile?.id ? `/profile/${profile.id}` : "/profile/edit"}
+                  />
+                  <QuickAction
+                    icon={<Heart className="h-5 w-5" />}
+                    title="Избранные вакансии"
+                    description="Сохранённые предложения"
+                    to="/favorites"
                   />
                   <QuickAction
                     icon={<Briefcase className="h-5 w-5" />}
