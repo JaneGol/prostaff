@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { MapPin } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { MapPin, ChevronRight } from "lucide-react";
 import { getSportIcon } from "@/lib/sportIcons";
-import defaultAvatar from "@/assets/default-avatar.png";
 
 const levelLabels: Record<string, string> = {
   intern: "Стажёр",
@@ -32,8 +32,6 @@ interface SpecialistCardProps {
   isRemoteAvailable: boolean;
   skills: SkillDisplay[];
   sports: SportDisplay[];
-  avatarUrl?: string | null;
-  displayName?: string | null;
 }
 
 export function SpecialistCard({
@@ -47,107 +45,84 @@ export function SpecialistCard({
   isRemoteAvailable,
   skills,
   sports,
-  avatarUrl,
-  displayName,
 }: SpecialistCardProps) {
   const isActive = searchStatus === "actively_looking";
   const isOpen = searchStatus === "open_to_offers";
-  const statusLabel = isActive
-    ? "Ищет работу"
-    : isOpen
-      ? "Открыт к предложениям"
-      : null;
+  const statusLabel = isActive ? "Ищет работу" : isOpen ? "Открыт к предложениям" : null;
 
   const location = [city, country].filter(Boolean).join(", ");
   const formats: string[] = [];
   if (isRelocatable) formats.push("Релокация");
   if (isRemoteAvailable) formats.push("Удалённо");
-
-  const sportLine = sports
-    .slice(0, 2)
-    .map((s) => s.sports?.name)
-    .filter(Boolean)
-    .join(", ");
-
-  const locationParts = [sportLine, location].filter(Boolean).join(" · ");
+  const locationLine = [location, ...formats].filter(Boolean).join(" · ");
 
   return (
-    <Link to={`/profile/${id}`} className="block h-full group">
-      <div className="h-full rounded-2xl bg-card p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-150">
-        {/* Top row: avatar + name + level */}
-        <div className="flex items-start gap-3.5 mb-3">
-          <img
-            src={avatarUrl || defaultAvatar}
-            alt=""
-            className="w-11 h-11 rounded-full object-cover bg-muted flex-shrink-0"
-          />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                {displayName && (
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {displayName}
-                  </p>
-                )}
-                <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-1">
-                  {roleName || "Специалист"}
-                </h3>
-              </div>
+    <Link to={`/profile/${id}`} className="block h-full">
+      <Card className="h-full rounded-lg border border-border hover:border-primary/40 hover:shadow-card-hover hover:-translate-y-0.5 transition-all group overflow-hidden">
+        <div className="flex h-full">
+          {/* Status strip — left side */}
+          <div className={`w-1 shrink-0 rounded-l-lg ${isActive ? "bg-primary" : isOpen ? "bg-primary/40" : "bg-border"}`} />
+
+          <CardContent className="px-3 py-3 flex flex-col flex-1">
+            {/* Role + Level */}
+            <div className="flex items-start justify-between gap-2 mb-3">
+              <h3 className="font-display font-semibold text-lg leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                {roleName || "Без специализации"}
+              </h3>
               {level && (
-                <span className="text-xs font-medium text-primary bg-primary/8 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 mt-0.5">
+                <span className="text-xs font-medium text-primary bg-primary/8 px-2 py-0.5 rounded-sm whitespace-nowrap shrink-0">
                   {levelLabels[level] || level}
                 </span>
               )}
             </div>
-          </div>
-        </div>
 
-        {/* Location + sport */}
-        {locationParts && (
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-3">
-            <MapPin className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{locationParts}</span>
-          </div>
-        )}
-
-        {/* Skills chips */}
-        {skills.length > 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap mb-3">
-            {skills.slice(0, 3).map((s, i) => (
-              <span
-                key={i}
-                className="text-xs bg-secondary text-muted-foreground px-2.5 py-1 rounded-full"
-              >
-                {s.name}
-              </span>
-            ))}
-            {skills.length > 3 && (
-              <span className="text-xs text-muted-foreground">
-                +{skills.length - 3}
-              </span>
+            {/* Status */}
+            {statusLabel && (
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className={`h-2 w-2 rounded-full shrink-0 ${isActive ? "bg-primary" : "bg-primary/40"}`} />
+                <span className="text-xs text-muted-foreground">{statusLabel}</span>
+              </div>
             )}
-          </div>
-        )}
 
-        {/* Status */}
-        {statusLabel && (
-          <div className="flex items-center gap-1.5 mb-3">
-            <span
-              className={`h-2 w-2 rounded-full shrink-0 ${
-                isActive ? "bg-success" : "bg-success/50"
-              }`}
-            />
-            <span className="text-xs text-muted-foreground">{statusLabel}</span>
-          </div>
-        )}
+            {/* Location + format — single line */}
+            {locationLine && (
+              <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{locationLine}</span>
+              </div>
+            )}
 
-        {/* CTA */}
-        <div className="pt-2 border-t border-border">
-          <span className="text-sm font-medium text-primary group-hover:underline">
-            Смотреть профиль
-          </span>
+            {/* Skills — max 2 chips */}
+            {skills.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+                {skills.slice(0, 2).map((s, i) => (
+                  <span key={i} className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-sm">
+                    {s.name}
+                  </span>
+                ))}
+                {skills.length > 2 && (
+                  <span className="text-xs text-muted-foreground">+{skills.length - 2}</span>
+                )}
+              </div>
+            )}
+
+            {/* Sports — max 2, inline */}
+            {sports.length > 0 && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {sports.slice(0, 2).map((s) => {
+                  const Icon = getSportIcon(s.sports?.icon || null);
+                  return (
+                    <span key={s.sport_id} className="flex items-center gap-1">
+                      <Icon className="h-3 w-3" />
+                      {s.sports?.name}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
         </div>
-      </div>
+      </Card>
     </Link>
   );
 }
