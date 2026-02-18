@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Building2, Clock, DollarSign, ChevronRight, FileText, ListChecks, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MapPin, Building2, Clock, ChevronRight, FileText, ListChecks, Heart, Send } from "lucide-react";
 
 /** Strip HTML tags and decode HTML entities for plain-text preview */
 const stripHtml = (html: string) => {
@@ -58,7 +59,7 @@ export { levelLabels, contractLabels };
 
 const formatSalary = (min: number | null, max: number | null, currency: string | null) => {
   if (!min && !max) return null;
-  const curr = currency || "RUB";
+  const curr = currency === "RUR" || currency === "RUB" ? "₽" : currency || "₽";
   if (min && max) return `${min.toLocaleString()} – ${max.toLocaleString()} ${curr}`;
   if (min) return `от ${min.toLocaleString()} ${curr}`;
   if (max) return `до ${max.toLocaleString()} ${curr}`;
@@ -115,11 +116,11 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
                   {onToggleFavorite && (
                     <button
                       onClick={handleFavorite}
-                      className="p-1 rounded-full hover:bg-muted transition-colors"
+                      className="p-1.5 rounded-full hover:bg-muted transition-colors"
                       aria-label={isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
                     >
                       <Heart
-                        className={`h-5 w-5 transition-colors ${
+                        className={`h-6 w-6 transition-colors ${
                           isFavorite
                             ? "fill-destructive text-destructive"
                             : "text-muted-foreground hover:text-destructive"
@@ -157,38 +158,48 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
 
               <div className="flex flex-wrap items-center gap-3 mt-2 text-sm">
                 {(job.city || job.country) && (
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
+                  <span className="flex items-center gap-1 text-primary font-medium">
+                    <MapPin className="h-3.5 w-3.5" />
                     {[job.city, job.country].filter(Boolean).join(", ")}
                   </span>
                 )}
                 {formatSalary(job.salary_min, job.salary_max, job.salary_currency) && (
                   <span className="flex items-center gap-1 text-foreground font-medium">
-                    <DollarSign className="h-3 w-3" />
                     {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
                   </span>
                 )}
               </div>
 
-              {/* Description + Requirements preview */}
+              {/* Description + Requirements preview with Apply button */}
               {(job.description || job.requirements) && (
-                <div className="mt-2.5 pt-2.5 border-t border-border/50 space-y-1.5">
-                  {job.description && (
-                    <div className="flex items-start gap-1.5">
-                      <FileText className="h-3.5 w-3.5 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                        {stripHtml(job.description)}
-                      </p>
-                    </div>
-                  )}
-                  {job.requirements && (
-                    <div className="flex items-start gap-1.5">
-                      <ListChecks className="h-3.5 w-3.5 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                        {stripHtml(job.requirements)}
-                      </p>
-                    </div>
-                  )}
+                <div className="mt-2.5 pt-2.5 border-t border-border/50 flex items-center gap-4">
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    {job.description && (
+                      <div className="flex items-start gap-1.5">
+                        <FileText className="h-3.5 w-3.5 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                          {stripHtml(job.description)}
+                        </p>
+                      </div>
+                    )}
+                    {job.requirements && (
+                      <div className="flex items-start gap-1.5">
+                        <ListChecks className="h-3.5 w-3.5 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-1">
+                          {stripHtml(job.requirements)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="hidden md:flex gap-2 flex-shrink-0 animate-fade-in"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  >
+                    <Send className="h-4 w-4" />
+                    Откликнуться
+                  </Button>
                 </div>
               )}
             </div>
