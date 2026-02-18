@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -83,10 +83,18 @@ interface JobCardItemProps {
 }
 
 export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemProps) {
+  const navigate = useNavigate();
+
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onToggleFavorite?.(job.id);
+  };
+
+  const handleApply = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/jobs/${job.id}`);
   };
 
   return (
@@ -195,7 +203,7 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
                     variant="primary"
                     size="default"
                     className="hidden md:flex flex-shrink-0 animate-fade-in !rounded-sm ml-20 bg-primary/85 hover:bg-primary/75 text-sm"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onClick={handleApply}
                   >
                     Откликнуться
                   </Button>
