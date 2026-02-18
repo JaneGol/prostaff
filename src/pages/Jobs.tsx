@@ -424,7 +424,7 @@ export default function Jobs() {
                   )}
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {filteredJobs.map((job) => (
                     <JobCardItem key={job.id} job={job} />
                   ))}
