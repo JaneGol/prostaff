@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Building2, Clock, DollarSign, ChevronRight } from "lucide-react";
+import { MapPin, Building2, Clock, DollarSign, ChevronRight, FileText, ListChecks } from "lucide-react";
+
+/** Strip HTML tags for plain-text preview */
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
 
 export interface JobCardData {
   id: string;
@@ -15,6 +18,7 @@ export interface JobCardData {
   salary_max: number | null;
   salary_currency: string | null;
   is_remote: boolean;
+  requirements: string | null;
   created_at: string;
   external_source: string | null;
   external_url: string | null;
@@ -131,6 +135,28 @@ export function JobCardItem({ job }: { job: JobCardData }) {
                   </span>
                 )}
               </div>
+
+              {/* Description + Requirements preview */}
+              {(job.description || job.requirements) && (
+                <div className="mt-2.5 pt-2.5 border-t border-border/50 space-y-1.5">
+                  {job.description && (
+                    <div className="flex items-start gap-1.5">
+                      <FileText className="h-3 w-3 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                        {stripHtml(job.description)}
+                      </p>
+                    </div>
+                  )}
+                  {job.requirements && (
+                    <div className="flex items-start gap-1.5">
+                      <ListChecks className="h-3 w-3 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                        {stripHtml(job.requirements)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors hidden md:block flex-shrink-0 mt-1" />
