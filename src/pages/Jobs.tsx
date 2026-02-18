@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { getSportIcon } from "@/lib/sportIcons";
 import { useAuth } from "@/hooks/useAuth";
 import { JOB_SECTIONS, getJobSectionForRole } from "@/lib/jobSections";
 import { JobCardItem, type JobCardData, levelLabels, contractLabels } from "@/components/jobs/JobCardItem";
@@ -24,6 +25,12 @@ interface SpecialistRole {
   name: string;
 }
 
+interface Sport {
+  id: string;
+  name: string;
+  icon: string | null;
+}
+
 /** Priority cities shown first in the region filter */
 const PRIORITY_CITIES = ["Москва", "Санкт-Петербург", "Казань", "Краснодар", "Екатеринбург", "Новосибирск"];
 
@@ -31,6 +38,7 @@ export default function Jobs() {
   const { userRole } = useAuth();
   const [jobs, setJobs] = useState<JobCardData[]>([]);
   const [roles, setRoles] = useState<SpecialistRole[]>([]);
+  const [sports, setSports] = useState<Sport[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -38,6 +46,7 @@ export default function Jobs() {
   const [activeTab, setActiveTab] = useState("all");
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
+  const [selectedSport, setSelectedSport] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedContract, setSelectedContract] = useState("");
   const [remoteOnly, setRemoteOnly] = useState(false);
@@ -49,8 +58,9 @@ export default function Jobs() {
 
   const fetchData = async () => {
     try {
-      const [{ data: rolesData }, { data: jobsData }] = await Promise.all([
+      const [{ data: rolesData }, { data: sportsData }, { data: jobsData }] = await Promise.all([
         supabase.from("specialist_roles").select("id, name").order("name"),
+        supabase.from("sports").select("id, name, icon").eq("is_active", true).order("sort_order"),
         supabase
           .from("jobs")
           .select(`
@@ -64,6 +74,7 @@ export default function Jobs() {
           .order("created_at", { ascending: false }),
       ]);
       if (rolesData) setRoles(rolesData);
+      if (sportsData) setSports(sportsData);
       setJobs(jobsData || []);
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -131,11 +142,12 @@ export default function Jobs() {
     });
   }, [jobs, activeTab, selectedRole, selectedCity, selectedLevel, selectedContract, searchQuery, remoteOnly]);
 
-  const hasActiveFilters = !!(selectedRole || selectedCity || selectedContract || selectedLevel || searchQuery || remoteOnly);
+  const hasActiveFilters = !!(selectedRole || selectedCity || selectedSport || selectedContract || selectedLevel || searchQuery || remoteOnly);
 
   const clearFilters = () => {
     setSelectedRole("");
     setSelectedCity("");
+    setSelectedSport("");
     setSelectedContract("");
     setSelectedLevel("");
     setSearchQuery("");
@@ -178,6 +190,32 @@ export default function Jobs() {
             {rolesWithJobs.map((role) => (
               <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Sport */}
+      <div>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+          Вид спорта
+        </label>
+        <Select value={selectedSport} onValueChange={setSelectedSport}>
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue placeholder="Все виды спорта" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все виды спорта</SelectItem>
+            {sports.map((sport) => {
+              const Icon = getSportIcon(sport.icon);
+              return (
+                <SelectItem key={sport.id} value={sport.id}>
+                  <span className="flex items-center gap-2">
+                    <Icon className="h-4 w-4" />
+                    {sport.name}
+                  </span>
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>
