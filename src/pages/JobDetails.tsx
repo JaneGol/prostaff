@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useFavoriteJobs } from "@/hooks/useFavoriteJobs";
 import { useToast } from "@/hooks/use-toast";
 import { trackEvent } from "@/hooks/useAnalytics";
 import { 
@@ -32,7 +33,8 @@ import {
   ArrowLeft,
   CheckCircle,
   Loader2,
-  ExternalLink
+  ExternalLink,
+  Heart
 } from "lucide-react";
 
 interface JobDetails {
@@ -92,6 +94,7 @@ export default function JobDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, userRole } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavoriteJobs();
   const { toast } = useToast();
 
   const [job, setJob] = useState<JobDetails | null>(null);
@@ -490,6 +493,23 @@ export default function JobDetails() {
                       Открыть на HH
                     </Button>
                   </a>
+                )}
+
+                {userRole === "specialist" && (
+                  <Button
+                    variant="outline"
+                    className="w-full mt-3 gap-2"
+                    onClick={() => toggleFavorite(job.id)}
+                  >
+                    <Heart
+                      className={`h-4 w-4 transition-colors ${
+                        isFavorite(job.id)
+                          ? "fill-destructive text-destructive"
+                          : ""
+                      }`}
+                    />
+                    {isFavorite(job.id) ? "В избранном" : "В избранное"}
+                  </Button>
                 )}
               </CardContent>
             </Card>

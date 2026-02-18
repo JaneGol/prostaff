@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportIcon } from "@/lib/sportIcons";
 import { useAuth } from "@/hooks/useAuth";
+import { useFavoriteJobs } from "@/hooks/useFavoriteJobs";
 import { JOB_SECTIONS, getJobSectionForRole } from "@/lib/jobSections";
 import { JobCardItem, type JobCardData, levelLabels, contractLabels } from "@/components/jobs/JobCardItem";
 import {
@@ -36,6 +37,7 @@ const PRIORITY_CITIES = ["Москва", "Санкт-Петербург", "Ка�
 
 export default function Jobs() {
   const { userRole } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavoriteJobs();
   const [jobs, setJobs] = useState<JobCardData[]>([]);
   const [roles, setRoles] = useState<SpecialistRole[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
@@ -426,7 +428,7 @@ export default function Jobs() {
               ) : (
                 <div className="space-y-6">
                   {filteredJobs.map((job) => (
-                    <JobCardItem key={job.id} job={job} />
+                    <JobCardItem key={job.id} job={job} isFavorite={isFavorite(job.id)} onToggleFavorite={toggleFavorite} />
                   ))}
                 </div>
               )}

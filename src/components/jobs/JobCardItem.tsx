@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Building2, Clock, DollarSign, ChevronRight, FileText, ListChecks } from "lucide-react";
+import { MapPin, Building2, Clock, DollarSign, ChevronRight, FileText, ListChecks, Heart } from "lucide-react";
 
 /** Strip HTML tags and decode HTML entities for plain-text preview */
 const stripHtml = (html: string) => {
@@ -75,7 +75,19 @@ const formatDate = (dateStr: string) => {
   return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
 };
 
-export function JobCardItem({ job }: { job: JobCardData }) {
+interface JobCardItemProps {
+  job: JobCardData;
+  isFavorite?: boolean;
+  onToggleFavorite?: (jobId: string) => void;
+}
+
+export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemProps) {
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onToggleFavorite?.(job.id);
+  };
+
   return (
     <Link to={`/jobs/${job.id}`}>
       <Card className="hover:shadow-lg transition-shadow group shadow-sm mb-3">
@@ -164,7 +176,24 @@ export function JobCardItem({ job }: { job: JobCardData }) {
               )}
             </div>
 
-            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors hidden md:block flex-shrink-0 mt-1" />
+            <div className="flex flex-col items-center gap-2 flex-shrink-0 mt-1">
+              {onToggleFavorite && (
+                <button
+                  onClick={handleFavorite}
+                  className="p-1 rounded-full hover:bg-muted transition-colors"
+                  aria-label={isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
+                >
+                  <Heart
+                    className={`h-4 w-4 transition-colors ${
+                      isFavorite
+                        ? "fill-destructive text-destructive"
+                        : "text-muted-foreground hover:text-destructive"
+                    }`}
+                  />
+                </button>
+              )}
+              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors hidden md:block" />
+            </div>
           </div>
         </CardContent>
       </Card>
