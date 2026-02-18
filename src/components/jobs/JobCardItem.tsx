@@ -69,7 +69,7 @@ const formatDate = (dateStr: string) => {
 export function JobCardItem({ job }: { job: JobCardData }) {
   return (
     <Link to={`/jobs/${job.id}`}>
-      <Card className="hover:shadow-lg transition-shadow group">
+      <Card className="hover:shadow-lg transition-shadow group shadow-sm mb-3">
         <CardContent className="p-4 md:p-5">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
