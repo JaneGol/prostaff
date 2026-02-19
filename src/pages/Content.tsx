@@ -47,7 +47,7 @@ function ArticleList() {
 
   return (
     <Layout>
-      <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-12 md:py-16">
+      <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-8 md:py-12">
         <div className="container">
           <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold uppercase mb-4">
             Контент и статьи

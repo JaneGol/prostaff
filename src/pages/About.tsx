@@ -57,7 +57,7 @@ export default function About() {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-16 md:py-24">
+      <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-8 md:py-12">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tight mb-6">
