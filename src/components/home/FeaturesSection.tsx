@@ -44,7 +44,7 @@ const features = [
 export function FeaturesSection() {
   return (
     <section className="py-16 md:py-24 bg-white">
-      <div className="container">
+      <div className="container max-w-6xl">
         {/* Section header */}
         <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
           <motion.span

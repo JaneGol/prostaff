@@ -7,7 +7,7 @@ import { trackEvent } from "@/hooks/useAnalytics";
 export function CTASection() {
   return (
     <section className="py-16 md:py-24 bg-white">
-      <div className="container">
+      <div className="container max-w-6xl">
         <div className="grid md:grid-cols-2 gap-6 md:gap-8">
           {/* For Specialists */}
           <motion.div
