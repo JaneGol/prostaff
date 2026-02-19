@@ -202,7 +202,7 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
                   <Button
                     variant="primary"
                     size="default"
-                    className="hidden md:flex flex-shrink-0 animate-fade-in !rounded-sm ml-6 bg-primary/85 hover:bg-primary/75 text-sm"
+                    className="hidden md:flex flex-shrink-0 animate-fade-in !rounded-sm ml-6 bg-primary hover:bg-primary/90 text-sm"
                     onClick={handleApply}
                   >
                     Откликнуться
