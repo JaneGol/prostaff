@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { trackEvent } from "@/hooks/useAnalytics";
 import { getSportIcon } from "@/lib/sportIcons";
-import { 
+import {
   MapPin, Mail, Phone, Globe, Briefcase, GraduationCap,
   Calendar, ExternalLink, Edit, MessageCircle, CheckCircle,
   Clock, Lock, Eye, AlertTriangle, Trophy, Handshake, FolderOpen,
@@ -20,8 +20,8 @@ import { PdfResumeModal } from "@/components/profile/PdfResumeModal";
 interface ProfileData {
   id: string;
   user_id: string;
-  first_name: string;
-  last_name: string;
+  first_name: string | null;
+  last_name: string | null;
   bio: string | null;
   avatar_url: string | null;
   city: string | null;
@@ -162,66 +162,71 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select(`*, specialist_roles!profiles_role_id_fkey (id, name)`)
-        .eq("id", id)
-        .maybeSingle();
-
-      if (profileError) throw profileError;
-      if (!profileData) { setLoading(false); return; }
-
-      // Fetch secondary role separately if exists
-      let secondaryRole = null;
-      if ((profileData as any).secondary_role_id) {
-        const { data: secRole } = await supabase
-          .from("specialist_roles")
-          .select("id, name")
-          .eq("id", (profileData as any).secondary_role_id)
-          .maybeSingle();
-        secondaryRole = secRole;
-      }
-
-      setProfile({ ...profileData, secondary_role: secondaryRole, hide_current_org: (profileData as any).hide_current_org || false, visibility_level: (profileData as any).visibility_level || "public_preview", about_useful: (profileData as any).about_useful, about_style: (profileData as any).about_style, about_goals: (profileData as any).about_goals } as any);
-
-      // Determine access level
-      if (user && user.id === profileData.user_id) {
-        setAccessLevel("owner");
-      } else if (userRole === "admin") {
-        setAccessLevel("full");
-      } else if (userRole === "employer" && user) {
-        const { data: existingView } = await supabase
-          .from("profile_views")
-          .select("id")
-          .eq("viewer_user_id", user.id)
-          .eq("profile_id", id)
-          .maybeSingle();
-        setAccessLevel(existingView ? "full" : "preview");
-      } else if (user) {
-        setAccessLevel("preview");
-      } else {
-        setAccessLevel("login_required");
-      }
-
-      trackEvent("profile_view", "specialist", profileData.first_name + " " + profileData.last_name, profileData.id, {
-        role: (profileData as any).specialist_roles?.name || "unknown",
-        level: profileData.level || "unknown",
+      // Use edge function for secure, field-filtered profile data
+      const { data, error } = await supabase.functions.invoke("get-profile", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        body: undefined,
       });
 
-      // Fetch all related data in parallel
-      const [expRes, skillsRes, sportsExpRes, sportsOpenRes, eduRes, certRes, portRes] = await Promise.all([
-        supabase.from("experiences").select("*").eq("profile_id", id!).order("start_date", { ascending: false }),
-        supabase.from("profile_skills").select(`skill_id, proficiency, is_top, is_custom, custom_name, skills (id, name, category)`).eq("profile_id", id!),
-        supabase.from("profile_sports_experience").select("sport_id, years, level, context_level, sports:sport_id (id, name, icon)").eq("profile_id", id!),
-        supabase.from("profile_sports_open_to").select("sport_id, sport_group, sports:sport_id (id, name, icon)").eq("profile_id", id!),
-        supabase.from("candidate_education").select("*").eq("profile_id", id!).order("start_year", { ascending: false }),
-        supabase.from("candidate_certificates").select("*").eq("profile_id", id!).order("year", { ascending: false }),
-        supabase.from("candidate_portfolio").select("*").eq("profile_id", id!),
-      ]);
+      // The invoke method doesn't support query params, so we use POST body workaround
+      // Actually, let's use fetch directly with proper URL
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
 
-      if (expRes.data) setExperiences(expRes.data as any);
-      if (skillsRes.data) {
-        setSkills(skillsRes.data.map((s: any) => ({
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/get-profile?id=${id}&mode=single`,
+        { headers }
+      );
+
+      if (!res.ok) {
+        if (res.status === 404) {
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const result = await res.json();
+
+      const profileData = result.profile;
+      setProfile(profileData as ProfileData);
+
+      // Set access level from server
+      const serverAccess = result.access as string;
+      if (serverAccess === "owner") {
+        setAccessLevel("owner");
+      } else if (serverAccess === "full") {
+        setAccessLevel("full");
+      } else if (!user) {
+        setAccessLevel("login_required");
+      } else if (userRole === "employer") {
+        setAccessLevel("preview");
+      } else {
+        setAccessLevel("preview");
+      }
+
+      trackEvent("profile_view", "specialist",
+        profileData.first_name ? `${profileData.first_name} ${profileData.last_name}` : "Anon",
+        profileData.id, {
+          role: profileData.specialist_roles?.name || "unknown",
+          level: profileData.level || "unknown",
+        });
+
+      // Set related data from edge function response
+      if (result.experiences) setExperiences(result.experiences as any);
+      if (result.skills) {
+        setSkills(result.skills.map((s: any) => ({
           id: s.skill_id || s.custom_name,
           name: s.is_custom ? s.custom_name : s.skills?.name || "—",
           category: s.skills?.category || null,
@@ -231,11 +236,11 @@ export default function Profile() {
           is_custom: s.is_custom || false,
         })));
       }
-      if (sportsExpRes.data) setSportsExp(sportsExpRes.data.map((s: any) => ({ ...s, sport: s.sports })));
-      if (sportsOpenRes.data) setSportsOpen(sportsOpenRes.data.map((s: any) => ({ sport_id: s.sport_id, sport_group: s.sport_group, sport: s.sports })));
-      if (eduRes.data) setEducationItems(eduRes.data as any);
-      if (certRes.data) setCertificateItems(certRes.data as any);
-      if (portRes.data) setPortfolioItems(portRes.data.map((p: any) => ({ ...p, tags: Array.isArray(p.tags) ? p.tags : [] })));
+      if (result.sportsExp) setSportsExp(result.sportsExp);
+      if (result.sportsOpen) setSportsOpen(result.sportsOpen);
+      if (result.education) setEducationItems(result.education as any);
+      if (result.certificates) setCertificateItems(result.certificates as any);
+      if (result.portfolio) setPortfolioItems(result.portfolio);
     } catch (err) {
       console.error("Error fetching profile:", err);
     } finally {
@@ -253,6 +258,8 @@ export default function Profile() {
         setAccessLevel("full");
         setViewsRemaining(data.views_remaining ?? data.weekly_remaining ?? null);
         trackEvent("contact_unlock", "profile", `${profile.first_name} ${profile.last_name}`, profile.id);
+        // Re-fetch to get full data
+        fetchProfile();
       } else if (data.access === "paywall") {
         setAccessLevel("paywall");
       }
@@ -293,7 +300,7 @@ export default function Profile() {
   }
 
   const roleName = profile.specialist_roles?.name || "Без специализации";
-  const displayName = canSeeName ? `${profile.first_name} ${profile.last_name}` : roleName;
+  const displayName = canSeeName && profile.first_name ? `${profile.first_name} ${profile.last_name}` : roleName;
   const location = [profile.city, profile.country].filter(Boolean).join(", ");
   const statusInfo = profile.search_status ? statusLabels[profile.search_status] : null;
 
@@ -503,16 +510,9 @@ export default function Profile() {
                   {sportsOpen.map((s, i) => {
                     if (s.sport_group) {
                       const groupLabels: Record<string, string> = {
-                        any: "Любой вид спорта",
-                        team: "Командные",
-                        individual: "Индивидуальные",
-                        game: "Игровые",
-                        cyclic: "Циклические",
-                        combat: "Единоборства",
-                        power: "Силовые",
-                        coordination: "Координационные",
-                        technical: "Технические",
-                        mixed: "Смешанные",
+                        any: "Любой вид спорта", team: "Командные", individual: "Индивидуальные",
+                        game: "Игровые", cyclic: "Циклические", combat: "Единоборства",
+                        power: "Силовые", coordination: "Координационные", technical: "Технические", mixed: "Смешанные",
                       };
                       return (
                         <Badge key={`group-${s.sport_group}`} variant="default" className="py-1.5 px-3">
@@ -543,43 +543,40 @@ export default function Profile() {
                   <Briefcase className="h-5 w-5" />Опыт работы
                 </h2>
                 <div className="space-y-6">
-                  {experiences.map((exp, index) => {
-                    const showOrg = !(exp.hide_org && !isOwner && (profile?.hide_current_org) && exp.is_current);
-                    return (
-                      <div key={exp.id} className="relative pl-6 pb-6 last:pb-0">
-                        {index < experiences.length - 1 && <div className="absolute left-2 top-3 bottom-0 w-0.5 bg-border" />}
-                        <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary border-2 border-card" />
-                        <div>
-                          <h3 className="font-semibold text-foreground">{exp.position}</h3>
-                          <p className="text-muted-foreground">{showOrg ? exp.company_name : "Организация скрыта"}</p>
-                          {(exp.league || exp.team_level) && (
-                            <p className="text-sm text-muted-foreground">{[exp.league, exp.team_level].filter(Boolean).join(" • ")}</p>
-                          )}
-                          <div className="flex flex-wrap items-center gap-2 mt-1">
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(exp.start_date).toLocaleDateString("ru-RU", { month: "long", year: "numeric" })}
-                              {" — "}
-                              {exp.is_current ? "настоящее время" : exp.end_date ? new Date(exp.end_date).toLocaleDateString("ru-RU", { month: "long", year: "numeric" }) : ""}
-                            </div>
-                            {exp.employment_type && <Badge variant="outline" className="text-xs">{employmentLabels[exp.employment_type] || exp.employment_type}</Badge>}
-                            {exp.is_remote && <Badge variant="outline" className="text-xs">Удалённо</Badge>}
+                  {experiences.map((exp, index) => (
+                    <div key={exp.id} className="relative pl-6 pb-6 last:pb-0">
+                      {index < experiences.length - 1 && <div className="absolute left-2 top-3 bottom-0 w-0.5 bg-border" />}
+                      <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary border-2 border-card" />
+                      <div>
+                        <h3 className="font-semibold text-foreground">{exp.position}</h3>
+                        <p className="text-muted-foreground">{exp.company_name}</p>
+                        {(exp.league || exp.team_level) && (
+                          <p className="text-sm text-muted-foreground">{[exp.league, exp.team_level].filter(Boolean).join(" • ")}</p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(exp.start_date).toLocaleDateString("ru-RU", { month: "long", year: "numeric" })}
+                            {" — "}
+                            {exp.is_current ? "настоящее время" : exp.end_date ? new Date(exp.end_date).toLocaleDateString("ru-RU", { month: "long", year: "numeric" }) : ""}
                           </div>
-                          {exp.description && <p className="text-sm mt-2">{exp.description}</p>}
-                          {exp.achievements && exp.achievements.length > 0 && (
-                            <ul className="mt-2 space-y-1">
-                              {exp.achievements.map((ach, i) => (
-                                <li key={i} className="text-sm flex items-start gap-2">
-                                  <CheckCircle className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
-                                  {ach}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
+                          {exp.employment_type && <Badge variant="outline" className="text-xs">{employmentLabels[exp.employment_type] || exp.employment_type}</Badge>}
+                          {exp.is_remote && <Badge variant="outline" className="text-xs">Удалённо</Badge>}
                         </div>
+                        {exp.description && <p className="text-sm mt-2">{exp.description}</p>}
+                        {exp.achievements && exp.achievements.length > 0 && (
+                          <ul className="mt-2 space-y-1">
+                            {exp.achievements.map((ach, i) => (
+                              <li key={i} className="text-sm flex items-start gap-2">
+                                <CheckCircle className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+                                {ach}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -639,7 +636,7 @@ export default function Profile() {
                   <FolderOpen className="h-5 w-5" />Портфолио
                 </h2>
                 <div className="space-y-4">
-                  {portfolioItems.filter(p => p.visibility === "public" || canSeeDetails).map(item => (
+                  {portfolioItems.map(item => (
                     <div key={item.id} className="border rounded-lg p-4">
                       <div className="flex items-start justify-between">
                         <div>
