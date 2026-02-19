@@ -946,6 +946,7 @@ export default function ProfileEdit() {
                   selectedSkills={selectedSkills}
                   onChange={setSelectedSkills}
                   primaryRoleName={primarySpecName}
+                  groupKey={selectedGroupKey}
                 />
               </div>
 

@@ -3,9 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, Search, Star, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getRecommendedSkills, type SkillSubGroup } from "@/lib/recommendedSkills";
 
 interface Skill {
   id: string;
@@ -29,6 +31,7 @@ interface SkillsEditorProps {
   maxSkills?: number;
   maxTopSkills?: number;
   primaryRoleName?: string;
+  groupKey?: string;
 }
 
 const proficiencyLabels: Record<number, string> = {
@@ -41,36 +44,67 @@ const LABEL = "text-[13px] font-medium text-muted-foreground";
 const HINT = "text-[12px] text-muted-foreground/60";
 
 export function SkillsEditor({
-  allSkills, selectedSkills, onChange, maxSkills = 20, maxTopSkills = 5, primaryRoleName,
+  allSkills, selectedSkills, onChange, maxSkills = 20, maxTopSkills = 5, primaryRoleName, groupKey,
 }: SkillsEditorProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [customName, setCustomName] = useState("");
   const [customGroup, setCustomGroup] = useState("");
-  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
-  const skillsByCategory = useMemo(() => {
-    return allSkills.reduce((acc, skill) => {
-      const cat = skill.category || "Прочее";
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push(skill);
-      return acc;
-    }, {} as Record<string, Skill[]>);
-  }, [allSkills]);
+  // Build recommended sections based on specialist group
+  const recommendedSections = useMemo(() => getRecommendedSkills(groupKey || null), [groupKey]);
 
-  const selectedIds = new Set(selectedSkills.filter(s => s.skill_id).map(s => s.skill_id));
+  // Helper: find the DB skill matching a recommended skill name, or treat as custom
+  const findSkillByName = (name: string): Skill | undefined => {
+    return allSkills.find(s => s.name.toLowerCase() === name.toLowerCase());
+  };
+
+  // Check if a skill name is selected (either by DB id or custom name)
+  const isSkillSelected = (name: string): boolean => {
+    const dbSkill = findSkillByName(name);
+    if (dbSkill) return selectedSkills.some(s => s.skill_id === dbSkill.id);
+    return selectedSkills.some(s => s.custom_name?.toLowerCase() === name.toLowerCase());
+  };
+
   const topCount = selectedSkills.filter(s => s.is_top).length;
 
-  const filteredSkills = searchQuery.trim()
-    ? allSkills.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : null;
+  // Toggle a recommended skill
+  const toggleRecommendedSkill = (name: string) => {
+    const dbSkill = findSkillByName(name);
 
-  const toggleSkill = (skillId: string) => {
-    if (selectedIds.has(skillId)) {
-      onChange(selectedSkills.filter(s => s.skill_id !== skillId));
-    } else if (selectedSkills.length < maxSkills) {
-      onChange([...selectedSkills, { skill_id: skillId, proficiency: 2, is_top: false, is_custom: false }]);
+    if (dbSkill) {
+      const exists = selectedSkills.some(s => s.skill_id === dbSkill.id);
+      if (exists) {
+        onChange(selectedSkills.filter(s => s.skill_id !== dbSkill.id));
+      } else if (selectedSkills.length < maxSkills) {
+        onChange([...selectedSkills, { skill_id: dbSkill.id, proficiency: 2, is_top: false, is_custom: false }]);
+      }
+    } else {
+      // Custom-style: match by custom_name
+      const exists = selectedSkills.some(s => s.custom_name?.toLowerCase() === name.toLowerCase());
+      if (exists) {
+        onChange(selectedSkills.filter(s => s.custom_name?.toLowerCase() !== name.toLowerCase()));
+      } else if (selectedSkills.length < maxSkills) {
+        onChange([...selectedSkills, {
+          skill_id: null, proficiency: 2, is_top: false, is_custom: true,
+          custom_name: name, custom_group: "Рекомендованные",
+        }]);
+      }
     }
   };
+
+  // Search across recommended + DB skills
+  const filteredSkills = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    const q = searchQuery.toLowerCase();
+    // Collect all recommended names
+    const recNames = recommendedSections.flatMap(s => s.skills);
+    const matchedRec = recNames.filter(n => n.toLowerCase().includes(q));
+    // Also match DB skills not in recommended
+    const recSet = new Set(recNames.map(n => n.toLowerCase()));
+    const matchedDb = allSkills.filter(s => s.name.toLowerCase().includes(q) && !recSet.has(s.name.toLowerCase()));
+    return { recommended: matchedRec, db: matchedDb };
+  }, [searchQuery, recommendedSections, allSkills]);
 
   const updateProficiency = (skillId: string | null, customName: string | undefined, proficiency: number) => {
     onChange(selectedSkills.map(s => {
@@ -103,8 +137,12 @@ export function SkillsEditor({
     onChange(selectedSkills.filter((_, i) => i !== index));
   };
 
-  const toggleCategory = (cat: string) => {
-    setOpenCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
+  const toggleSection = (title: string) => {
+    setOpenSections(prev => ({ ...prev, [title]: !prev[title] }));
+  };
+
+  const countSelectedInSection = (section: SkillSubGroup): number => {
+    return section.skills.filter(name => isSkillSelected(name)).length;
   };
 
   return (
@@ -134,33 +172,53 @@ export function SkillsEditor({
 
       {/* Search results */}
       {filteredSkills && (
-        <div className="flex flex-wrap gap-2 p-3 rounded-lg bg-secondary/40">
-          {filteredSkills.length === 0 ? (
+        <div className="space-y-2 p-3 rounded-lg bg-secondary/40">
+          {filteredSkills.recommended.length === 0 && filteredSkills.db.length === 0 ? (
             <p className={HINT}>Ничего не найдено</p>
           ) : (
-            filteredSkills.map(skill => (
-              <Badge key={skill.id} variant={selectedIds.has(skill.id) ? "default" : "outline"} className="cursor-pointer text-[12px]" onClick={() => toggleSkill(skill.id)}>
-                {skill.name}
-              </Badge>
-            ))
+            <>
+              {filteredSkills.recommended.map(name => (
+                <label key={name} className="flex items-center gap-2.5 cursor-pointer text-[13px] py-0.5">
+                  <Checkbox checked={isSkillSelected(name)} onCheckedChange={() => toggleRecommendedSkill(name)} />
+                  <span className="text-foreground">{name}</span>
+                </label>
+              ))}
+              {filteredSkills.db.map(skill => (
+                <label key={skill.id} className="flex items-center gap-2.5 cursor-pointer text-[13px] py-0.5">
+                  <Checkbox
+                    checked={selectedSkills.some(s => s.skill_id === skill.id)}
+                    onCheckedChange={() => {
+                      const exists = selectedSkills.some(s => s.skill_id === skill.id);
+                      if (exists) onChange(selectedSkills.filter(s => s.skill_id !== skill.id));
+                      else if (selectedSkills.length < maxSkills) onChange([...selectedSkills, { skill_id: skill.id, proficiency: 2, is_top: false, is_custom: false }]);
+                    }}
+                  />
+                  <span className="text-foreground">{skill.name}</span>
+                  <span className="text-muted-foreground/50 text-[11px]">{skill.category}</span>
+                </label>
+              ))}
+            </>
           )}
         </div>
       )}
 
-      {/* Categories */}
-      {!filteredSkills && Object.entries(skillsByCategory).map(([category, skills]) => (
-        <Collapsible key={category} open={openCategories[category] ?? false} onOpenChange={() => toggleCategory(category)}>
+      {/* Recommended sections */}
+      {!filteredSkills && recommendedSections.map(section => (
+        <Collapsible key={section.title} open={openSections[section.title] ?? false} onOpenChange={() => toggleSection(section.title)}>
           <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-[13px] font-medium text-muted-foreground hover:text-foreground py-1">
-            <ChevronDown className={cn("h-4 w-4 transition-transform", openCategories[category] && "rotate-180")} />
-            {category}
-            <span className="text-[11px] text-muted-foreground/60">({skills.filter(s => selectedIds.has(s.id)).length}/{skills.length})</span>
+            <ChevronDown className={cn("h-4 w-4 transition-transform", openSections[section.title] && "rotate-180")} />
+            {section.title}
+            <span className="text-[11px] text-muted-foreground/60">
+              ({countSelectedInSection(section)}/{section.skills.length})
+            </span>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="flex flex-wrap gap-2 pt-2 pb-3">
-              {skills.map(skill => (
-                <Badge key={skill.id} variant={selectedIds.has(skill.id) ? "default" : "outline"} className="cursor-pointer text-[12px]" onClick={() => toggleSkill(skill.id)}>
-                  {skill.name}
-                </Badge>
+            <div className="space-y-1 pt-2 pb-3 pl-6">
+              {section.skills.map(name => (
+                <label key={name} className="flex items-center gap-2.5 cursor-pointer text-[13px] py-0.5">
+                  <Checkbox checked={isSkillSelected(name)} onCheckedChange={() => toggleRecommendedSkill(name)} />
+                  <span className="text-foreground">{name}</span>
+                </label>
               ))}
             </div>
           </CollapsibleContent>
