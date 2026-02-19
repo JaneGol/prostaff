@@ -968,6 +968,7 @@ export type Database = {
           role_id: string | null
           search_status: Database["public"]["Enums"]["search_status"] | null
           secondary_role_id: string | null
+          secondary_specialization_id: string | null
           show_contacts: boolean
           show_name: boolean
           specialization_id: string | null
@@ -1004,6 +1005,7 @@ export type Database = {
           role_id?: string | null
           search_status?: Database["public"]["Enums"]["search_status"] | null
           secondary_role_id?: string | null
+          secondary_specialization_id?: string | null
           show_contacts?: boolean
           show_name?: boolean
           specialization_id?: string | null
@@ -1040,6 +1042,7 @@ export type Database = {
           role_id?: string | null
           search_status?: Database["public"]["Enums"]["search_status"] | null
           secondary_role_id?: string | null
+          secondary_specialization_id?: string | null
           show_contacts?: boolean
           show_name?: boolean
           specialization_id?: string | null
@@ -1061,6 +1064,13 @@ export type Database = {
             columns: ["secondary_role_id"]
             isOneToOne: false
             referencedRelation: "specialist_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_secondary_specialization_id_fkey"
+            columns: ["secondary_specialization_id"]
+            isOneToOne: false
+            referencedRelation: "specializations"
             referencedColumns: ["id"]
           },
           {

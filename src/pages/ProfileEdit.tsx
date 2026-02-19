@@ -78,6 +78,7 @@ export default function ProfileEdit() {
   const [selectedGroupKey, setSelectedGroupKey] = useState("");
   const [roleId, setRoleId] = useState("");
   const [secondaryRoleId, setSecondaryRoleId] = useState("");
+  const [secondarySpecializationId, setSecondarySpecializationId] = useState("");
   const [level, setLevel] = useState("middle");
   const [avatarUrl, setAvatarUrl] = useState("");
 
@@ -136,22 +137,7 @@ export default function ProfileEdit() {
     if (user) fetchData();
   }, [user, authLoading]);
 
-  // Fetch allowed secondary roles when primary role changes
-  useEffect(() => {
-    if (roleId) {
-      supabase
-        .from("role_relations")
-        .select("secondary_role_id")
-        .eq("primary_role_id", roleId)
-        .eq("is_allowed", true)
-        .then(({ data }) => {
-          setAllowedSecondaryRoles(data?.map(r => r.secondary_role_id) || []);
-        });
-    } else {
-      setAllowedSecondaryRoles([]);
-      setSecondaryRoleId("");
-    }
-  }, [roleId]);
+  // (role_relations logic removed — roles no longer shown in basic info)
 
   const fetchData = async () => {
     try {
@@ -183,6 +169,7 @@ export default function ProfileEdit() {
         }
         setRoleId(profile.role_id || "");
         setSecondaryRoleId((profile as any).secondary_role_id || "");
+        setSecondarySpecializationId((profile as any).secondary_specialization_id || "");
         setLevel(profile.level || "middle");
         setBio(profile.bio || "");
         setAboutUseful((profile as any).about_useful || "");
@@ -320,6 +307,7 @@ export default function ProfileEdit() {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         specialization_id: specializationId || null,
+        secondary_specialization_id: secondarySpecializationId || null,
         role_id: roleId || null,
         secondary_role_id: secondaryRoleId || null,
         level: level as any,
@@ -479,21 +467,16 @@ export default function ProfileEdit() {
     sectionRefs.current[sectionId]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const primaryRoleName = roles.find(r => r.id === roleId)?.name;
+  const primarySpecName = specializations.find(s => s.id === specializationId)?.name;
   const specsForGroup = selectedGroupKey
     ? specializations.filter(s => s.group_key === selectedGroupKey)
     : specializations;
-  const rolesForSpecialization = specializationId
-    ? roles.filter(r => r.specialization_id === specializationId)
-    : [];
-  // Secondary role: from same group's specializations
-  const specsInGroup = specializations.filter(s => s.group_key === selectedGroupKey);
-  const specIdsInGroup = specsInGroup.map(s => s.id);
-  const secondaryRoleOptions = roles.filter(r => r.id !== roleId && r.specialization_id && specIdsInGroup.includes(r.specialization_id));
+  // Additional specializations from same group, excluding primary
+  const additionalSpecOptions = specsForGroup.filter(s => s.id !== specializationId);
 
   const profileFields = useMemo(() => [
     { key: "avatar", label: "Фото профиля", completed: !!avatarUrl, weight: 5 },
-    { key: "role", label: "Специализация + уровень", completed: !!roleId && !!level, weight: 15 },
+    { key: "role", label: "Специализация + уровень", completed: !!specializationId && !!level, weight: 15 },
     { key: "about", label: "О себе", completed: !!bio && bio.length > 20, weight: 10 },
     { key: "location", label: "Город и формат работы", completed: !!city && !!country, weight: 10 },
     { key: "skills", label: "Навыки (минимум 5)", completed: selectedSkills.length >= 5, weight: 15 },
@@ -501,7 +484,7 @@ export default function ProfileEdit() {
     { key: "education", label: "Образование / сертификаты", completed: education.length > 0 || certificates.length > 0, weight: 10 },
     { key: "sports", label: "Виды спорта (опыт)", completed: sportsExperience.length > 0, weight: 10 },
     { key: "contacts", label: "Контакты", completed: !!email || !!telegram, weight: 5 },
-  ], [avatarUrl, roleId, level, bio, city, country, selectedSkills, experiences, education, certificates, sportsExperience, email, telegram]);
+  ], [avatarUrl, specializationId, level, bio, city, country, selectedSkills, experiences, education, certificates, sportsExperience, email, telegram]);
 
   if (authLoading || loading) {
     return (
@@ -513,7 +496,7 @@ export default function ProfileEdit() {
     );
   }
 
-  const roleName = roles.find(r => r.id === roleId)?.name;
+  const roleName = primarySpecName;
 
   return (
     <Layout>
@@ -644,14 +627,11 @@ export default function ProfileEdit() {
                     
                     {/* Specialization */}
                     <div className="space-y-2 mb-4">
-                      <Label className="text-[14px]">Специализация *</Label>
+                      <Label className="text-[14px]">Основная специализация *</Label>
                       <Select value={specializationId} onValueChange={(val) => {
                         setSpecializationId(val);
-                        // Reset role if it doesn't belong to new specialization
-                        const currentRole = roles.find(r => r.id === roleId);
-                        if (currentRole && currentRole.specialization_id !== val) {
-                          setRoleId("");
-                        }
+                        // Reset secondary spec if same
+                        if (secondarySpecializationId === val) setSecondarySpecializationId("");
                       }} disabled={!selectedGroupKey}>
                         <SelectTrigger className="text-[15px]"><SelectValue placeholder={selectedGroupKey ? "Выберите специализацию" : "Сначала выберите направление"} /></SelectTrigger>
                         <SelectContent>
@@ -661,29 +641,17 @@ export default function ProfileEdit() {
                       <p className="text-[12px] text-muted-foreground">Определяет категорию, в которой вас найдут клубы</p>
                     </div>
 
-                    {/* Role + Secondary Role */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <Label className="text-[14px]">Роль / должность *</Label>
-                        <Select value={roleId} onValueChange={setRoleId} disabled={!specializationId}>
-                          <SelectTrigger className="text-[15px]"><SelectValue placeholder={specializationId ? "Выберите роль" : "Сначала выберите специализацию"} /></SelectTrigger>
-                          <SelectContent>
-                            {rolesForSpecialization.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <p className="text-[12px] text-muted-foreground">Заголовок вашей карточки</p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[14px]">Дополнительная роль</Label>
-                        <Select value={secondaryRoleId} onValueChange={setSecondaryRoleId} disabled={!roleId}>
-                          <SelectTrigger className="text-[15px]"><SelectValue placeholder="Опционально" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Нет</SelectItem>
-                            {secondaryRoleOptions.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <p className="text-[12px] text-muted-foreground">Помогает клубам находить вас шире</p>
-                      </div>
+                    {/* Additional Specialization */}
+                    <div className="space-y-2 mb-4">
+                      <Label className="text-[14px]">Дополнительная специализация</Label>
+                      <Select value={secondarySpecializationId} onValueChange={setSecondarySpecializationId} disabled={!specializationId}>
+                        <SelectTrigger className="text-[15px]"><SelectValue placeholder="Опционально" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Нет</SelectItem>
+                          {additionalSpecOptions.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[12px] text-muted-foreground">Помогает клубам находить вас шире</p>
                     </div>
 
                     {/* Level */}
@@ -706,7 +674,7 @@ export default function ProfileEdit() {
                   bio={bio} aboutUseful={aboutUseful} aboutStyle={aboutStyle} aboutGoals={aboutGoals}
                   onBioChange={setBio} onAboutUsefulChange={setAboutUseful}
                   onAboutStyleChange={setAboutStyle} onAboutGoalsChange={setAboutGoals}
-                  roleName={primaryRoleName}
+                  roleName={primarySpecName}
                 />
               </div>
 
@@ -817,7 +785,7 @@ export default function ProfileEdit() {
                   allSkills={allSkills}
                   selectedSkills={selectedSkills}
                   onChange={setSelectedSkills}
-                  primaryRoleName={primaryRoleName}
+                  primaryRoleName={primarySpecName}
                 />
               </div>
 
