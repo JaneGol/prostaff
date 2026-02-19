@@ -166,7 +166,7 @@ function SpecialistDashboard({ userId }: { userId: string }) {
       <div className="min-h-[80vh] bg-secondary/30">
         {/* Hero */}
         <section className="bg-background border-b border-border/50">
-          <div className="container py-8 md:py-10">
+          <div className="container max-w-6xl py-8 md:py-10">
             <p className="text-[13px] font-medium text-primary mb-1.5 tracking-wide uppercase">
               Личный кабинет
             </p>
@@ -189,7 +189,7 @@ function SpecialistDashboard({ userId }: { userId: string }) {
           </div>
         </section>
 
-        <div className="container py-6 md:py-8">
+        <div className="container max-w-6xl py-6 md:py-8">
           <div className="flex gap-6 lg:gap-8">
             {/* ── LEFT COLUMN (60-65%) ── */}
             <div className="flex-1 min-w-0 space-y-6">
@@ -455,7 +455,7 @@ function EmployerDashboard({ userId }: { userId: string }) {
     <Layout>
       <div className="min-h-[80vh]">
         <section className="border-b border-border/50">
-          <div className="container py-10 md:py-14">
+          <div className="container max-w-6xl py-10 md:py-14">
             <div className="max-w-3xl">
               <p className="text-sm font-medium text-primary mb-2 tracking-wide uppercase">
                 Панель работодателя
@@ -470,7 +470,7 @@ function EmployerDashboard({ userId }: { userId: string }) {
           </div>
         </section>
 
-        <div className="container py-8 md:py-10">
+        <div className="container max-w-6xl py-8 md:py-10">
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               <div>

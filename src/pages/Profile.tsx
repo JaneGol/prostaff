@@ -270,7 +270,7 @@ export default function Profile() {
   if (loading) {
     return (
       <Layout>
-        <div className="container py-8 md:py-12">
+        <div className="container max-w-6xl py-8 md:py-12">
           <div className="max-w-4xl mx-auto space-y-6">
             <Skeleton className="h-64 w-full rounded-2xl" />
             <Skeleton className="h-48 w-full rounded-2xl" />
@@ -283,7 +283,7 @@ export default function Profile() {
   if (!profile) {
     return (
       <Layout>
-        <div className="container py-20 text-center">
+        <div className="container max-w-6xl py-20 text-center">
           <h1 className="text-2xl font-bold mb-4">Профиль не найден</h1>
           <p className="text-muted-foreground mb-6">Возможно, профиль был удалён или скрыт</p>
           <Link to="/specialists"><Button>К банку специалистов</Button></Link>
@@ -302,7 +302,7 @@ export default function Profile() {
 
   return (
     <Layout>
-      <div className="container py-8 md:py-12">
+      <div className="container max-w-6xl py-8 md:py-12">
         <div className="max-w-4xl mx-auto space-y-6">
           {viewsRemaining !== null && viewsRemaining >= 0 && (
             <div className="bg-accent/10 border border-accent/20 rounded-lg px-4 py-3 flex items-center gap-2 text-sm">

@@ -46,7 +46,7 @@ export default function FavoriteJobs() {
   return (
     <Layout>
       <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-8 md:py-12">
-        <div className="container">
+        <div className="container max-w-6xl">
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-4 text-sm">
             <ArrowLeft className="h-4 w-4" />
             Личный кабинет
