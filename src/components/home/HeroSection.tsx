@@ -15,7 +15,7 @@ export function HeroSection() {
         }}
       />
 
-      <div className="container relative">
+      <div className="container max-w-6xl relative">
         <div className="py-16 md:py-24 lg:py-32">
           {/* Main content */}
           <div className="max-w-4xl mx-auto text-center">
