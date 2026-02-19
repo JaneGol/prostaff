@@ -11,7 +11,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, X, Users, Activity, BarChart3, HeartPulse, Briefcase, ChevronDown, Check } from "lucide-react";
+import { Loader2, Save, X, Users, Activity, BarChart3, HeartPulse, Briefcase, ChevronDown, Check, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { GROUPS } from "@/lib/specialistSections";
 import { ProfileProgress } from "@/components/shared/ProfileProgress";
@@ -48,11 +49,11 @@ interface SportOption {
 }
 
 const levels = [
-  { value: "intern", label: "Стажёр" },
-  { value: "junior", label: "Junior" },
-  { value: "middle", label: "Middle" },
-  { value: "senior", label: "Senior" },
-  { value: "head", label: "Head" }
+  { value: "intern", label: "Стажёр", desc: "Обучение, помощь старшим специалистам" },
+  { value: "junior", label: "Junior", desc: "Начальный опыт, выполнение задач по заданию" },
+  { value: "middle", label: "Middle", desc: "Самостоятельная работа, ответственность за результат" },
+  { value: "senior", label: "Senior", desc: "Эксперт, принятие решений, наставничество" },
+  { value: "head", label: "Head", desc: "Руководство направлением или командой" }
 ];
 
 const searchStatuses = [
@@ -734,11 +735,31 @@ export default function ProfileEdit() {
 
                     {/* Level */}
                     <div className="space-y-2">
-                      <Label className="text-[14px]">Уровень *</Label>
+                      <div className="flex items-center gap-1.5">
+                        <Label className="text-[14px]">Уровень позиции *</Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-[260px] text-xs">
+                              Уровень помогает клубам понять, с какими задачами вы работали и какой уровень ответственности вам подходит. Это не влияет на «оценку» специалиста.
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <p className="text-xs text-muted-foreground -mt-1">Выберите в зависимости от вашего опыта и типа задач</p>
                       <Select value={level} onValueChange={setLevel}>
                         <SelectTrigger className="text-[15px] max-w-xs"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {levels.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
+                          {levels.map(l => (
+                            <SelectItem key={l.value} value={l.value}>
+                              <div className="flex flex-col">
+                                <span>{l.label}</span>
+                                <span className="text-xs text-muted-foreground">{l.desc}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
