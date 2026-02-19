@@ -138,8 +138,8 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
   .meta { font-size: 10pt; color: #777; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 12px; }
   .section { margin-top: 20px; }
   .section-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #4355C5; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px; }
-  .skill-tag { display: inline-block; background: #eceefb; border: 1px solid #c8cde8; border-radius: 6px; padding: 6px 14px; margin: 3px 6px 3px 0; font-size: 10.5pt; font-weight: 500; color: #2a2a4a; }
-  .skill-top { background: #4355C5; color: #fff; border-color: #4355C5; }
+  .skill-tag { display: inline-block; vertical-align: top; background-color: #eceefb; border: 1px solid #c8cde8; border-radius: 6px; padding: 4px 12px; margin: 3px 6px 3px 0; font-size: 10pt; font-weight: 500; color: #2a2a4a; line-height: 1.4; white-space: nowrap; }
+  .skill-top { background-color: #4355C5; color: #fff; border-color: #4355C5; }
   .exp-item { margin-bottom: 14px; }
   .exp-org { font-weight: 600; font-size: 11pt; }
   .exp-pos { color: #555; }
@@ -251,23 +251,24 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
       html += `<div class="footer">Сгенерировано на ProStaff • ${new Date().toLocaleDateString("ru-RU")}</div>`;
       html += `</div></body></html>`;
 
-      // Generate PDF using html2pdf.js
+      // Generate PDF and open in new tab for preview
       const { default: html2pdf } = await import("html2pdf.js");
       const container = document.createElement("div");
+      container.style.position = "absolute";
+      container.style.left = "-9999px";
+      container.style.top = "0";
       container.innerHTML = html;
       document.body.appendChild(container);
       const el = container.querySelector(".page") as HTMLElement;
-      const fileName = showName
-        ? `${profile.first_name}_${profile.last_name}_CV.pdf`
-        : "ProStaff_CV.pdf";
-      await html2pdf().set({
-        margin: 0,
-        filename: fileName,
+      const pdfBlob = await html2pdf().set({
+        margin: [10, 10, 10, 10],
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      }).from(el).save();
+      }).from(el).outputPdf("blob");
       document.body.removeChild(container);
+      const blobUrl = URL.createObjectURL(new Blob([pdfBlob], { type: "application/pdf" }));
+      window.open(blobUrl, "_blank");
     } finally {
       setGenerating(false);
     }
