@@ -15,6 +15,7 @@ import {
   Clock, Lock, Eye, AlertTriangle, Trophy, Handshake, FolderOpen,
   Star, Award, FileText, Wrench, User
 } from "lucide-react";
+import { isBankAvatar, decodeBankAvatar, getDefaultAvatar } from "@/lib/defaultAvatars";
 import { PdfResumeModal } from "@/components/profile/PdfResumeModal";
 
 interface ProfileData {
@@ -316,11 +317,16 @@ export default function Profile() {
             <CardContent className="relative pt-0 pb-6">
               <div className="absolute -top-12 left-6 md:left-8">
                 <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-card bg-card flex items-center justify-center overflow-hidden">
-                  {profile.avatar_url ? (
-                    <img src={profile.avatar_url} alt={displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-10 h-10 md:w-14 md:h-14 text-primary/40" />
-                  )}
+                  {(() => {
+                    const url = profile.avatar_url;
+                    if (url && isBankAvatar(url)) {
+                      const ba = decodeBankAvatar(url);
+                      return ba ? <img src={ba.src} alt={displayName} className="w-full h-full object-cover" /> : <User className="w-10 h-10 md:w-14 md:h-14 text-primary/40" />;
+                    }
+                    if (url) return <img src={url} alt={displayName} className="w-full h-full object-cover" />;
+                    const def = getDefaultAvatar(profile.id);
+                    return <img src={def.src} alt={def.label} className="w-full h-full object-cover" />;
+                  })()}
                 </div>
               </div>
 
