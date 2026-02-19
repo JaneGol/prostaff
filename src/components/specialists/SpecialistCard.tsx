@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, User, ChevronRight, Briefcase, Clock } from "lucide-react";
 import { getSportIcon } from "@/lib/sportIcons";
+import { getDefaultAvatar } from "@/lib/defaultAvatars";
 
 const levelLabels: Record<string, string> = {
   intern: "Стажёр",
