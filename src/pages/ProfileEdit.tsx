@@ -700,7 +700,6 @@ export default function ProfileEdit() {
 
                   {/* Specialization + Sport */}
                   <div>
-                    <p className={`${SUB_TITLE} mb-2.5`}>Специализация</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div className="space-y-1">
                         <Label className={LABEL}>Специализация</Label>
