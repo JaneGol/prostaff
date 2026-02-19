@@ -59,7 +59,7 @@ function ArticleList() {
         </div>
       </section>
 
-      <section className="py-12 md:py-16">
+      <section className="py-6 md:py-8">
         <div className="container">
           {loading ? (
             <p className="text-center text-muted-foreground py-12">Загрузка...</p>
