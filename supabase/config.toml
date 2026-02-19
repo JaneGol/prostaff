@@ -6,5 +6,5 @@ verify_jwt = false
 [functions.hh-import]
 verify_jwt = false
 
-[functions.get-profile]
+[functions.profile-api]
 verify_jwt = false
