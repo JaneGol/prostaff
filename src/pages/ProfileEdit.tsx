@@ -40,6 +40,12 @@ interface Skill {
   category: string | null;
 }
 
+interface SportOption {
+  id: string;
+  name: string;
+  icon: string | null;
+}
+
 const levels = [
   { value: "intern", label: "Стажёр" },
   { value: "junior", label: "Junior" },
@@ -117,6 +123,8 @@ export default function ProfileEdit() {
   const [specializations, setSpecializations] = useState<SpecializationOption[]>([]);
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [allowedSecondaryRoles, setAllowedSecondaryRoles] = useState<string[]>([]);
+  const [allSports, setAllSports] = useState<SportOption[]>([]);
+  const [selectedSportIds, setSelectedSportIds] = useState<string[]>([]);
 
   // Complex fields
   const [selectedSkills, setSelectedSkills] = useState<SkillSelection[]>([]);
@@ -141,15 +149,17 @@ export default function ProfileEdit() {
 
   const fetchData = async () => {
     try {
-      const [rolesRes, skillsRes, specsRes] = await Promise.all([
+      const [rolesRes, skillsRes, specsRes, sportsRes] = await Promise.all([
         supabase.from("specialist_roles").select("id, name, specialization_id").order("name"),
         supabase.from("skills").select("id, name, category").order("name"),
         supabase.from("specializations").select("id, name, group_key").order("sort_order"),
+        supabase.from("sports").select("id, name, icon").eq("is_active", true).order("sort_order"),
       ]);
 
       if (rolesRes.data) setRoles(rolesRes.data);
       if (skillsRes.data) setAllSkills(skillsRes.data);
       if (specsRes.data) setSpecializations(specsRes.data);
+      if (sportsRes.data) setAllSports(sportsRes.data);
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -272,9 +282,11 @@ export default function ProfileEdit() {
         }
 
         if (sportsExpData.data) {
-          setSportsExperience(sportsExpData.data.map((s: any) => ({
+          const mapped = sportsExpData.data.map((s: any) => ({
             id: s.id, sport_id: s.sport_id, years: s.years || 1, level: s.level || "intermediate", sport: s.sports,
-          })));
+          }));
+          setSportsExperience(mapped);
+          setSelectedSportIds(mapped.map((s: any) => s.sport_id));
         }
 
         if (sportsOpenData.data) {
@@ -431,11 +443,18 @@ export default function ProfileEdit() {
           } as any);
         }
 
-        // Sports experience
+        // Sports experience — merge chip selections with detailed entries
         await supabase.from("profile_sports_experience").delete().eq("profile_id", newProfileId);
-        if (sportsExperience.length > 0) {
+        const existingSportIds = new Set(sportsExperience.map(s => s.sport_id));
+        const mergedSports = [
+          ...sportsExperience,
+          ...selectedSportIds
+            .filter(id => !existingSportIds.has(id))
+            .map(id => ({ sport_id: id, years: 1, level: "intermediate" })),
+        ];
+        if (mergedSports.length > 0) {
           await supabase.from("profile_sports_experience").insert(
-            sportsExperience.map(s => ({ profile_id: newProfileId!, sport_id: s.sport_id, years: s.years, level: s.level }))
+            mergedSports.map(s => ({ profile_id: newProfileId!, sport_id: s.sport_id, years: s.years, level: s.level }))
           );
         }
 
@@ -625,33 +644,64 @@ export default function ProfileEdit() {
                   <div>
                     <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider mb-3">Профессиональное</p>
                     
-                    {/* Specialization */}
-                    <div className="space-y-2 mb-4">
-                      <Label className="text-[14px]">Основная специализация *</Label>
-                      <Select value={specializationId} onValueChange={(val) => {
-                        setSpecializationId(val);
-                        // Reset secondary spec if same
-                        if (secondarySpecializationId === val) setSecondarySpecializationId("");
-                      }} disabled={!selectedGroupKey}>
-                        <SelectTrigger className="text-[15px]"><SelectValue placeholder={selectedGroupKey ? "Выберите специализацию" : "Сначала выберите направление"} /></SelectTrigger>
-                        <SelectContent>
-                          {specsForGroup.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-[12px] text-muted-foreground">Определяет категорию, в которой вас найдут клубы</p>
+                    {/* Primary Specialization + Sport */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-2">
+                        <Label className="text-[14px]">Основная специализация *</Label>
+                        <Select value={specializationId} onValueChange={(val) => {
+                          setSpecializationId(val);
+                          if (secondarySpecializationId === val) setSecondarySpecializationId("");
+                        }} disabled={!selectedGroupKey}>
+                          <SelectTrigger className="text-[15px]"><SelectValue placeholder={selectedGroupKey ? "Выберите специализацию" : "Сначала выберите направление"} /></SelectTrigger>
+                          <SelectContent>
+                            {specsForGroup.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-[12px] text-muted-foreground">Определяет категорию, в которой вас найдут клубы</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[14px]">Вид спорта *</Label>
+                        <div className="flex flex-wrap gap-1.5 min-h-[40px] p-2 rounded-md border border-input bg-background">
+                          {allSports.slice(0, 20).map(sport => {
+                            const isSelected = selectedSportIds.includes(sport.id);
+                            return (
+                              <button
+                                key={sport.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedSportIds(prev =>
+                                    isSelected ? prev.filter(id => id !== sport.id) : [...prev, sport.id]
+                                  );
+                                }}
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-medium transition-all ${
+                                  isSelected
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                }`}
+                              >
+                                {sport.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <p className="text-[12px] text-muted-foreground">Выберите один или несколько видов спорта</p>
+                      </div>
                     </div>
 
                     {/* Additional Specialization */}
-                    <div className="space-y-2 mb-4">
-                      <Label className="text-[14px]">Дополнительная специализация</Label>
-                      <Select value={secondarySpecializationId} onValueChange={setSecondarySpecializationId} disabled={!specializationId}>
-                        <SelectTrigger className="text-[15px]"><SelectValue placeholder="Опционально" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Нет</SelectItem>
-                          {additionalSpecOptions.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-[12px] text-muted-foreground">Помогает клубам находить вас шире</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-2">
+                        <Label className="text-[14px]">Дополнительная специализация</Label>
+                        <Select value={secondarySpecializationId} onValueChange={setSecondarySpecializationId} disabled={!specializationId}>
+                          <SelectTrigger className="text-[15px]"><SelectValue placeholder="Опционально" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Нет</SelectItem>
+                            {additionalSpecOptions.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-[12px] text-muted-foreground">Помогает клубам находить вас шире</p>
+                      </div>
+                      <div>{/* Empty right column for alignment */}</div>
                     </div>
 
                     {/* Level */}
