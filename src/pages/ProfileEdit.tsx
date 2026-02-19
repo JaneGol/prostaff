@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, X, Users, Activity, BarChart3, HeartPulse, Briefcase, ChevronDown, Check, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ImageUpload } from "@/components/shared/ImageUpload";
+import { AvatarBankPicker } from "@/components/shared/AvatarBankPicker";
+import { isBankAvatar, decodeBankAvatar, getAvatarStyle } from "@/lib/defaultAvatars";
 import { GROUPS } from "@/lib/specialistSections";
 import { ProfileProgress } from "@/components/shared/ProfileProgress";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
@@ -616,19 +618,38 @@ export default function ProfileEdit() {
               <div ref={el => { sectionRefs.current["basic"] = el; }} className="space-y-5">
                 <div className="bg-card rounded-xl p-5 md:p-6 shadow-card">
                   <div className="flex items-start gap-5">
-                    <ImageUpload
-                      currentImageUrl={avatarUrl}
-                      onImageUploaded={setAvatarUrl}
-                      bucket="avatars"
-                      userId={user!.id}
-                      size="lg"
-                      shape="circle"
-                      placeholder={
-                        <span className="text-xl font-semibold text-muted-foreground/60">
-                          {firstName?.[0] || "?"}{lastName?.[0] || "?"}
-                        </span>
-                      }
-                    />
+                    <div className="flex flex-col items-center gap-2">
+                      {/* Show bank avatar or image upload */}
+                      {isBankAvatar(avatarUrl) ? (
+                        <div className="relative group">
+                          <div
+                            className="w-32 h-32 rounded-full overflow-hidden border-2 border-border"
+                            style={getAvatarStyle(decodeBankAvatar(avatarUrl)!)}
+                          />
+                          <button
+                            onClick={() => setAvatarUrl("")}
+                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <ImageUpload
+                          currentImageUrl={avatarUrl}
+                          onImageUploaded={setAvatarUrl}
+                          bucket="avatars"
+                          userId={user!.id}
+                          size="lg"
+                          shape="circle"
+                          placeholder={
+                            <span className="text-xl font-semibold text-muted-foreground/60">
+                              {firstName?.[0] || "?"}{lastName?.[0] || "?"}
+                            </span>
+                          }
+                        />
+                      )}
+                      <AvatarBankPicker onSelect={setAvatarUrl} />
+                    </div>
                     <div className="flex-1 pt-1 space-y-3">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
