@@ -17,6 +17,8 @@ export const AVATAR_BANK: BankAvatar[] = [
   { id: 8,  src: "/avatars/avatar-08.png", label: "Аналитик данных" },
   { id: 9,  src: "/avatars/avatar-09.png", label: "Главный тренер" },
   { id: 10, src: "/avatars/avatar-10.png", label: "S&C тренер" },
+  { id: 11, src: "/avatars/avatar-11.png", label: "Спортивный аналитик" },
+  { id: 12, src: "/avatars/avatar-12.png", label: "Фитнес-тренер" },
 ];
 
 /**
