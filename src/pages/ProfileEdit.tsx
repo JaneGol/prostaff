@@ -743,9 +743,9 @@ export default function ProfileEdit() {
 
               {/* BASIC — Photo + Info */}
               <div ref={el => { sectionRefs.current["basic"] = el; }} className="space-y-5">
-                {/* Photo */}
+                {/* Photo + Name */}
                 <div className="bg-card rounded-2xl p-6 shadow-card">
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-start gap-6">
                     <ImageUpload
                       currentImageUrl={avatarUrl}
                       onImageUploaded={setAvatarUrl}
@@ -759,15 +759,19 @@ export default function ProfileEdit() {
                         </span>
                       }
                     />
-                    <div>
-                      <h3 className="text-[16px] font-medium mb-1">Фото профиля</h3>
-                      <p className="text-[13px] text-muted-foreground mb-3">Рекомендуемый размер 400×400 px</p>
-                      <Button variant="outline" size="sm" className="text-[13px]" onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}>
-                        📷 Загрузить фото
-                      </Button>
+                    <div className="flex-1 pt-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Имя *</Label>
+                          <Input className="!text-[18px] !font-semibold h-11 border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Фамилия *</Label>
+                          <Input className="!text-[18px] !font-semibold h-11 border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  
                 </div>
 
                 {/* Basic Info */}
@@ -775,21 +779,6 @@ export default function ProfileEdit() {
                   <div className="flex items-center justify-between">
                     <h2 className="text-[18px] font-medium">Основная информация</h2>
                     <SectionSaveIcon section="basic" />
-                  </div>
-
-                  {/* Personal */}
-                  <div>
-                    <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider mb-3">Личные данные</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-[14px]">Имя *</Label>
-                        <Input className="!text-[18px] !font-semibold h-12" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[14px]">Фамилия *</Label>
-                        <Input className="!text-[18px] !font-semibold h-12" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
-                      </div>
-                    </div>
                   </div>
 
                   {/* Group Selection Cards */}
@@ -839,8 +828,8 @@ export default function ProfileEdit() {
                     
                     {/* Primary Specialization + Sport */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <Label className="text-[14px]">Основная специализация *</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Специализация *</Label>
                         <Select value={specializationId} onValueChange={(val) => {
                           setSpecializationId(val);
                           if (secondarySpecializationId === val) setSecondarySpecializationId("");
@@ -850,10 +839,10 @@ export default function ProfileEdit() {
                             {specsForGroup.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                        <p className="text-[12px] text-muted-foreground">Определяет категорию, в которой вас найдут клубы</p>
+                        <p className="text-[11px] text-muted-foreground/70">Определяет категорию, в которой вас найдут клубы</p>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-[14px]">Вид спорта *</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Вид спорта *</Label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button variant="outline" role="combobox" className="w-full justify-between text-[15px] h-10 font-normal">
@@ -910,8 +899,8 @@ export default function ProfileEdit() {
 
                     {/* Additional Specialization */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <Label className="text-[14px]">Дополнительная специализация</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Доп. специализация</Label>
                         <Select value={secondarySpecializationId} onValueChange={setSecondarySpecializationId} disabled={!specializationId}>
                           <SelectTrigger className="text-[15px]"><SelectValue placeholder="Опционально" /></SelectTrigger>
                           <SelectContent>
@@ -919,15 +908,15 @@ export default function ProfileEdit() {
                             {additionalSpecOptions.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                        <p className="text-[12px] text-muted-foreground">Помогает клубам находить вас шире</p>
+                        <p className="text-[11px] text-muted-foreground/70">Помогает клубам находить вас шире</p>
                       </div>
                       <div>{/* Empty right column for alignment */}</div>
                     </div>
 
                     {/* Level */}
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <div className="flex items-center gap-1.5">
-                        <Label className="text-[14px]">Уровень позиции *</Label>
+                        <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Уровень позиции *</Label>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -939,7 +928,6 @@ export default function ProfileEdit() {
                           </Tooltip>
                         </TooltipProvider>
                       </div>
-                      <p className="text-xs text-muted-foreground -mt-1">Выберите в зависимости от вашего опыта и типа задач</p>
                       <Select value={level} onValueChange={setLevel}>
                         <SelectTrigger className="text-[15px] w-full">
                           <SelectValue>
@@ -991,18 +979,18 @@ export default function ProfileEdit() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[14px]">Город</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Город</Label>
                       <Input className="text-[15px]" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Москва" />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[14px]">Страна</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Страна</Label>
                       <Input className="text-[15px]" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Россия" />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-[14px]">Статус поиска</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Статус поиска</Label>
                     <Select value={searchStatus} onValueChange={setSearchStatus}>
                       <SelectTrigger className="text-[15px]"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -1015,8 +1003,8 @@ export default function ProfileEdit() {
                     <div className="border-t border-border pt-5 space-y-4">
                       <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Что ищу</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-[14px]">Формат</Label>
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Формат</Label>
                           <Select value={desiredContractType} onValueChange={setDesiredContractType}>
                             <SelectTrigger className="text-[15px]"><SelectValue placeholder="Любой" /></SelectTrigger>
                             <SelectContent>
@@ -1028,8 +1016,8 @@ export default function ProfileEdit() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-[14px]">Желаемый город</Label>
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Желаемый город</Label>
                           <Input className="text-[15px]" value={desiredCity} onChange={(e) => setDesiredCity(e.target.value)} placeholder="Любой" />
                         </div>
                       </div>
@@ -1038,11 +1026,11 @@ export default function ProfileEdit() {
 
                   <div className="flex flex-col gap-4 border-t border-border pt-5">
                     <div className="flex items-center justify-between">
-                      <Label className="text-[14px]">Готов к релокации</Label>
+                      <Label className="text-[13px]">Готов к релокации</Label>
                       <Switch checked={isRelocatable} onCheckedChange={setIsRelocatable} />
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label className="text-[14px]">Удалённая работа</Label>
+                      <Label className="text-[13px]">Удалённая работа</Label>
                       <Switch checked={isRemoteAvailable} onCheckedChange={setIsRemoteAvailable} />
                     </div>
                   </div>
@@ -1062,22 +1050,22 @@ export default function ProfileEdit() {
                     <div className="flex flex-col gap-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label className="text-[14px]">Показывать имя клубам</Label>
-                          <p className="text-[12px] text-muted-foreground mt-0.5">Если выключено — клубы увидят только роль</p>
+                          <Label className="text-[13px]">Показывать имя клубам</Label>
+                          <p className="text-[11px] text-muted-foreground/70 mt-0.5">Если выключено — клубы увидят только роль</p>
                         </div>
                         <Switch checked={showName} onCheckedChange={setShowName} />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label className="text-[14px]">Показывать контакты</Label>
-                          <p className="text-[12px] text-muted-foreground mt-0.5">Видны только после разблокировки</p>
+                          <Label className="text-[13px]">Показывать контакты</Label>
+                          <p className="text-[11px] text-muted-foreground/70 mt-0.5">Видны только после разблокировки</p>
                         </div>
                         <Switch checked={showContacts} onCheckedChange={setShowContacts} />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label className="text-[14px]">Скрыть текущую организацию</Label>
-                          <p className="text-[12px] text-muted-foreground mt-0.5">Название текущей работы будет скрыто</p>
+                          <Label className="text-[13px]">Скрыть текущую организацию</Label>
+                          <p className="text-[11px] text-muted-foreground/70 mt-0.5">Название текущей работы будет скрыто</p>
                         </div>
                         <Switch checked={hideCurrentOrg} onCheckedChange={setHideCurrentOrg} />
                       </div>
@@ -1143,27 +1131,27 @@ export default function ProfileEdit() {
                 <div className="bg-card rounded-2xl p-6 shadow-card space-y-5">
                   <h2 className="text-[18px] font-medium">Контакты</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[14px]">Email</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Email</Label>
                       <Input className="text-[15px]" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ivan@example.com" />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[14px]">Телефон</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Телефон</Label>
                       <Input className="text-[15px]" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 (999) 123-45-67" />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[14px]">Telegram</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Telegram</Label>
                       <Input className="text-[15px]" value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[14px]">LinkedIn</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">LinkedIn</Label>
                       <Input className="text-[15px]" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/username" />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-[14px]">Портфолио / Сайт</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Портфолио / Сайт</Label>
                     <Input className="text-[15px]" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} placeholder="https://example.com" />
                   </div>
                   
