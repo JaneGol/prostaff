@@ -48,7 +48,7 @@ function ArticleList() {
   return (
     <Layout>
       <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-8 md:py-12">
-        <div className="container">
+        <div className="container max-w-6xl">
           <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold uppercase mb-4">
             Контент и статьи
           </h1>
@@ -60,7 +60,7 @@ function ArticleList() {
       </section>
 
       <section className="py-6 md:py-8">
-        <div className="container">
+        <div className="container max-w-6xl">
           {loading ? (
             <p className="text-center text-muted-foreground py-12">Загрузка...</p>
           ) : articles.length === 0 ? (
