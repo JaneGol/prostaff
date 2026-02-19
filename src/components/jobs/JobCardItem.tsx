@@ -185,7 +185,7 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
                     {job.description && (
                       <div className="flex items-start gap-1.5">
                         <FileText className="h-3.5 w-3.5 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
                           {stripHtml(job.description)}
                         </p>
                       </div>
@@ -202,7 +202,7 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
                   <Button
                     variant="primary"
                     size="default"
-                    className="hidden md:flex flex-shrink-0 animate-fade-in !rounded-sm ml-20 bg-primary/85 hover:bg-primary/75 text-sm"
+                    className="hidden md:flex flex-shrink-0 animate-fade-in !rounded-sm ml-6 bg-primary/85 hover:bg-primary/75 text-sm"
                     onClick={handleApply}
                   >
                     Откликнуться
