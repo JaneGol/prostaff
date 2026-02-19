@@ -592,11 +592,11 @@ export default function ProfileEdit() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className="text-[14px]">Имя *</Label>
-                        <Input className="text-[17px] font-semibold h-12" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
+                        <Input className="text-[20px] font-semibold h-14" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-[14px]">Фамилия *</Label>
-                        <Input className="text-[17px] font-semibold h-12" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
+                        <Input className="text-[20px] font-semibold h-14" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
                       </div>
                     </div>
                   </div>
@@ -978,12 +978,17 @@ export default function ProfileEdit() {
                     <p className="text-[15px] font-medium text-foreground">
                       {firstName || "Имя"} {lastName || "Фамилия"}
                     </p>
-                    {roleName && (
-                      <p className="text-[13px] text-foreground/80 mt-0.5">{roleName}</p>
+                    {primarySpecName && (
+                      <p className="text-[13px] text-foreground/80 mt-0.5">{primarySpecName}</p>
                     )}
-                    {specializationId && (
+                    {selectedSportIds.length > 0 && (
                       <p className="text-[12px] text-muted-foreground mt-0.5">
-                        {specializations.find(s => s.id === specializationId)?.name}
+                        {allSports.filter(s => selectedSportIds.includes(s.id)).map(s => s.name).join(", ")}
+                      </p>
+                    )}
+                    {secondarySpecializationId && (
+                      <p className="text-[12px] text-muted-foreground mt-0.5">
+                        + {specializations.find(s => s.id === secondarySpecializationId)?.name}
                       </p>
                     )}
                     {level && (
