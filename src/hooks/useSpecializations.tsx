@@ -47,8 +47,10 @@ export function useSpecializations() {
 
   /** Get specializations filtered by group_key */
   const getSpecsForGroup = (groupKey: string | null): Specialization[] => {
-    if (!groupKey || groupKey === "all") return specializations;
-    return specializations.filter((s) => s.group_key === groupKey);
+    const filtered = (!groupKey || groupKey === "all")
+      ? specializations
+      : specializations.filter((s) => s.group_key === groupKey);
+    return [...filtered].sort((a, b) => a.name.localeCompare(b.name, "ru"));
   };
 
   /** Get role IDs belonging to a specialization */
