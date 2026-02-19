@@ -11,6 +11,7 @@ import {
   Users, Eye, ChevronRight, Loader2, ArrowRight,
   CheckCircle2, Circle, Sparkles, TrendingUp, MapPin, Heart
 } from "lucide-react";
+import { isBankAvatar, decodeBankAvatar, getDefaultAvatar } from "@/lib/defaultAvatars";
 
 export default function Dashboard() {
   const { user, userRole, loading } = useAuth();
@@ -292,11 +293,16 @@ function SpecialistDashboard({ userId }: { userId: string }) {
                 <Link to={profile.id ? `/profile/${profile.id}` : "/profile/edit"} className="block">
                   <div className="bg-card rounded-2xl p-5 shadow-card hover:shadow-md transition-shadow flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {profile.avatar_url ? (
-                        <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <FileText className="h-5 w-5 text-muted-foreground" />
-                      )}
+                      {(() => {
+                        const url = profile.avatar_url;
+                        if (url && isBankAvatar(url)) {
+                          const ba = decodeBankAvatar(url);
+                          return ba ? <img src={ba.src} alt={ba.label} className="w-full h-full object-cover" /> : <FileText className="h-5 w-5 text-muted-foreground" />;
+                        }
+                        if (url) return <img src={url} alt="" className="w-full h-full object-cover" />;
+                        const def = getDefaultAvatar(profile.id);
+                        return <img src={def.src} alt={def.label} className="w-full h-full object-cover" />;
+                      })()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-medium text-foreground">Моё резюме</p>
