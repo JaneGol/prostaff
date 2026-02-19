@@ -10,8 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, X } from "lucide-react";
+import { Loader2, Save, X, Users, Activity, BarChart3, HeartPulse, Briefcase } from "lucide-react";
 import { ImageUpload } from "@/components/shared/ImageUpload";
+import { GROUPS } from "@/lib/specialistSections";
 import { ProfileProgress } from "@/components/shared/ProfileProgress";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { SportsEditor, SportExperience, SportOpenTo } from "@/components/profile/SportsEditor";
@@ -74,6 +75,7 @@ export default function ProfileEdit() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [specializationId, setSpecializationId] = useState("");
+  const [selectedGroupKey, setSelectedGroupKey] = useState("");
   const [roleId, setRoleId] = useState("");
   const [secondaryRoleId, setSecondaryRoleId] = useState("");
   const [level, setLevel] = useState("middle");
@@ -174,6 +176,11 @@ export default function ProfileEdit() {
         setFirstName(profile.first_name);
         setLastName(profile.last_name);
         setSpecializationId((profile as any).specialization_id || "");
+        // Derive group from specialization
+        if ((profile as any).specialization_id && specsRes.data) {
+          const spec = specsRes.data.find((s: any) => s.id === (profile as any).specialization_id);
+          if (spec) setSelectedGroupKey(spec.group_key);
+        }
         setRoleId(profile.role_id || "");
         setSecondaryRoleId((profile as any).secondary_role_id || "");
         setLevel(profile.level || "middle");
@@ -473,10 +480,16 @@ export default function ProfileEdit() {
   };
 
   const primaryRoleName = roles.find(r => r.id === roleId)?.name;
+  const specsForGroup = selectedGroupKey
+    ? specializations.filter(s => s.group_key === selectedGroupKey)
+    : specializations;
   const rolesForSpecialization = specializationId
     ? roles.filter(r => r.specialization_id === specializationId)
-    : roles;
-  const secondaryRoleOptions = roles.filter(r => r.id !== roleId && (allowedSecondaryRoles.length === 0 || allowedSecondaryRoles.includes(r.id)));
+    : [];
+  // Secondary role: from same group's specializations
+  const specsInGroup = specializations.filter(s => s.group_key === selectedGroupKey);
+  const specIdsInGroup = specsInGroup.map(s => s.id);
+  const secondaryRoleOptions = roles.filter(r => r.id !== roleId && r.specialization_id && specIdsInGroup.includes(r.specialization_id));
 
   const profileFields = useMemo(() => [
     { key: "avatar", label: "Фото профиля", completed: !!avatarUrl, weight: 5 },
@@ -575,12 +588,53 @@ export default function ProfileEdit() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className="text-[14px]">Имя *</Label>
-                        <Input className="text-[15px]" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
+                        <Input className="text-[17px] font-semibold h-12" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-[14px]">Фамилия *</Label>
-                        <Input className="text-[15px]" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
+                        <Input className="text-[17px] font-semibold h-12" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Group Selection Cards */}
+                  <div>
+                    <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider mb-3">Направление</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                      {GROUPS.map(g => {
+                        const icons: Record<string, React.ReactNode> = {
+                          coaching: <Users className="h-5 w-5" />,
+                          performance: <Activity className="h-5 w-5" />,
+                          analytics: <BarChart3 className="h-5 w-5" />,
+                          medical: <HeartPulse className="h-5 w-5" />,
+                          other: <Briefcase className="h-5 w-5" />,
+                        };
+                        const isActive = selectedGroupKey === g.key;
+                        return (
+                          <button
+                            key={g.key}
+                            type="button"
+                            onClick={() => {
+                              setSelectedGroupKey(g.key);
+                              // Reset downstream if group changed
+                              const currentSpec = specializations.find(s => s.id === specializationId);
+                              if (currentSpec && currentSpec.group_key !== g.key) {
+                                setSpecializationId("");
+                                setRoleId("");
+                                setSecondaryRoleId("");
+                              }
+                            }}
+                            className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 text-center transition-all ${
+                              isActive
+                                ? "border-primary bg-primary/5 text-primary"
+                                : "border-border bg-background text-muted-foreground hover:border-primary/40"
+                            }`}
+                          >
+                            {icons[g.key] || <Briefcase className="h-5 w-5" />}
+                            <span className="text-[11px] font-medium leading-tight">{g.shortTitle}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -598,10 +652,10 @@ export default function ProfileEdit() {
                         if (currentRole && currentRole.specialization_id !== val) {
                           setRoleId("");
                         }
-                      }}>
-                        <SelectTrigger className="text-[15px]"><SelectValue placeholder="Выберите специализацию" /></SelectTrigger>
+                      }} disabled={!selectedGroupKey}>
+                        <SelectTrigger className="text-[15px]"><SelectValue placeholder={selectedGroupKey ? "Выберите специализацию" : "Сначала выберите направление"} /></SelectTrigger>
                         <SelectContent>
-                          {specializations.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                          {specsForGroup.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                       <p className="text-[12px] text-muted-foreground">Определяет категорию, в которой вас найдут клубы</p>
@@ -611,7 +665,7 @@ export default function ProfileEdit() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div className="space-y-2">
                         <Label className="text-[14px]">Роль / должность *</Label>
-                        <Select value={roleId} onValueChange={setRoleId}>
+                        <Select value={roleId} onValueChange={setRoleId} disabled={!specializationId}>
                           <SelectTrigger className="text-[15px]"><SelectValue placeholder={specializationId ? "Выберите роль" : "Сначала выберите специализацию"} /></SelectTrigger>
                           <SelectContent>
                             {rolesForSpecialization.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
