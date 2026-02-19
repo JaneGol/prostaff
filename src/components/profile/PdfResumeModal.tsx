@@ -151,6 +151,9 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
   .contact-row { display: flex; flex-wrap: wrap; gap: 16px; font-size: 10pt; }
   .port-item { font-size: 10pt; margin-bottom: 4px; }
   .sport-row { font-size: 10pt; margin-bottom: 3px; }
+  .skill-line { font-size: 10pt; margin-bottom: 3px; padding-left: 14px; position: relative; }
+  .skill-dot { width: 6px; height: 6px; border-radius: 50%; background: #c8cde8; display: inline-block; position: absolute; left: 0; top: 6px; }
+  .skill-dot.top-dot { background: #4355C5; }
   .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 8px; text-align: center; font-size: 8pt; color: #aaa; }
   a { color: #4355C5; text-decoration: none; }
 </style></head><body><div class="page">`;
@@ -187,10 +190,12 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
       if (skills.length > 0) {
         html += `<div class="section"><div class="section-title">Навыки</div>`;
         if (topSkills.length > 0) {
-          html += `<p style="margin-bottom:4px"><strong>Ключевые:</strong> ${topSkills.map(s => `${s.name} (${profLabels[s.proficiency]})`).join(", ")}</p>`;
+          html += `<div style="margin-bottom:6px"><strong style="font-size:10pt;color:#4355C5">Ключевые навыки</strong></div>`;
+          topSkills.forEach(s => { html += `<div class="skill-line"><span class="skill-dot top-dot"></span><strong>${s.name}</strong> <span style="color:#777">— ${profLabels[s.proficiency]}</span></div>`; });
         }
         if (otherSkills.length > 0) {
-          html += `<p style="font-size:10pt;color:#555">${otherSkills.map(s => `${s.name} (${profLabels[s.proficiency]})`).join(", ")}</p>`;
+          html += `<div style="margin-top:8px;margin-bottom:6px"><strong style="font-size:10pt;color:#555">Дополнительные</strong></div>`;
+          otherSkills.forEach(s => { html += `<div class="skill-line"><span class="skill-dot"></span>${s.name} <span style="color:#777">— ${profLabels[s.proficiency]}</span></div>`; });
         }
         html += `</div>`;
       }
