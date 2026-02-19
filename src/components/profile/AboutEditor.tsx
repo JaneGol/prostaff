@@ -60,6 +60,7 @@ export function AboutEditor({
 
       <div className="space-y-1">
         <Label className={LABEL}>Чем я полезен команде</Label>
+        <p className={HINT}>Этот текст будет виден всем в вашей карточке в банке специалистов</p>
         <Textarea
           value={aboutUseful}
           onChange={(e) => onAboutUsefulChange(e.target.value)}
