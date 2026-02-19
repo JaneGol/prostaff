@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AVATAR_BANK, getAvatarStyle, encodeBankAvatar, type BankAvatar } from "@/lib/defaultAvatars";
+import { AVATAR_BANK, encodeBankAvatar, type BankAvatar } from "@/lib/defaultAvatars";
 import { Palette } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -47,10 +47,7 @@ export function AvatarBankPicker({ onSelect, trigger }: AvatarBankPickerProps) {
               )}
               title={avatar.label}
             >
-              <div
-                className="w-full h-full rounded-full"
-                style={getAvatarStyle(avatar)}
-              />
+              <img src={avatar.src} alt={avatar.label} className="w-full h-full object-cover rounded-full" />
             </button>
           ))}
         </div>
