@@ -76,6 +76,7 @@ export default function ProfileEdit() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState("basic");
 
@@ -483,6 +484,195 @@ export default function ProfileEdit() {
     }
   };
 
+  const ensureProfileId = async (): Promise<string> => {
+    if (profileId) return profileId;
+    if (!firstName.trim() || !lastName.trim()) {
+      throw new Error("Заполните имя и фамилию");
+    }
+    const profileData = {
+      user_id: user!.id,
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      level: level as any,
+      search_status: searchStatus as any,
+      country: country.trim() || null,
+    } as any;
+    const { data, error } = await supabase.from("profiles").insert(profileData).select("id").single();
+    if (error) throw error;
+    setProfileId(data.id);
+    return data.id;
+  };
+
+  const handleSectionSave = async (section: string) => {
+    setSavingSection(section);
+    try {
+      const pid = await ensureProfileId();
+
+      if (section === "basic" || section === "photo") {
+        const updateData = {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          specialization_id: specializationId || null,
+          secondary_specialization_id: secondarySpecializationId || null,
+          role_id: roleId || null,
+          secondary_role_id: secondaryRoleId || null,
+          level: level as any,
+          avatar_url: avatarUrl || null,
+        } as any;
+        const { error } = await supabase.from("profiles").update(updateData).eq("id", pid);
+        if (error) throw error;
+
+        // Also save sports chips (selected in basic card)
+        await supabase.from("profile_sports_experience").delete().eq("profile_id", pid);
+        const existingSportIds = new Set(sportsExperience.map(s => s.sport_id));
+        const mergedSports = [
+          ...sportsExperience,
+          ...selectedSportIds
+            .filter(id => !existingSportIds.has(id))
+            .map(id => ({ sport_id: id, years: 1, level: "intermediate" })),
+        ];
+        if (mergedSports.length > 0) {
+          await supabase.from("profile_sports_experience").insert(
+            mergedSports.map(s => ({ profile_id: pid, sport_id: s.sport_id, years: s.years, level: s.level }))
+          );
+        }
+      } else if (section === "about") {
+        const { error } = await supabase.from("profiles").update({
+          bio: bio.trim() || null,
+          about_useful: aboutUseful.trim() || null,
+          about_style: aboutStyle.trim() || null,
+          about_goals: aboutGoals.trim() || null,
+        } as any).eq("id", pid);
+        if (error) throw error;
+      } else if (section === "status") {
+        const { error } = await supabase.from("profiles").update({
+          city: city.trim() || null,
+          country: country.trim() || null,
+          is_relocatable: isRelocatable,
+          is_remote_available: isRemoteAvailable,
+          search_status: searchStatus as any,
+          desired_city: desiredCity.trim() || null,
+          desired_country: desiredCountry.trim() || null,
+          desired_contract_type: desiredContractType || null,
+          is_public: isPublic,
+          visibility_level: visibilityLevel,
+          show_name: showName,
+          show_contacts: showContacts,
+          hide_current_org: hideCurrentOrg,
+        } as any).eq("id", pid);
+        if (error) throw error;
+      } else if (section === "skills") {
+        await supabase.from("profile_skills").delete().eq("profile_id", pid);
+        if (selectedSkills.length > 0) {
+          await supabase.from("profile_skills").insert(
+            selectedSkills.map(s => ({
+              profile_id: pid,
+              skill_id: s.skill_id,
+              proficiency: s.proficiency,
+              is_top: s.is_top,
+              is_custom: s.is_custom,
+              custom_name: s.custom_name || null,
+              custom_group: s.custom_group || null,
+              status: s.is_custom ? "pending" : "approved",
+            })) as any
+          );
+        }
+      } else if (section === "sports") {
+        await supabase.from("profile_sports_experience").delete().eq("profile_id", pid);
+        const existingSportIds = new Set(sportsExperience.map(s => s.sport_id));
+        const mergedSports = [
+          ...sportsExperience,
+          ...selectedSportIds
+            .filter(id => !existingSportIds.has(id))
+            .map(id => ({ sport_id: id, years: 1, level: "intermediate" })),
+        ];
+        if (mergedSports.length > 0) {
+          await supabase.from("profile_sports_experience").insert(
+            mergedSports.map(s => ({ profile_id: pid, sport_id: s.sport_id, years: s.years, level: s.level }))
+          );
+        }
+        await supabase.from("profile_sports_open_to").delete().eq("profile_id", pid);
+        if (sportsOpenTo.length > 0) {
+          await supabase.from("profile_sports_open_to").insert(
+            sportsOpenTo.map(s => ({ profile_id: pid, sport_id: s.sport_id || null, sport_group: s.sport_group || null }))
+          );
+        }
+      } else if (section === "experience") {
+        await supabase.from("experiences").delete().eq("profile_id", pid);
+        for (const exp of experiences) {
+          await supabase.from("experiences").insert({
+            profile_id: pid, company_name: exp.company_name, position: exp.position,
+            league: exp.league || null, team_level: exp.team_level || null,
+            start_date: exp.start_date, end_date: exp.end_date || null,
+            is_current: exp.is_current, description: exp.description || null,
+            employment_type: exp.employment_type, achievements: exp.achievements,
+            is_remote: exp.is_remote, hide_org: exp.hide_org,
+          } as any);
+        }
+      } else if (section === "education") {
+        await supabase.from("candidate_education").delete().eq("profile_id", pid);
+        for (const edu of education) {
+          if (!edu.institution.trim()) continue;
+          await supabase.from("candidate_education").insert({
+            profile_id: pid, institution: edu.institution, degree: edu.degree || null,
+            field_of_study: edu.field_of_study || null, start_year: edu.start_year,
+            end_year: edu.end_year, country: edu.country || null, city: edu.city || null,
+            is_current: edu.is_current,
+          } as any);
+        }
+        await supabase.from("candidate_certificates").delete().eq("profile_id", pid);
+        for (const cert of certificates) {
+          if (!cert.name.trim()) continue;
+          await supabase.from("candidate_certificates").insert({
+            profile_id: pid, name: cert.name, issuer: cert.issuer || null,
+            year: cert.year, url: cert.url || null,
+          } as any);
+        }
+      } else if (section === "portfolio") {
+        await supabase.from("candidate_portfolio").delete().eq("profile_id", pid);
+        for (const item of portfolio) {
+          if (!item.title.trim() || !item.url.trim()) continue;
+          await supabase.from("candidate_portfolio").insert({
+            profile_id: pid, type: item.type, title: item.title, url: item.url,
+            description: item.description || null, tags: item.tags, visibility: item.visibility,
+          } as any);
+        }
+      } else if (section === "contacts") {
+        const { error } = await supabase.from("profiles").update({
+          email: email.trim() || null, phone: phone.trim() || null,
+          telegram: telegram.trim() || null, linkedin_url: linkedinUrl.trim() || null,
+          portfolio_url: portfolioUrl.trim() || null,
+        } as any).eq("id", pid);
+        if (error) throw error;
+      }
+
+      toast({ title: "Сохранено ✓", description: "Раздел успешно обновлён" });
+    } catch (err: any) {
+      console.error("Section save error:", err);
+      toast({ title: "Ошибка", description: err.message || "Не удалось сохранить", variant: "destructive" });
+    } finally {
+      setSavingSection(null);
+    }
+  };
+
+  const SectionSaveButton = ({ section }: { section: string }) => (
+    <div className="flex justify-end pt-4 border-t border-border mt-4">
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => handleSectionSave(section)}
+        disabled={savingSection === section}
+        className="text-[13px] gap-1.5"
+      >
+        {savingSection === section ? (
+          <><Loader2 className="h-3.5 w-3.5 animate-spin" />Сохранение...</>
+        ) : (
+          <><Save className="h-3.5 w-3.5" />Сохранить</>
+        )}
+      </Button>
+    </div>
+  );
+
   const scrollToSection = (sectionId: string) => {
     setActiveSection(sectionId);
     sectionRefs.current[sectionId]?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -580,6 +770,7 @@ export default function ProfileEdit() {
                       </Button>
                     </div>
                   </div>
+                  <SectionSaveButton section="photo" />
                 </div>
 
                 {/* Basic Info */}
@@ -773,17 +964,23 @@ export default function ProfileEdit() {
                       </Select>
                     </div>
                   </div>
+                  <SectionSaveButton section="basic" />
                 </div>
               </div>
 
               {/* ABOUT */}
               <div ref={el => { sectionRefs.current["about"] = el; }}>
-                <AboutEditor
-                  bio={bio} aboutUseful={aboutUseful} aboutStyle={aboutStyle} aboutGoals={aboutGoals}
-                  onBioChange={setBio} onAboutUsefulChange={setAboutUseful}
-                  onAboutStyleChange={setAboutStyle} onAboutGoalsChange={setAboutGoals}
-                  roleName={primarySpecName}
-                />
+                <div className="space-y-0">
+                  <AboutEditor
+                    bio={bio} aboutUseful={aboutUseful} aboutStyle={aboutStyle} aboutGoals={aboutGoals}
+                    onBioChange={setBio} onAboutUsefulChange={setAboutUseful}
+                    onAboutStyleChange={setAboutStyle} onAboutGoalsChange={setAboutGoals}
+                    roleName={primarySpecName}
+                  />
+                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
+                    <SectionSaveButton section="about" />
+                  </div>
+                </div>
               </div>
 
               {/* STATUS & PRIVACY */}
@@ -883,49 +1080,75 @@ export default function ProfileEdit() {
                         <Switch checked={hideCurrentOrg} onCheckedChange={setHideCurrentOrg} />
                       </div>
                     </div>
-                  </div>
+                  <SectionSaveButton section="status" />
                 </div>
+              </div>
               </div>
 
               {/* SKILLS */}
               <div ref={el => { sectionRefs.current["skills"] = el; }}>
-                <SkillsEditor
-                  allSkills={allSkills}
-                  selectedSkills={selectedSkills}
-                  onChange={setSelectedSkills}
-                  primaryRoleName={primarySpecName}
-                />
+                <div className="space-y-0">
+                  <SkillsEditor
+                    allSkills={allSkills}
+                    selectedSkills={selectedSkills}
+                    onChange={setSelectedSkills}
+                    primaryRoleName={primarySpecName}
+                  />
+                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
+                    <SectionSaveButton section="skills" />
+                  </div>
+                </div>
               </div>
 
               {/* SPORTS */}
               <div ref={el => { sectionRefs.current["sports"] = el; }}>
-                <SportsEditor
-                  profileId={profileId}
-                  sportsExperience={sportsExperience}
-                  sportsOpenTo={sportsOpenTo}
-                  onExperienceChange={setSportsExperience}
-                  onOpenToChange={setSportsOpenTo}
-                />
+                <div className="space-y-0">
+                  <SportsEditor
+                    profileId={profileId}
+                    sportsExperience={sportsExperience}
+                    sportsOpenTo={sportsOpenTo}
+                    onExperienceChange={setSportsExperience}
+                    onOpenToChange={setSportsOpenTo}
+                  />
+                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
+                    <SectionSaveButton section="sports" />
+                  </div>
+                </div>
               </div>
 
               {/* EXPERIENCE */}
               <div ref={el => { sectionRefs.current["experience"] = el; }}>
-                <ExperienceEditor experiences={experiences} onChange={setExperiences} />
+                <div className="space-y-0">
+                  <ExperienceEditor experiences={experiences} onChange={setExperiences} />
+                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
+                    <SectionSaveButton section="experience" />
+                  </div>
+                </div>
               </div>
 
               {/* EDUCATION */}
               <div ref={el => { sectionRefs.current["education"] = el; }}>
-                <EducationEditor
-                  education={education}
-                  certificates={certificates}
-                  onEducationChange={setEducation}
-                  onCertificatesChange={setCertificates}
-                />
+                <div className="space-y-0">
+                  <EducationEditor
+                    education={education}
+                    certificates={certificates}
+                    onEducationChange={setEducation}
+                    onCertificatesChange={setCertificates}
+                  />
+                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
+                    <SectionSaveButton section="education" />
+                  </div>
+                </div>
               </div>
 
               {/* PORTFOLIO */}
               <div ref={el => { sectionRefs.current["portfolio"] = el; }}>
-                <PortfolioEditor items={portfolio} onChange={setPortfolio} />
+                <div className="space-y-0">
+                  <PortfolioEditor items={portfolio} onChange={setPortfolio} />
+                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
+                    <SectionSaveButton section="portfolio" />
+                  </div>
+                </div>
               </div>
 
               {/* CONTACTS */}
@@ -956,6 +1179,7 @@ export default function ProfileEdit() {
                     <Label className="text-[14px]">Портфолио / Сайт</Label>
                     <Input className="text-[15px]" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} placeholder="https://example.com" />
                   </div>
+                  <SectionSaveButton section="contacts" />
                 </div>
               </div>
 
