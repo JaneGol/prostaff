@@ -15,7 +15,7 @@ import {
   Clock, Lock, Eye, AlertTriangle, Trophy, Handshake, FolderOpen,
   Star, Award, FileText, Wrench, User
 } from "lucide-react";
-import { isBankAvatar, decodeBankAvatar, getDefaultAvatar } from "@/lib/defaultAvatars";
+import { isBankAvatar, decodeBankAvatar, getDefaultAvatar, isSilhouetteAvatar } from "@/lib/defaultAvatars";
 import { PdfResumeModal } from "@/components/profile/PdfResumeModal";
 
 interface ProfileData {
@@ -321,11 +321,11 @@ export default function Profile() {
                     const url = profile.avatar_url;
                     if (url && isBankAvatar(url)) {
                       const ba = decodeBankAvatar(url);
-                      return ba ? <img src={ba.src} alt={displayName} className="w-full h-full object-cover" /> : <User className="w-10 h-10 md:w-14 md:h-14 text-primary/40" />;
+                      return ba ? <img src={ba.src} alt={displayName} className={`w-full h-full object-cover ${isSilhouetteAvatar(ba) ? "scale-125" : ""}`} /> : <User className="w-10 h-10 md:w-14 md:h-14 text-primary/40" />;
                     }
                     if (url) return <img src={url} alt={displayName} className="w-full h-full object-cover" />;
                     const def = getDefaultAvatar(profile.id);
-                    return <img src={def.src} alt={def.label} className="w-full h-full object-cover" />;
+                    return <img src={def.src} alt={def.label} className={`w-full h-full object-cover ${isSilhouetteAvatar(def) ? "scale-125" : ""}`} />;
                   })()}
                 </div>
               </div>
