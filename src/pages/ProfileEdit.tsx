@@ -809,10 +809,10 @@ export default function ProfileEdit() {
                         </SelectTrigger>
                         <SelectContent>
                           {levels.map(l => (
-                            <SelectItem key={l.value} value={l.value} className="[&[data-highlighted]]:text-accent-foreground">
+                            <SelectItem key={l.value} value={l.value} className="group">
                               <div className="flex flex-col">
                                 <span>{l.label}</span>
-                                <span className="text-[12px] text-muted-foreground/60">{l.desc}</span>
+                                <span className="text-[12px] text-muted-foreground/60 transition-colors group-focus:text-accent-foreground/70">{l.desc}</span>
                               </div>
                             </SelectItem>
                           ))}
