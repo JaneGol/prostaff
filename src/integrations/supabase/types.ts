@@ -636,6 +636,7 @@ export type Database = {
           salary_max: number | null
           salary_min: number | null
           source_id: string | null
+          specialization_id: string | null
           status: Database["public"]["Enums"]["job_status"] | null
           title: string
           updated_at: string | null
@@ -665,6 +666,7 @@ export type Database = {
           salary_max?: number | null
           salary_min?: number | null
           source_id?: string | null
+          specialization_id?: string | null
           status?: Database["public"]["Enums"]["job_status"] | null
           title: string
           updated_at?: string | null
@@ -694,6 +696,7 @@ export type Database = {
           salary_max?: number | null
           salary_min?: number | null
           source_id?: string | null
+          specialization_id?: string | null
           status?: Database["public"]["Enums"]["job_status"] | null
           title?: string
           updated_at?: string | null
@@ -719,6 +722,13 @@ export type Database = {
             columns: ["source_id"]
             isOneToOne: false
             referencedRelation: "hh_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_specialization_id_fkey"
+            columns: ["specialization_id"]
+            isOneToOne: false
+            referencedRelation: "specializations"
             referencedColumns: ["id"]
           },
         ]
@@ -1118,18 +1128,53 @@ export type Database = {
           id: string
           name: string
           name_en: string | null
+          specialization_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
           name: string
           name_en?: string | null
+          specialization_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
           name?: string
           name_en?: string | null
+          specialization_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "specialist_roles_specialization_id_fkey"
+            columns: ["specialization_id"]
+            isOneToOne: false
+            referencedRelation: "specializations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      specializations: {
+        Row: {
+          created_at: string | null
+          group_key: string
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string | null
+          group_key: string
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string | null
+          group_key?: string
+          id?: string
+          name?: string
+          sort_order?: number
         }
         Relationships: []
       }
