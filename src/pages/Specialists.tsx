@@ -175,54 +175,34 @@ export default function Specialists() {
   const fetchProfiles = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(`
-          id, first_name, last_name, avatar_url, city, country, level,
-          search_status, is_relocatable, is_remote_available, show_name,
-          secondary_role_id,
-          specialist_roles!profiles_role_id_fkey (id, name)
-        `)
-        .eq("is_public", true)
-        .order("updated_at", { ascending: false });
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
 
-      if (error) throw error;
-      const profilesList = (data || []) as ProfileCard[];
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/get-profile?mode=list`,
+        { headers }
+      );
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const result = await res.json();
+
+      const profilesList = (result.profiles || []) as ProfileCard[];
       const mergedProfiles = [...profilesList, ...MOCK_PROFILES];
       setProfiles(mergedProfiles);
 
-      // Fetch sports & skills for real profiles
-      const realIds = profilesList.map((p) => p.id);
-      if (realIds.length > 0) {
-        const [sportsData, skillsData] = await Promise.all([
-          supabase
-            .from("profile_sports_experience")
-            .select("profile_id, sport_id, years, sports:sport_id (name, icon)")
-            .in("profile_id", realIds)
-            .order("years", { ascending: false }),
-          supabase
-            .from("profile_skills")
-            .select("profile_id, skill_id, is_top, custom_name, is_custom")
-            .in("profile_id", realIds)
-            .eq("is_top", true),
-        ]);
-
-        const groupedSports: Record<string, ProfileSportExp[]> = {};
-        for (const s of (sportsData.data || []) as any[]) {
-          if (!groupedSports[s.profile_id]) groupedSports[s.profile_id] = [];
-          groupedSports[s.profile_id].push(s);
-        }
-        const groupedSkills: Record<string, ProfileSkillRow[]> = {};
-        for (const s of (skillsData.data || []) as any[]) {
-          if (!groupedSkills[s.profile_id]) groupedSkills[s.profile_id] = [];
-          groupedSkills[s.profile_id].push(s);
-        }
-        setProfileSports({ ...MOCK_SPORTS, ...groupedSports });
-        setProfileSkills({ ...MOCK_SKILLS, ...groupedSkills });
-      } else {
-        setProfileSports(MOCK_SPORTS);
-        setProfileSkills(MOCK_SKILLS);
-      }
+      const serverSports = result.profileSports || {};
+      const serverSkills = result.profileSkills || {};
+      setProfileSports({ ...MOCK_SPORTS, ...serverSports });
+      setProfileSkills({ ...MOCK_SKILLS, ...serverSkills });
     } catch (err) {
       console.error("Error fetching profiles:", err);
     } finally {
