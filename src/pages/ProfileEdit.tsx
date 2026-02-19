@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, X, ChevronDown, Check, Info } from "lucide-react";
+import { Loader2, Save, X, Users, Activity, BarChart3, HeartPulse, Briefcase, ChevronDown, Check, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { GROUPS } from "@/lib/specialistSections";
@@ -658,11 +658,18 @@ export default function ProfileEdit() {
                     <SectionSaveIcon section="basic" />
                   </div>
 
-                  {/* Direction — segmented control */}
+                  {/* Direction */}
                   <div>
-                    <p className={`${SUB_TITLE} mb-2`}>Направление</p>
-                    <div className="flex flex-wrap gap-0 rounded-lg border border-border/60 bg-muted/30 p-0.5">
+                    <p className={`${SUB_TITLE} mb-2.5`}>Направление</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                       {GROUPS.map(g => {
+                        const icons: Record<string, React.ReactNode> = {
+                          coaching: <Users className="h-4 w-4" />,
+                          performance: <Activity className="h-4 w-4" />,
+                          analytics: <BarChart3 className="h-4 w-4" />,
+                          medical: <HeartPulse className="h-4 w-4" />,
+                          other: <Briefcase className="h-4 w-4" />,
+                        };
                         const isActive = selectedGroupKey === g.key;
                         return (
                           <button
@@ -677,71 +684,36 @@ export default function ProfileEdit() {
                                 setSecondaryRoleId("");
                               }
                             }}
-                            className={`flex-1 min-w-0 px-2.5 py-2 text-[12px] sm:text-[13px] font-medium rounded-md transition-all whitespace-nowrap ${
+                            className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center transition-all ${
                               isActive
-                                ? "bg-background text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
+                                ? "border-primary bg-primary/5 text-primary"
+                                : "border-transparent bg-secondary/60 text-muted-foreground hover:bg-secondary"
                             }`}
                           >
-                            {g.shortTitle}
+                            {icons[g.key] || <Briefcase className="h-4 w-4" />}
+                            <span className="text-[11px] font-medium leading-tight">{g.shortTitle}</span>
                           </button>
                         );
                       })}
                     </div>
                   </div>
 
-                  {/* Primary fields: Specialization + Level */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label className={LABEL}>Специализация</Label>
-                      <Select value={specializationId} onValueChange={(val) => {
-                        setSpecializationId(val);
-                        if (secondarySpecializationId === val) setSecondarySpecializationId("");
-                      }} disabled={!selectedGroupKey}>
-                        <SelectTrigger className={FIELD_TEXT}><SelectValue placeholder={selectedGroupKey ? "Выберите специализацию" : "Сначала выберите направление"} /></SelectTrigger>
-                        <SelectContent>
-                          {specsForGroup.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <p className={HINT}>Используется для поиска клубами</p>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5">
-                        <Label className={LABEL}>Уровень позиции</Label>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Info className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help" />
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-[260px] text-xs">
-                              Помогает клубам понять ваш уровень ответственности и задач.
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                  {/* Specialization + Sport */}
+                  <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-1">
+                        <Label className={LABEL}>Специализация</Label>
+                        <Select value={specializationId} onValueChange={(val) => {
+                          setSpecializationId(val);
+                          if (secondarySpecializationId === val) setSecondarySpecializationId("");
+                        }} disabled={!selectedGroupKey}>
+                          <SelectTrigger className={FIELD_TEXT}><SelectValue placeholder={selectedGroupKey ? "Выберите специализацию" : "Сначала выберите направление"} /></SelectTrigger>
+                          <SelectContent>
+                            {specsForGroup.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <p className={HINT}>Определяет категорию, в которой вас найдут клубы</p>
                       </div>
-                      <Select value={level} onValueChange={setLevel}>
-                        <SelectTrigger className={`${FIELD_TEXT} w-full`}>
-                          <SelectValue placeholder="Выберите уровень">
-                            {level && levels.find(l => l.value === level)?.label}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {levels.map(l => (
-                            <SelectItem key={l.value} value={l.value} className="group">
-                              <div className="flex flex-col">
-                                <span>{l.label}</span>
-                                <span className="text-[12px] text-muted-foreground/60 transition-colors group-focus:text-accent-foreground/70">{l.desc}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Secondary fields: Sport + Additional Specialization */}
-                  <div className="border-t border-border/40 pt-4 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <Label className={LABEL}>Вид спорта</Label>
                         <Popover>
@@ -749,7 +721,7 @@ export default function ProfileEdit() {
                             <Button variant="outline" role="combobox" className={`w-full justify-between ${FIELD_TEXT} h-10 font-normal`}>
                               <span className="truncate">
                                 {selectedSportIds.length > 0
-                                  ? `${selectedSportIds.length} ${selectedSportIds.length === 1 ? 'вид' : selectedSportIds.length < 5 ? 'вида' : 'видов'} спорта`
+                                  ? `Выбрано: ${selectedSportIds.length}`
                                   : "Выберите виды спорта"}
                               </span>
                               <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -781,13 +753,13 @@ export default function ProfileEdit() {
                           </PopoverContent>
                         </Popover>
                         {selectedSportIds.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-1.5">
+                          <div className="flex flex-wrap gap-1 mt-1">
                             {selectedSportIds.map(id => {
                               const sport = allSports.find(s => s.id === id);
                               return sport ? (
-                                <span key={id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border/60 bg-muted/40 text-foreground/80 text-[11px] font-medium">
+                                <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium">
                                   {sport.name}
-                                  <button type="button" onClick={() => setSelectedSportIds(prev => prev.filter(sid => sid !== id))} className="text-muted-foreground/40 hover:text-foreground transition-colors">
+                                  <button type="button" onClick={() => setSelectedSportIds(prev => prev.filter(sid => sid !== id))} className="hover:text-destructive">
                                     <X className="h-3 w-3" />
                                   </button>
                                 </span>
@@ -796,6 +768,10 @@ export default function ProfileEdit() {
                           </div>
                         )}
                       </div>
+                    </div>
+
+                    {/* Additional Specialization */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div className="space-y-1">
                         <Label className={LABEL}>Доп. специализация</Label>
                         <Select value={secondarySpecializationId} onValueChange={setSecondarySpecializationId} disabled={!specializationId}>
@@ -805,8 +781,43 @@ export default function ProfileEdit() {
                             {additionalSpecOptions.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                        <p className={HINT}>Расширяет видимость в поиске</p>
+                        <p className={HINT}>Помогает клубам находить вас шире</p>
                       </div>
+                      <div>{/* alignment */}</div>
+                    </div>
+
+                    {/* Level */}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <Label className={LABEL}>Уровень позиции</Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-[260px] text-xs">
+                              Уровень помогает клубам понять, с какими задачами вы работали и какой уровень ответственности вам подходит.
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <Select value={level} onValueChange={setLevel}>
+                        <SelectTrigger className={`${FIELD_TEXT} w-full`}>
+                          <SelectValue placeholder="Выберите уровень">
+                            {level && levels.find(l => l.value === level)?.label}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {levels.map(l => (
+                            <SelectItem key={l.value} value={l.value} className="group">
+                              <div className="flex flex-col">
+                                <span>{l.label}</span>
+                                <span className="text-[12px] text-muted-foreground/60 transition-colors group-focus:text-accent-foreground/70">{l.desc}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
