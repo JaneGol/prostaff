@@ -804,13 +804,8 @@ export default function ProfileEdit() {
                       </div>
                       <Select value={level} onValueChange={setLevel}>
                         <SelectTrigger className={`${FIELD_TEXT} w-full`}>
-                          <SelectValue>
-                            {level && (
-                              <div className="flex flex-col items-start">
-                                <span>{levels.find(l => l.value === level)?.label}</span>
-                                <span className="text-[12px] text-muted-foreground/60">{levels.find(l => l.value === level)?.desc}</span>
-                              </div>
-                            )}
+                          <SelectValue placeholder="Выберите уровень">
+                            {level && levels.find(l => l.value === level)?.label}
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
