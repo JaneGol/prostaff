@@ -80,7 +80,7 @@ export function RolesSection() {
             >
               <Link
                 to={`/specialists?role=${encodeURIComponent(role.name)}`}
-                className="block p-4 bg-white rounded-lg border border-border hover:border-accent hover:shadow-card transition-all duration-200 group"
+                className="block p-4 h-full min-h-[88px] bg-white rounded-lg border border-border hover:border-accent hover:shadow-card transition-all duration-200 group flex flex-col justify-center"
               >
                 <div className="font-medium text-foreground group-hover:text-accent transition-colors mb-1">
                   {role.name}
