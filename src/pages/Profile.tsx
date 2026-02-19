@@ -163,14 +163,6 @@ export default function Profile() {
   const fetchProfile = async () => {
     try {
       // Use edge function for secure, field-filtered profile data
-      const { data, error } = await supabase.functions.invoke("get-profile", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        body: undefined,
-      });
-
-      // The invoke method doesn't support query params, so we use POST body workaround
-      // Actually, let's use fetch directly with proper URL
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const session = await supabase.auth.getSession();
       const token = session.data.session?.access_token;
@@ -184,7 +176,7 @@ export default function Profile() {
       }
 
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/get-profile?id=${id}&mode=single`,
+        `https://${projectId}.supabase.co/functions/v1/profile-api?id=${id}&mode=single`,
         { headers }
       );
 

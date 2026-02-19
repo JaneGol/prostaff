@@ -188,7 +188,7 @@ export default function Specialists() {
       }
 
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/get-profile?mode=list`,
+        `https://${projectId}.supabase.co/functions/v1/profile-api?mode=list`,
         { headers }
       );
 
