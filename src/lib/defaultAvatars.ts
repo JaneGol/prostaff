@@ -1,55 +1,110 @@
-// Default avatar bank for specialist cards
-// Each avatar is a flat vector illustration of a sport professional
+// Default avatar bank using user-provided sprite sheets
+// Sheet 1: 4 columns × 3 rows = 12 avatars
+// Sheet 2: 5 columns × 4 rows = 20 avatars (row 2 has only 4, but we treat as 5 cols)
 
-import avatar01 from "@/assets/avatars/avatar-01.png";
-import avatar02 from "@/assets/avatars/avatar-02.png";
-import avatar03 from "@/assets/avatars/avatar-03.png";
-import avatar04 from "@/assets/avatars/avatar-04.png";
-import avatar05 from "@/assets/avatars/avatar-05.png";
-import avatar06 from "@/assets/avatars/avatar-06.png";
-import avatar07 from "@/assets/avatars/avatar-07.png";
-import avatar08 from "@/assets/avatars/avatar-08.png";
-import avatar09 from "@/assets/avatars/avatar-09.png";
-import avatar10 from "@/assets/avatars/avatar-10.png";
-import avatar11 from "@/assets/avatars/avatar-11.png";
-import avatar12 from "@/assets/avatars/avatar-12.png";
-import avatar13 from "@/assets/avatars/avatar-13.png";
-import avatar14 from "@/assets/avatars/avatar-14.png";
-import avatar15 from "@/assets/avatars/avatar-15.png";
-import avatar16 from "@/assets/avatars/avatar-16.png";
-import avatar17 from "@/assets/avatars/avatar-17.png";
-import avatar18 from "@/assets/avatars/avatar-18.png";
-import avatar19 from "@/assets/avatars/avatar-19.png";
-import avatar20 from "@/assets/avatars/avatar-20.png";
-import avatar21 from "@/assets/avatars/avatar-21.png";
-import avatar22 from "@/assets/avatars/avatar-22.png";
-import avatar23 from "@/assets/avatars/avatar-23.png";
-import avatar24 from "@/assets/avatars/avatar-24.png";
-import avatar25 from "@/assets/avatars/avatar-25.png";
-import avatar26 from "@/assets/avatars/avatar-26.png";
-import avatar27 from "@/assets/avatars/avatar-27.png";
-import avatar28 from "@/assets/avatars/avatar-28.png";
-import avatar29 from "@/assets/avatars/avatar-29.png";
-import avatar30 from "@/assets/avatars/avatar-30.png";
-import avatar31 from "@/assets/avatars/avatar-31.png";
-import avatar32 from "@/assets/avatars/avatar-32.png";
+export interface BankAvatar {
+  id: number;
+  sheet: string;
+  row: number;
+  col: number;
+  cols: number;
+  rows: number;
+  label: string;
+}
 
-export const DEFAULT_AVATARS = [
-  avatar01, avatar02, avatar03, avatar04, avatar05, avatar06, avatar07, avatar08,
-  avatar09, avatar10, avatar11, avatar12, avatar13, avatar14, avatar15, avatar16,
-  avatar17, avatar18, avatar19, avatar20, avatar21, avatar22, avatar23, avatar24,
-  avatar25, avatar26, avatar27, avatar28, avatar29, avatar30, avatar31, avatar32,
-] as const;
+const SHEET1 = "/avatars/sheet1.png";
+const SHEET2 = "/avatars/sheet2.png";
+
+// Sheet 1: 4 cols × 3 rows
+const sheet1Avatars: BankAvatar[] = [
+  { id: 1,  sheet: SHEET1, row: 0, col: 0, cols: 4, rows: 3, label: "Тренер" },
+  { id: 2,  sheet: SHEET1, row: 0, col: 1, cols: 4, rows: 3, label: "Нутрициолог" },
+  { id: 3,  sheet: SHEET1, row: 0, col: 2, cols: 4, rows: 3, label: "Аналитик" },
+  { id: 4,  sheet: SHEET1, row: 0, col: 3, cols: 4, rows: 3, label: "Скаут" },
+  { id: 5,  sheet: SHEET1, row: 1, col: 0, cols: 4, rows: 3, label: "Тренер вратарей" },
+  { id: 6,  sheet: SHEET1, row: 1, col: 1, cols: 4, rows: 3, label: "Тактический аналитик" },
+  { id: 7,  sheet: SHEET1, row: 1, col: 2, cols: 4, rows: 3, label: "Комментатор" },
+  { id: 8,  sheet: SHEET1, row: 1, col: 3, cols: 4, rows: 3, label: "Физиотерапевт" },
+  { id: 9,  sheet: SHEET1, row: 2, col: 0, cols: 4, rows: 3, label: "Менеджер" },
+  { id: 10, sheet: SHEET1, row: 2, col: 1, cols: 4, rows: 3, label: "Тренер-женщина" },
+  { id: 11, sheet: SHEET1, row: 2, col: 2, cols: 4, rows: 3, label: "Молодой скаут" },
+  { id: 12, sheet: SHEET1, row: 2, col: 3, cols: 4, rows: 3, label: "Учёный" },
+];
+
+// Sheet 2: 5 cols × 4 rows
+const sheet2Avatars: BankAvatar[] = [
+  { id: 13, sheet: SHEET2, row: 0, col: 0, cols: 5, rows: 4, label: "Менеджер" },
+  { id: 14, sheet: SHEET2, row: 0, col: 1, cols: 5, rows: 4, label: "Видеоаналитик" },
+  { id: 15, sheet: SHEET2, row: 0, col: 2, cols: 5, rows: 4, label: "IT-специалист" },
+  { id: 16, sheet: SHEET2, row: 0, col: 3, cols: 5, rows: 4, label: "Врач" },
+  { id: 17, sheet: SHEET2, row: 0, col: 4, cols: 5, rows: 4, label: "Директор" },
+  { id: 18, sheet: SHEET2, row: 1, col: 0, cols: 5, rows: 4, label: "Доктор" },
+  { id: 19, sheet: SHEET2, row: 1, col: 1, cols: 5, rows: 4, label: "Фотограф" },
+  { id: 20, sheet: SHEET2, row: 1, col: 2, cols: 5, rows: 4, label: "Исследователь" },
+  { id: 21, sheet: SHEET2, row: 1, col: 3, cols: 5, rows: 4, label: "HR-менеджер" },
+  { id: 22, sheet: SHEET2, row: 2, col: 0, cols: 5, rows: 4, label: "Тренер" },
+  { id: 23, sheet: SHEET2, row: 2, col: 1, cols: 5, rows: 4, label: "Аналитик" },
+  { id: 24, sheet: SHEET2, row: 2, col: 2, cols: 5, rows: 4, label: "Главный тренер" },
+  { id: 25, sheet: SHEET2, row: 2, col: 3, cols: 5, rows: 4, label: "Видеооператор" },
+  { id: 26, sheet: SHEET2, row: 2, col: 4, cols: 5, rows: 4, label: "Скаут" },
+  { id: 27, sheet: SHEET2, row: 3, col: 0, cols: 5, rows: 4, label: "Администратор" },
+  { id: 28, sheet: SHEET2, row: 3, col: 1, cols: 5, rows: 4, label: "Аналитик данных" },
+  { id: 29, sheet: SHEET2, row: 3, col: 2, cols: 5, rows: 4, label: "S&C тренер" },
+  { id: 30, sheet: SHEET2, row: 3, col: 3, cols: 5, rows: 4, label: "Аналитик" },
+  { id: 31, sheet: SHEET2, row: 3, col: 4, cols: 5, rows: 4, label: "Ментор" },
+];
+
+export const AVATAR_BANK: BankAvatar[] = [...sheet1Avatars, ...sheet2Avatars];
 
 /**
- * Get a deterministic default avatar based on a string id.
- * Returns a consistent avatar for the same id every time.
+ * Get CSS background styles for rendering a bank avatar.
  */
-export function getDefaultAvatar(id: string): string {
+export function getAvatarStyle(avatar: BankAvatar): React.CSSProperties {
+  const bgSizeX = avatar.cols * 100;
+  const bgSizeY = avatar.rows * 100;
+  const posX = avatar.cols > 1 ? (avatar.col / (avatar.cols - 1)) * 100 : 0;
+  const posY = avatar.rows > 1 ? (avatar.row / (avatar.rows - 1)) * 100 : 0;
+
+  return {
+    backgroundImage: `url(${avatar.sheet})`,
+    backgroundSize: `${bgSizeX}% ${bgSizeY}%`,
+    backgroundPosition: `${posX}% ${posY}%`,
+    backgroundRepeat: "no-repeat",
+  };
+}
+
+/**
+ * Encode a bank avatar selection as a string for storage.
+ * Format: "bank:{id}"
+ */
+export function encodeBankAvatar(id: number): string {
+  return `bank:${id}`;
+}
+
+/**
+ * Check if a URL is a bank avatar reference.
+ */
+export function isBankAvatar(url: string | null | undefined): boolean {
+  return !!url && url.startsWith("bank:");
+}
+
+/**
+ * Get the BankAvatar object from an encoded string.
+ */
+export function decodeBankAvatar(url: string): BankAvatar | null {
+  if (!isBankAvatar(url)) return null;
+  const id = parseInt(url.replace("bank:", ""), 10);
+  return AVATAR_BANK.find(a => a.id === id) || null;
+}
+
+/**
+ * Get a deterministic default avatar based on a string id (for profiles without avatar).
+ */
+export function getDefaultAvatar(id: string): BankAvatar {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
   }
-  const index = Math.abs(hash) % DEFAULT_AVATARS.length;
-  return DEFAULT_AVATARS[index];
+  const index = Math.abs(hash) % AVATAR_BANK.length;
+  return AVATAR_BANK[index];
 }
