@@ -66,6 +66,7 @@ export function SpecialistCard({
   const statusLabel = isActive ? "Ищет работу" : isOpen ? "Открыт к предложениям" : null;
 
   const location = [city, country].filter(Boolean).join(", ");
+  const displayAvatar = avatarUrl || getDefaultAvatar(id);
 
   // Total sport years (max across sports)
   const maxSportYears = sports.length > 0
