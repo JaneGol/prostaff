@@ -138,8 +138,8 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
   .meta { font-size: 10pt; color: #777; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 12px; }
   .section { margin-top: 20px; }
   .section-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #2B47B8; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px; }
-  .skill-tag { display: inline-block; background: #f0f0f8; border: 1px solid #ddd; border-radius: 6px; padding: 6px 14px; margin: 3px 6px 3px 0; font-size: 10.5pt; font-weight: 500; }
-  .skill-top { background: #2B47B8; color: #fff; border-color: #2B47B8; }
+  .skill-tag { display: inline-block; background: #e8eaf6; border: 1px solid #c5cae9; border-radius: 6px; padding: 6px 14px; margin: 3px 6px 3px 0; font-size: 10.5pt; font-weight: 500; color: #1a1a2e; }
+  .skill-top { background: #3d5afe; color: #fff; border-color: #3d5afe; }
   .exp-item { margin-bottom: 14px; }
   .exp-org { font-weight: 600; font-size: 11pt; }
   .exp-pos { color: #555; }
