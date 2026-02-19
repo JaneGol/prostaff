@@ -23,6 +23,9 @@ export interface SectionProfile {
   isRemoteAvailable: boolean;
   skills: SkillDisplay[];
   sports: SportDisplay[];
+  avatarUrl?: string | null;
+  aboutSnippet?: string | null;
+  experience?: { count: number; latest_position: string | null; latest_company: string | null; total_years: number } | null;
 }
 
 interface SpecialistSectionProps {

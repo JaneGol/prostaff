@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, User, ChevronRight } from "lucide-react";
+import { MapPin, User, ChevronRight, Briefcase, Clock } from "lucide-react";
 import { getSportIcon } from "@/lib/sportIcons";
 
 const levelLabels: Record<string, string> = {
@@ -22,6 +22,13 @@ interface SkillDisplay {
   name: string;
 }
 
+interface ExperienceSummary {
+  count: number;
+  latest_position: string | null;
+  latest_company: string | null;
+  total_years: number;
+}
+
 interface SpecialistCardProps {
   id: string;
   roleName: string | null;
@@ -33,6 +40,9 @@ interface SpecialistCardProps {
   isRemoteAvailable: boolean;
   skills: SkillDisplay[];
   sports: SportDisplay[];
+  avatarUrl?: string | null;
+  aboutSnippet?: string | null;
+  experience?: ExperienceSummary | null;
 }
 
 export function SpecialistCard({
@@ -46,6 +56,9 @@ export function SpecialistCard({
   isRemoteAvailable,
   skills,
   sports,
+  avatarUrl,
+  aboutSnippet,
+  experience,
 }: SpecialistCardProps) {
   const isActive = searchStatus === "actively_looking";
   const isOpen = searchStatus === "open_to_offers";
@@ -53,14 +66,23 @@ export function SpecialistCard({
 
   const location = [city, country].filter(Boolean).join(", ");
 
+  // Total sport years (max across sports)
+  const maxSportYears = sports.length > 0
+    ? Math.max(...sports.map(s => s.years || 0))
+    : 0;
+
   return (
     <Link to={`/profile/${id}`}>
       <Card className="hover:shadow-lg transition-shadow group shadow-sm mb-3">
         <CardContent className="p-4 md:p-5">
           <div className="flex items-start gap-3">
-            {/* Avatar placeholder */}
-            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-              <User className="h-5 w-5 text-muted-foreground" />
+            {/* Avatar */}
+            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <User className="h-5 w-5 text-muted-foreground" />
+              )}
             </div>
 
             <div className="flex-1 min-w-0">
@@ -77,12 +99,37 @@ export function SpecialistCard({
                     </p>
                   )}
                 </div>
-                {level && (
-                  <Badge variant="outline" className="text-xs px-2 py-0.5 flex-shrink-0">
-                    {levelLabels[level] || level}
-                  </Badge>
-                )}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {level && (
+                    <Badge variant="outline" className="text-xs px-2 py-0.5">
+                      {levelLabels[level] || level}
+                    </Badge>
+                  )}
+                </div>
               </div>
+
+              {/* Experience & bio row */}
+              {(experience?.latest_position || aboutSnippet) && (
+                <div className="mt-1.5">
+                  {experience?.latest_position && (
+                    <p className="text-[13px] text-muted-foreground flex items-center gap-1.5 line-clamp-1">
+                      <Briefcase className="h-3 w-3 flex-shrink-0" />
+                      <span className="font-medium text-foreground/80">{experience.latest_position}</span>
+                      {experience.latest_company && (
+                        <span className="text-muted-foreground">· {experience.latest_company}</span>
+                      )}
+                      {experience.total_years > 0 && (
+                        <span className="text-muted-foreground/70">· {experience.total_years} {experience.total_years === 1 ? "год" : experience.total_years < 5 ? "года" : "лет"}</span>
+                      )}
+                    </p>
+                  )}
+                  {aboutSnippet && (
+                    <p className="text-[12px] text-muted-foreground/80 line-clamp-1 mt-0.5 italic">
+                      {aboutSnippet}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Badges row */}
               <div className="flex flex-wrap gap-1 mt-1.5">
@@ -92,14 +139,14 @@ export function SpecialistCard({
                 {isRemoteAvailable && (
                   <Badge variant="outline" className="text-xs px-2 py-0.5">Удалённо</Badge>
                 )}
-                {skills.slice(0, 2).map((s, i) => (
+                {skills.slice(0, 3).map((s, i) => (
                   <Badge key={i} variant="outline" className="text-xs px-2 py-0.5">
                     {s.name}
                   </Badge>
                 ))}
-                {skills.length > 2 && (
+                {skills.length > 3 && (
                   <Badge variant="outline" className="text-xs px-2 py-0.5">
-                    +{skills.length - 2}
+                    +{skills.length - 3}
                   </Badge>
                 )}
               </div>
@@ -118,6 +165,7 @@ export function SpecialistCard({
                     <span key={s.sport_id} className="flex items-center gap-1 text-muted-foreground">
                       <Icon className="h-3 w-3" />
                       {s.sports?.name}
+                      {s.years > 0 && <span className="text-muted-foreground/60 text-xs">({s.years}л)</span>}
                     </span>
                   );
                 })}

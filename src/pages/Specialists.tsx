@@ -32,6 +32,14 @@ interface ProfileCard {
   show_name: boolean;
   specialist_roles: { id: string; name: string } | null;
   secondary_role_id: string | null;
+  about_useful: string | null;
+}
+
+interface ExperienceSummary {
+  count: number;
+  latest_position: string | null;
+  latest_company: string | null;
+  total_years: number;
 }
 
 interface Sport {
@@ -70,16 +78,16 @@ const levelLabels: Record<string, string> = {
 
 // Mock data for demo
 const MOCK_PROFILES: ProfileCard[] = [
-  { id: "mock-1", first_name: "", last_name: "", avatar_url: null, city: "Москва", country: "Россия", level: "senior", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "b79fbfc7-3c12-44aa-8606-fcba449c9373", name: "Аналитик данных" }, secondary_role_id: null },
-  { id: "mock-2", first_name: "", last_name: "", avatar_url: null, city: "Санкт-Петербург", country: "Россия", level: "middle", search_status: "open_to_offers", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "c19b18bc-4521-45b4-8ed7-54aa647cb17f", name: "Видеоаналитик" }, secondary_role_id: null },
-  { id: "mock-3", first_name: "", last_name: "", avatar_url: null, city: "Алматы", country: "Казахстан", level: "junior", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "362ad39d-e65d-4f79-ab97-0710ff4b40e7", name: "Скаут" }, secondary_role_id: null },
-  { id: "mock-4", first_name: "", last_name: "", avatar_url: null, city: "Минск", country: "Беларусь", level: "head", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "e74c6476-9b5f-4ccd-a3b8-03faa2988d46", name: "Главный тренер" }, secondary_role_id: null },
-  { id: "mock-5", first_name: "", last_name: "", avatar_url: null, city: "Казань", country: "Россия", level: "middle", search_status: "actively_looking", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "a9620db1-3cf0-4d57-a6bf-28c2961c43e1", name: "S&C специалист" }, secondary_role_id: null },
-  { id: "mock-6", first_name: "", last_name: "", avatar_url: null, city: "Краснодар", country: "Россия", level: "senior", search_status: "not_looking", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "98271286-d569-4074-8d96-16dcf258fdcf", name: "Спортивный врач" }, secondary_role_id: null },
-  { id: "mock-7", first_name: "", last_name: "", avatar_url: null, city: "Астана", country: "Казахстан", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "c7c42a56-6bd1-4080-949a-f7f80e5c5651", name: "Тренер вратарей" }, secondary_role_id: null },
-  { id: "mock-8", first_name: "", last_name: "", avatar_url: null, city: "Екатеринбург", country: "Россия", level: "junior", search_status: "open_to_offers", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "2056f7c5-6c00-491f-a298-bec303ff15cf", name: "Нутрициолог" }, secondary_role_id: null },
-  { id: "mock-9", first_name: "", last_name: "", avatar_url: null, city: "Сочи", country: "Россия", level: "senior", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "0bd7deb6-adca-4ff7-b83f-ca8ad11758ad", name: "Реабилитолог" }, secondary_role_id: null },
-  { id: "mock-10", first_name: "", last_name: "", avatar_url: null, city: "Гомель", country: "Беларусь", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "96069546-82b6-4337-9079-a5473e238b3f", name: "Аналитик GPS/отслеживания" }, secondary_role_id: null },
+  { id: "mock-1", first_name: "", last_name: "", avatar_url: null, city: "Москва", country: "Россия", level: "senior", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "b79fbfc7-3c12-44aa-8606-fcba449c9373", name: "Аналитик данных" }, secondary_role_id: null, about_useful: "Помогаю командам принимать решения на основе данных" },
+  { id: "mock-2", first_name: "", last_name: "", avatar_url: null, city: "Санкт-Петербург", country: "Россия", level: "middle", search_status: "open_to_offers", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "c19b18bc-4521-45b4-8ed7-54aa647cb17f", name: "Видеоаналитик" }, secondary_role_id: null, about_useful: "Разбор матчей и подготовка тактических отчётов" },
+  { id: "mock-3", first_name: "", last_name: "", avatar_url: null, city: "Алматы", country: "Казахстан", level: "junior", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "362ad39d-e65d-4f79-ab97-0710ff4b40e7", name: "Скаут" }, secondary_role_id: null, about_useful: null },
+  { id: "mock-4", first_name: "", last_name: "", avatar_url: null, city: "Минск", country: "Беларусь", level: "head", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "e74c6476-9b5f-4ccd-a3b8-03faa2988d46", name: "Главный тренер" }, secondary_role_id: null, about_useful: "20+ лет в профессиональном футболе" },
+  { id: "mock-5", first_name: "", last_name: "", avatar_url: null, city: "Казань", country: "Россия", level: "middle", search_status: "actively_looking", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "a9620db1-3cf0-4d57-a6bf-28c2961c43e1", name: "S&C специалист" }, secondary_role_id: null, about_useful: null },
+  { id: "mock-6", first_name: "", last_name: "", avatar_url: null, city: "Краснодар", country: "Россия", level: "senior", search_status: "not_looking", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "98271286-d569-4074-8d96-16dcf258fdcf", name: "Спортивный врач" }, secondary_role_id: null, about_useful: "Спортивная медицина и реабилитация" },
+  { id: "mock-7", first_name: "", last_name: "", avatar_url: null, city: "Астана", country: "Казахстан", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "c7c42a56-6bd1-4080-949a-f7f80e5c5651", name: "Тренер вратарей" }, secondary_role_id: null, about_useful: null },
+  { id: "mock-8", first_name: "", last_name: "", avatar_url: null, city: "Екатеринбург", country: "Россия", level: "junior", search_status: "open_to_offers", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "2056f7c5-6c00-491f-a298-bec303ff15cf", name: "Нутрициолог" }, secondary_role_id: null, about_useful: null },
+  { id: "mock-9", first_name: "", last_name: "", avatar_url: null, city: "Сочи", country: "Россия", level: "senior", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "0bd7deb6-adca-4ff7-b83f-ca8ad11758ad", name: "Реабилитолог" }, secondary_role_id: null, about_useful: "Возвращение спортсменов после травм" },
+  { id: "mock-10", first_name: "", last_name: "", avatar_url: null, city: "Гомель", country: "Беларусь", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "96069546-82b6-4337-9079-a5473e238b3f", name: "Аналитик GPS/отслеживания" }, secondary_role_id: null, about_useful: null },
 ];
 
 const MOCK_SKILLS: Record<string, ProfileSkillRow[]> = {
@@ -130,6 +138,7 @@ export default function Specialists() {
   const [skills, setSkills] = useState<SkillRef[]>([]);
   const [profileSports, setProfileSports] = useState<Record<string, ProfileSportExp[]>>({});
   const [profileSkills, setProfileSkills] = useState<Record<string, ProfileSkillRow[]>>({});
+  const [profileExperience, setProfileExperience] = useState<Record<string, ExperienceSummary>>({});
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -201,8 +210,10 @@ export default function Specialists() {
 
       const serverSports = result.profileSports || {};
       const serverSkills = result.profileSkills || {};
+      const serverExperience = result.profileExperience || {};
       setProfileSports({ ...MOCK_SPORTS, ...serverSports });
       setProfileSkills({ ...MOCK_SKILLS, ...serverSkills });
+      setProfileExperience(serverExperience);
     } catch (err) {
       console.error("Error fetching profiles:", err);
     } finally {
@@ -558,6 +569,9 @@ export default function Specialists() {
                         isRemoteAvailable={p.is_remote_available}
                         skills={pSkills}
                         sports={pSports}
+                        avatarUrl={p.avatar_url}
+                        aboutSnippet={p.about_useful}
+                        experience={profileExperience[p.id] || null}
                       />
                     );
                   })}
