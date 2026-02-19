@@ -185,14 +185,14 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
 
       // Skills
       if (skills.length > 0) {
-        html += `<div class="section"><div class="section-title">Навыки</div><div class="skills-wrap">`;
+        html += `<div class="section"><div class="section-title">Навыки</div>`;
         if (topSkills.length > 0) {
-          topSkills.forEach(s => { html += `<span class="skill-tag skill-top">★ ${s.name} • ${profLabels[s.proficiency]}</span>`; });
+          html += `<p style="margin-bottom:4px"><strong>Ключевые:</strong> ${topSkills.map(s => `${s.name} (${profLabels[s.proficiency]})`).join(", ")}</p>`;
         }
         if (otherSkills.length > 0) {
-          otherSkills.forEach(s => { html += `<span class="skill-tag">${s.name} • ${profLabels[s.proficiency]}</span>`; });
+          html += `<p style="font-size:10pt;color:#555">${otherSkills.map(s => `${s.name} (${profLabels[s.proficiency]})`).join(", ")}</p>`;
         }
-        html += `</div></div>`;
+        html += `</div>`;
       }
 
       // Experience
