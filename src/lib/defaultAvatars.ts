@@ -4,12 +4,18 @@ export interface BankAvatar {
   id: number;
   src: string;
   label: string;
+  isSilhouette?: boolean;
+}
+
+/** Check if a resolved bank avatar is a default silhouette (needs scale-up). */
+export function isSilhouetteAvatar(avatar: BankAvatar | null | undefined): boolean {
+  return !!avatar?.isSilhouette;
 }
 
 // Full bank for picker (keeps all 16 themed icons + 2 default silhouettes)
 export const AVATAR_BANK: BankAvatar[] = [
-  { id: 17, src: "/avatars/default-male.png",   label: "Мужской силуэт" },
-  { id: 18, src: "/avatars/default-female.png",  label: "Женский силуэт" },
+  { id: 17, src: "/avatars/default-male.png",   label: "Мужской силуэт",  isSilhouette: true },
+  { id: 18, src: "/avatars/default-female.png",  label: "Женский силуэт", isSilhouette: true },
   { id: 1,  src: "/avatars/avatar-01.png", label: "Главный тренер" },
   { id: 2,  src: "/avatars/avatar-02.png", label: "Тактический аналитик" },
   { id: 3,  src: "/avatars/avatar-03.png", label: "IT-специалист" },
