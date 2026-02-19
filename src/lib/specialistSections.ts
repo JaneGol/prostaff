@@ -12,9 +12,9 @@ export interface GroupConfig {
 
 export const GROUPS: GroupConfig[] = [
   { key: "coaching", title: "Тренеры по видам спорта", shortTitle: "Тренеры" },
-  { key: "performance", title: "Тренеры по физподготовке", shortTitle: "Физподготовка" },
-  { key: "analytics", title: "Аналитика и данные", shortTitle: "Аналитика" },
-  { key: "medical", title: "Медперсонал и восстановление", shortTitle: "Медицина" },
+  { key: "performance", title: "Тренеры по физической подготовке", shortTitle: "Тренеры по физической подготовке" },
+  { key: "analytics", title: "Аналитика и данные", shortTitle: "Аналитика и данные" },
+  { key: "medical", title: "Медицина и восстановление", shortTitle: "Медицина и восстановление" },
   { key: "other", title: "Другие специалисты", shortTitle: "Другое" },
 ];
 
