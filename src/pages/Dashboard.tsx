@@ -287,6 +287,32 @@ function SpecialistDashboard({ userId }: { userId: string }) {
                 </div>
               )}
 
+              {/* My Resume card */}
+              {profile && (
+                <Link to={profile.id ? `/profile/${profile.id}` : "/profile/edit"} className="block">
+                  <div className="bg-card rounded-2xl p-5 shadow-card hover:shadow-md transition-shadow flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {profile.avatar_url ? (
+                        <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-medium text-foreground">Моё резюме</p>
+                      <p className="text-[13px] text-muted-foreground truncate">
+                        {[
+                          roleName,
+                          profile.level ? levels[profile.level] : null,
+                          profile.city
+                        ].filter(Boolean).join(" · ") || "Заполните профиль"}
+                      </p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  </div>
+                </Link>
+              )}
+
               {/* Quick actions */}
               <div>
                 <h2 className="text-[16px] font-medium text-foreground mb-3">Быстрые действия</h2>
