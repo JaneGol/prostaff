@@ -14,7 +14,7 @@ import { Loader2, Save, X, Users, Activity, BarChart3, HeartPulse, Briefcase, Ch
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { AvatarBankPicker } from "@/components/shared/AvatarBankPicker";
-import { isBankAvatar, decodeBankAvatar, getAvatarStyle } from "@/lib/defaultAvatars";
+import { isBankAvatar, decodeBankAvatar } from "@/lib/defaultAvatars";
 import { GROUPS } from "@/lib/specialistSections";
 import { ProfileProgress } from "@/components/shared/ProfileProgress";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
@@ -622,9 +622,10 @@ export default function ProfileEdit() {
                       {/* Show bank avatar or image upload */}
                       {isBankAvatar(avatarUrl) ? (
                         <div className="relative group">
-                          <div
-                            className="w-32 h-32 rounded-full overflow-hidden border-2 border-border"
-                            style={getAvatarStyle(decodeBankAvatar(avatarUrl)!)}
+                          <img
+                            src={decodeBankAvatar(avatarUrl)!.src}
+                            alt={decodeBankAvatar(avatarUrl)!.label}
+                            className="w-32 h-32 rounded-full overflow-hidden border-2 border-border object-cover"
                           />
                           <button
                             onClick={() => setAvatarUrl("")}

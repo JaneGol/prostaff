@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, User, ChevronRight, Briefcase, Clock } from "lucide-react";
 import { getSportIcon } from "@/lib/sportIcons";
-import { getDefaultAvatar, getAvatarStyle, isBankAvatar, decodeBankAvatar } from "@/lib/defaultAvatars";
+import { getDefaultAvatar, isBankAvatar, decodeBankAvatar } from "@/lib/defaultAvatars";
 
 const levelLabels: Record<string, string> = {
   intern: "Стажёр",
@@ -88,7 +88,7 @@ export function SpecialistCard({
               {isCustomImage ? (
                 <img src={avatarUrl!} alt="" className="w-full h-full object-cover" />
               ) : resolvedBank ? (
-                <div className="w-full h-full rounded-lg" style={getAvatarStyle(resolvedBank)} />
+                <img src={resolvedBank.src} alt={resolvedBank.label} className="w-full h-full object-cover" />
               ) : (
                 <User className="h-5 w-5 text-muted-foreground" />
               )}
