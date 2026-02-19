@@ -990,14 +990,14 @@ export default function ProfileEdit() {
                     {primarySpecName && (
                       <p className="text-[13px] text-foreground/80 mt-0.5">{primarySpecName}</p>
                     )}
-                    {selectedSportIds.length > 0 && (
-                      <p className="text-[12px] text-muted-foreground mt-0.5">
-                        {allSports.filter(s => selectedSportIds.includes(s.id)).map(s => s.name).join(", ")}
-                      </p>
-                    )}
                     {secondarySpecializationId && (
                       <p className="text-[12px] text-muted-foreground mt-0.5">
                         + {specializations.find(s => s.id === secondarySpecializationId)?.name}
+                      </p>
+                    )}
+                    {selectedSportIds.length > 0 && (
+                      <p className="text-[12px] text-muted-foreground mt-0.5">
+                        {allSports.filter(s => selectedSportIds.includes(s.id)).map(s => s.name).join(", ")}
                       </p>
                     )}
                     {level && (
