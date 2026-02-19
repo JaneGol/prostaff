@@ -75,7 +75,7 @@ export default function Pricing() {
     <Layout>
       <main className="min-h-screen">
         {/* Hero */}
-        <section className="bg-hero-gradient text-primary-foreground py-16 md:py-24">
+        <section className="bg-hero-gradient text-primary-foreground py-8 md:py-12">
           <div className="container text-center">
             <Badge className="bg-white/20 text-white border-white/30 mb-6">
               🎉 Все тарифы бесплатны первые 6 месяцев
