@@ -341,24 +341,24 @@ export default function Profile() {
                       <p className="text-lg text-muted-foreground">{profile.specialist_roles.name}</p>
                     )}
                     {profile.secondary_role && (
-                      <Badge variant="outline" className="text-xs">+ {profile.secondary_role.name}</Badge>
+                      <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium">+ {profile.secondary_role.name}</Badge>
                     )}
                     {!canSeeName && (
-                      <Badge variant="outline" className="text-xs"><Lock className="h-3 w-3 mr-1" />Имя скрыто</Badge>
+                      <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium"><Lock className="h-3.5 w-3.5 mr-1" />Имя скрыто</Badge>
                     )}
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2.5">
                   {statusInfo && (
-                    <Badge variant={statusInfo.variant} className="flex items-center gap-1">
-                      {profile.search_status === "actively_looking" ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                    <Badge variant={statusInfo.variant} className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium">
+                      {profile.search_status === "actively_looking" ? <CheckCircle className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
                       {statusInfo.label}
                     </Badge>
                   )}
-                  {profile.level && <Badge variant="outline"><GraduationCap className="h-3 w-3 mr-1" />{levelLabels[profile.level] || profile.level}</Badge>}
-                  {profile.is_relocatable && <Badge variant="outline">Готов к релокации</Badge>}
-                  {profile.is_remote_available && <Badge variant="outline">Удалённая работа</Badge>}
+                  {profile.level && <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium"><GraduationCap className="h-3.5 w-3.5 mr-1" />{levelLabels[profile.level] || profile.level}</Badge>}
+                  {profile.is_relocatable && <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium">Готов к релокации</Badge>}
+                  {profile.is_remote_available && <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium">Удалённая работа</Badge>}
                 </div>
 
                 {location && (
@@ -482,9 +482,9 @@ export default function Profile() {
                       <div key={s.sport_id} className="flex items-center gap-3">
                         <Icon className="h-5 w-5 text-primary" />
                         <span className="font-medium">{s.sport?.name}</span>
-                        <Badge variant="outline">{s.years} {s.years === 1 ? "год" : s.years < 5 ? "года" : "лет"}</Badge>
-                        {s.level && <Badge variant="secondary" className="text-xs">{s.level === "beginner" ? "Начинающий" : s.level === "intermediate" ? "Средний" : s.level === "advanced" ? "Продвинутый" : "Эксперт"}</Badge>}
-                        {s.context_level && <Badge variant="outline" className="text-xs">{s.context_level}</Badge>}
+                        <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium">{s.years} {s.years === 1 ? "год" : s.years < 5 ? "года" : "лет"}</Badge>
+                        {s.level && <Badge variant="secondary" className="px-4 py-1.5 text-sm font-medium">{s.level === "beginner" ? "Начинающий" : s.level === "intermediate" ? "Средний" : s.level === "advanced" ? "Продвинутый" : "Эксперт"}</Badge>}
+                        {s.context_level && <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium">{s.context_level}</Badge>}
                       </div>
                     );
                   })}
@@ -508,7 +508,7 @@ export default function Profile() {
                         power: "Силовые", coordination: "Координационные", technical: "Технические", mixed: "Смешанные",
                       };
                       return (
-                        <Badge key={`group-${s.sport_group}`} variant="default" className="py-1.5 px-3">
+                        <Badge key={`group-${s.sport_group}`} variant="default" className="px-4 py-1.5 text-sm font-medium">
                           {groupLabels[s.sport_group] || s.sport_group}
                         </Badge>
                       );
@@ -516,7 +516,7 @@ export default function Profile() {
                     if (s.sport_id && s.sport) {
                       const Icon = getSportIcon(s.sport.icon);
                       return (
-                        <Badge key={s.sport_id} variant="outline" className="flex items-center gap-1.5 py-1.5 px-3">
+                        <Badge key={s.sport_id} variant="outline" className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium">
                           <Icon className="h-3.5 w-3.5" />{s.sport.name}
                         </Badge>
                       );
@@ -553,8 +553,8 @@ export default function Profile() {
                             {" — "}
                             {exp.is_current ? "настоящее время" : exp.end_date ? new Date(exp.end_date).toLocaleDateString("ru-RU", { month: "long", year: "numeric" }) : ""}
                           </div>
-                          {exp.employment_type && <Badge variant="outline" className="text-xs">{employmentLabels[exp.employment_type] || exp.employment_type}</Badge>}
-                          {exp.is_remote && <Badge variant="outline" className="text-xs">Удалённо</Badge>}
+                          {exp.employment_type && <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium">{employmentLabels[exp.employment_type] || exp.employment_type}</Badge>}
+                          {exp.is_remote && <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium">Удалённо</Badge>}
                         </div>
                         {exp.description && <p className="text-sm mt-2">{exp.description}</p>}
                         {exp.achievements && exp.achievements.length > 0 && (
@@ -634,7 +634,7 @@ export default function Profile() {
                       <div className="flex items-start justify-between">
                         <div>
                           <h3 className="font-semibold">{item.title}</h3>
-                          <Badge variant="outline" className="text-xs mt-1">{item.type}</Badge>
+                          <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium mt-1">{item.type}</Badge>
                         </div>
                         <a href={item.url} target="_blank" rel="noopener noreferrer">
                           <Button variant="outline" size="sm"><ExternalLink className="h-3 w-3 mr-1" />Открыть</Button>
@@ -643,7 +643,7 @@ export default function Profile() {
                       {item.description && <p className="text-sm text-muted-foreground mt-2">{item.description}</p>}
                       {item.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mt-2">
-                          {item.tags.map((tag, i) => <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>)}
+                          {item.tags.map((tag, i) => <Badge key={i} variant="secondary" className="px-4 py-1.5 text-sm font-medium">{tag}</Badge>)}
                         </div>
                       )}
                     </div>
