@@ -242,7 +242,7 @@ export default function About() {
                   </div>
                 </li>
               </ol>
-              <Button asChild className="mt-6 w-full bg-white text-muted-foreground border-0 shadow-none hover:bg-accent hover:text-white">
+              <Button asChild className="mt-6 w-full bg-white text-primary border-0 shadow-none hover:bg-accent hover:text-white">
                 <Link to="/auth?mode=signup&role=employer">Зарегистрировать клуб</Link>
               </Button>
             </div>
