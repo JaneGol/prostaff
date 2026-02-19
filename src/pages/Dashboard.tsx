@@ -292,28 +292,22 @@ function SpecialistDashboard({ userId }: { userId: string }) {
                 <h2 className="text-[16px] font-medium text-foreground mb-3">Быстрые действия</h2>
                 <div className="grid sm:grid-cols-2 gap-3">
                   <QuickAction
-                    icon={<User className="h-5 w-5" />}
-                    title="Мой профиль"
-                    description="Просмотр и редактирование"
+                    icon={<Eye className="h-5 w-5" />}
+                    title="Посмотреть как рекрутер"
+                    description="Как видят ваш профиль"
                     to={profile?.id ? `/profile/${profile.id}` : "/profile/edit"}
+                  />
+                  <QuickAction
+                    icon={<User className="h-5 w-5" />}
+                    title="Редактировать профиль"
+                    description="Обновить информацию"
+                    to="/profile/edit"
                   />
                   <QuickAction
                     icon={<Heart className="h-5 w-5" />}
                     title="Избранные вакансии"
                     description="Сохранённые предложения"
                     to="/favorites"
-                  />
-                  <QuickAction
-                    icon={<Briefcase className="h-5 w-5" />}
-                    title="Вакансии"
-                    description="Открытые позиции в спорте"
-                    to="/jobs"
-                  />
-                  <QuickAction
-                    icon={<FileText className="h-5 w-5" />}
-                    title="PDF резюме"
-                    description="Скачать профиль"
-                    to={profile?.id ? `/profile/${profile.id}` : "/profile/edit"}
                   />
                   <QuickAction
                     icon={<Settings className="h-5 w-5" />}
