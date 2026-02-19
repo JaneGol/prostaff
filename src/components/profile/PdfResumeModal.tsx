@@ -132,26 +132,26 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11pt; line-height: 1.5; color: #1a1a2e; }
   .page { max-width: 800px; margin: 0 auto; padding: 40px; }
-  .header { border-bottom: 3px solid #2B47B8; padding-bottom: 16px; margin-bottom: 20px; }
-  .name { font-size: 24pt; font-weight: 700; color: #2B47B8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .header { border-bottom: 3px solid #4355C5; padding-bottom: 16px; margin-bottom: 20px; }
+  .name { font-size: 24pt; font-weight: 700; color: #4355C5; text-transform: uppercase; letter-spacing: 0.5px; }
   .role { font-size: 13pt; color: #555; margin-top: 4px; }
   .meta { font-size: 10pt; color: #777; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 12px; }
   .section { margin-top: 20px; }
-  .section-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #2B47B8; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px; }
-  .skill-tag { display: inline-block; background: #e8eaf6; border: 1px solid #c5cae9; border-radius: 6px; padding: 6px 14px; margin: 3px 6px 3px 0; font-size: 10.5pt; font-weight: 500; color: #1a1a2e; }
-  .skill-top { background: #3d5afe; color: #fff; border-color: #3d5afe; }
+  .section-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #4355C5; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px; }
+  .skill-tag { display: inline-block; background: #eceefb; border: 1px solid #c8cde8; border-radius: 6px; padding: 6px 14px; margin: 3px 6px 3px 0; font-size: 10.5pt; font-weight: 500; color: #2a2a4a; }
+  .skill-top { background: #4355C5; color: #fff; border-color: #4355C5; }
   .exp-item { margin-bottom: 14px; }
   .exp-org { font-weight: 600; font-size: 11pt; }
   .exp-pos { color: #555; }
   .exp-dates { font-size: 9.5pt; color: #888; }
   .ach { margin-left: 16px; position: relative; padding-left: 14px; font-size: 10pt; }
-  .ach::before { content: "✓"; position: absolute; left: 0; color: #2B47B8; font-weight: bold; }
+  .ach::before { content: "✓"; position: absolute; left: 0; color: #4355C5; font-weight: bold; }
   .edu-item { margin-bottom: 10px; }
   .contact-row { display: flex; flex-wrap: wrap; gap: 16px; font-size: 10pt; }
   .port-item { font-size: 10pt; margin-bottom: 4px; }
   .sport-row { font-size: 10pt; margin-bottom: 3px; }
   .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 8px; text-align: center; font-size: 8pt; color: #aaa; }
-  a { color: #2B47B8; text-decoration: none; }
+  a { color: #4355C5; text-decoration: none; }
 </style></head><body><div class="page">`;
 
       // Header
@@ -251,16 +251,23 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
       html += `<div class="footer">Сгенерировано на ProStaff • ${new Date().toLocaleDateString("ru-RU")}</div>`;
       html += `</div></body></html>`;
 
-      // Print-based PDF generation
-      const printWindow = window.open("", "_blank");
-      if (printWindow) {
-        printWindow.document.write(html);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => {
-          printWindow.print();
-        }, 500);
-      }
+      // Generate PDF using html2pdf.js
+      const { default: html2pdf } = await import("html2pdf.js");
+      const container = document.createElement("div");
+      container.innerHTML = html;
+      document.body.appendChild(container);
+      const el = container.querySelector(".page") as HTMLElement;
+      const fileName = showName
+        ? `${profile.first_name}_${profile.last_name}_CV.pdf`
+        : "ProStaff_CV.pdf";
+      await html2pdf().set({
+        margin: 0,
+        filename: fileName,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      }).from(el).save();
+      document.body.removeChild(container);
     } finally {
       setGenerating(false);
     }
