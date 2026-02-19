@@ -28,14 +28,14 @@ export function AvatarBankPicker({ onSelect, trigger }: AvatarBankPickerProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-md sm:max-w-lg">
+      <DialogContent className="max-w-lg sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-base">Выберите аватарку</DialogTitle>
           <p className="text-sm text-muted-foreground">
             Выберите иконку из нашего банка или загрузите своё фото
           </p>
         </DialogHeader>
-        <div className="grid grid-cols-5 sm:grid-cols-6 gap-2 max-h-[60vh] overflow-y-auto py-2">
+        <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 max-h-[65vh] overflow-y-auto py-2">
           {AVATAR_BANK.map((avatar) => (
             <button
               key={avatar.id}
