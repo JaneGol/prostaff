@@ -489,7 +489,7 @@ export default function ProfileEdit() {
   return (
     <Layout>
       <div className="bg-secondary/30 min-h-screen">
-        <div className="container py-6 md:py-8">
+        <div className="container max-w-6xl py-6 md:py-8">
           <div className="flex gap-6 lg:gap-8 relative">
             {/* Sidebar - sticky left */}
             <div className="hidden lg:block w-48 shrink-0">

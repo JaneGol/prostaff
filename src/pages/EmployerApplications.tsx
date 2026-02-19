@@ -271,7 +271,7 @@ export default function EmployerApplications() {
   if (authLoading || loading) {
     return (
       <Layout>
-        <div className="container py-8">
+        <div className="container max-w-6xl py-8">
           <Skeleton className="h-8 w-64 mb-6" />
           <div className="space-y-4">
             {[...Array(5)].map((_, i) => (
@@ -285,7 +285,7 @@ export default function EmployerApplications() {
 
   return (
     <Layout>
-      <div className="container py-8 md:py-12">
+      <div className="container max-w-6xl py-8 md:py-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>

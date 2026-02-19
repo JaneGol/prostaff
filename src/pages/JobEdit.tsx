@@ -306,7 +306,7 @@ export default function JobEdit() {
 
   return (
     <Layout>
-      <div className="container py-8 md:py-12">
+      <div className="container max-w-6xl py-8 md:py-12">
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="font-display text-2xl md:text-3xl font-bold uppercase">
