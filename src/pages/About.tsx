@@ -58,7 +58,7 @@ export default function About() {
     <Layout>
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-8 md:py-12">
-        <div className="container">
+        <div className="container max-w-6xl">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tight mb-6">
               О платформе <span className="text-accent">ProStaff</span>
@@ -73,7 +73,7 @@ export default function About() {
 
       {/* Mission Section */}
       <section className="py-16 md:py-20 bg-background">
-        <div className="container">
+        <div className="container max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <span className="text-accent font-semibold uppercase tracking-wide text-sm">
@@ -118,7 +118,7 @@ export default function About() {
 
       {/* Values Section */}
       <section className="py-16 md:py-20 bg-muted/50">
-        <div className="container">
+        <div className="container max-w-6xl">
           <div className="text-center mb-12">
             <span className="text-accent font-semibold uppercase tracking-wide text-sm">
               Наши ценности
@@ -145,7 +145,7 @@ export default function About() {
 
       {/* How It Works Section */}
       <section className="py-16 md:py-20 bg-background">
-        <div className="container">
+        <div className="container max-w-6xl">
           <div className="text-center mb-12">
             <span className="text-accent font-semibold uppercase tracking-wide text-sm">
               Как это работает
@@ -250,7 +250,7 @@ export default function About() {
 
       {/* Contact Section */}
       <section className="py-16 md:py-20 bg-primary text-white">
-        <div className="container">
+        <div className="container max-w-6xl">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="font-display text-3xl md:text-4xl font-bold uppercase tracking-tight mb-4">
               Свяжитесь с нами
