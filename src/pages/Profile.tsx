@@ -443,22 +443,23 @@ export default function Profile() {
                     <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
                       <Star className="h-3.5 w-3.5 text-yellow-500" />Ключевые навыки
                     </h4>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2.5">
                       {topSkills.map(skill => (
-                        <Badge key={skill.id} variant="default" className="flex items-center gap-1">
+                        <Badge key={skill.id} variant="default" className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium">
+                          <Star className="h-3.5 w-3.5 fill-current" />
                           {skill.name}
-                          <span className="text-xs opacity-70">• {proficiencyLabels[skill.proficiency]}</span>
+                          <span className="opacity-70">• {proficiencyLabels[skill.proficiency]}</span>
                         </Badge>
                       ))}
                     </div>
                   </div>
                 )}
                 {otherSkills.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     {otherSkills.map(skill => (
-                      <Badge key={skill.id} variant="secondary" className="flex items-center gap-1">
+                      <Badge key={skill.id} variant="secondary" className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium">
                         {skill.name}
-                        <span className="text-xs opacity-50">• {proficiencyLabels[skill.proficiency]}</span>
+                        <span className="opacity-50">• {proficiencyLabels[skill.proficiency]}</span>
                       </Badge>
                     ))}
                   </div>
