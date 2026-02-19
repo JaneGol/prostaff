@@ -338,7 +338,7 @@ export default function Profile() {
                   <h1 className="font-display text-2xl md:text-3xl font-bold uppercase">{displayName}</h1>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     {profile.specialist_roles && (
-                      <p className="text-lg font-semibold text-primary">{profile.specialist_roles.name}</p>
+                      <p className="text-xl font-semibold text-primary">{profile.specialist_roles.name}</p>
                     )}
                     {profile.secondary_role && (
                       <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium">+ {profile.secondary_role.name}</Badge>
