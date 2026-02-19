@@ -7,10 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, X, Users, Activity, BarChart3, HeartPulse, Briefcase } from "lucide-react";
+import { Loader2, Save, X, Users, Activity, BarChart3, HeartPulse, Briefcase, ChevronDown, Check } from "lucide-react";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { GROUPS } from "@/lib/specialistSections";
 import { ProfileProgress } from "@/components/shared/ProfileProgress";
@@ -661,30 +662,57 @@ export default function ProfileEdit() {
                       </div>
                       <div className="space-y-2">
                         <Label className="text-[14px]">Вид спорта *</Label>
-                        <div className="flex flex-wrap gap-1.5 min-h-[40px] p-2 rounded-md border border-input bg-background">
-                          {allSports.slice(0, 20).map(sport => {
-                            const isSelected = selectedSportIds.includes(sport.id);
-                            return (
-                              <button
-                                key={sport.id}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedSportIds(prev =>
-                                    isSelected ? prev.filter(id => id !== sport.id) : [...prev, sport.id]
-                                  );
-                                }}
-                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-medium transition-all ${
-                                  isSelected
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                                }`}
-                              >
-                                {sport.name}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <p className="text-[12px] text-muted-foreground">Выберите один или несколько видов спорта</p>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" role="combobox" className="w-full justify-between text-[15px] h-10 font-normal">
+                              <span className="truncate">
+                                {selectedSportIds.length > 0
+                                  ? `Выбрано: ${selectedSportIds.length}`
+                                  : "Выберите виды спорта"}
+                              </span>
+                              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-50 bg-popover" align="start">
+                            <div className="max-h-60 overflow-y-auto p-1">
+                              {allSports.map(sport => {
+                                const isSelected = selectedSportIds.includes(sport.id);
+                                return (
+                                  <button
+                                    key={sport.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedSportIds(prev =>
+                                        isSelected ? prev.filter(id => id !== sport.id) : [...prev, sport.id]
+                                      );
+                                    }}
+                                    className="flex items-center gap-2 w-full px-3 py-2 text-[14px] rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                                  >
+                                    <div className={`flex h-4 w-4 items-center justify-center rounded-sm border ${isSelected ? "bg-primary border-primary text-primary-foreground" : "border-input"}`}>
+                                      {isSelected && <Check className="h-3 w-3" />}
+                                    </div>
+                                    {sport.name}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                        {selectedSportIds.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {selectedSportIds.map(id => {
+                              const sport = allSports.find(s => s.id === id);
+                              return sport ? (
+                                <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[12px] font-medium">
+                                  {sport.name}
+                                  <button type="button" onClick={() => setSelectedSportIds(prev => prev.filter(sid => sid !== id))} className="hover:text-destructive">
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </span>
+                              ) : null;
+                            })}
+                          </div>
+                        )}
                       </div>
                     </div>
 
