@@ -6,7 +6,10 @@ export interface BankAvatar {
   label: string;
 }
 
+// Full bank for picker (keeps all 16 themed icons + 2 default silhouettes)
 export const AVATAR_BANK: BankAvatar[] = [
+  { id: 17, src: "/avatars/default-male.png",   label: "Мужской силуэт" },
+  { id: 18, src: "/avatars/default-female.png",  label: "Женский силуэт" },
   { id: 1,  src: "/avatars/avatar-01.png", label: "Главный тренер" },
   { id: 2,  src: "/avatars/avatar-02.png", label: "Тактический аналитик" },
   { id: 3,  src: "/avatars/avatar-03.png", label: "IT-специалист" },
@@ -23,6 +26,12 @@ export const AVATAR_BANK: BankAvatar[] = [
   { id: 14, src: "/avatars/avatar-14.png", label: "Фитнес-тренер" },
   { id: 15, src: "/avatars/avatar-15.png", label: "Тактический аналитик-женщина" },
   { id: 16, src: "/avatars/avatar-16.png", label: "Спортивный реабилитолог" },
+];
+
+/** The two default silhouettes used when no avatar is chosen */
+export const DEFAULT_AVATARS: BankAvatar[] = [
+  AVATAR_BANK[0], // male
+  AVATAR_BANK[1], // female
 ];
 
 /**
@@ -50,13 +59,13 @@ export function decodeBankAvatar(url: string): BankAvatar | null {
 }
 
 /**
- * Get a deterministic default avatar based on a string id (for profiles without avatar).
+ * Get a deterministic default avatar (male or female silhouette) based on a string id.
  */
 export function getDefaultAvatar(id: string): BankAvatar {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
   }
-  const index = Math.abs(hash) % AVATAR_BANK.length;
-  return AVATAR_BANK[index];
+  const index = Math.abs(hash) % DEFAULT_AVATARS.length;
+  return DEFAULT_AVATARS[index];
 }
