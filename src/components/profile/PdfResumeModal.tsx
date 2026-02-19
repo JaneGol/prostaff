@@ -132,26 +132,26 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11pt; line-height: 1.5; color: #1a1a2e; }
   .page { max-width: 800px; margin: 0 auto; padding: 40px; }
-  .header { border-bottom: 3px solid #4F6ADB; padding-bottom: 16px; margin-bottom: 20px; }
-  .name { font-size: 24pt; font-weight: 700; color: #4F6ADB; text-transform: uppercase; letter-spacing: 0.5px; }
+  .header { border-bottom: 3px solid #2B47B8; padding-bottom: 16px; margin-bottom: 20px; }
+  .name { font-size: 24pt; font-weight: 700; color: #2B47B8; text-transform: uppercase; letter-spacing: 0.5px; }
   .role { font-size: 13pt; color: #555; margin-top: 4px; }
   .meta { font-size: 10pt; color: #777; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 12px; }
   .section { margin-top: 20px; }
-  .section-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #4F6ADB; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px; }
+  .section-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #2B47B8; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px; }
   .skill-tag { display: inline-block; background: #f0f0f8; border: 1px solid #ddd; border-radius: 6px; padding: 6px 14px; margin: 3px 6px 3px 0; font-size: 10.5pt; font-weight: 500; }
-  .skill-top { background: #4F6ADB; color: #fff; border-color: #4F6ADB; }
+  .skill-top { background: #2B47B8; color: #fff; border-color: #2B47B8; }
   .exp-item { margin-bottom: 14px; }
   .exp-org { font-weight: 600; font-size: 11pt; }
   .exp-pos { color: #555; }
   .exp-dates { font-size: 9.5pt; color: #888; }
   .ach { margin-left: 16px; position: relative; padding-left: 14px; font-size: 10pt; }
-  .ach::before { content: "✓"; position: absolute; left: 0; color: #4F6ADB; font-weight: bold; }
+  .ach::before { content: "✓"; position: absolute; left: 0; color: #2B47B8; font-weight: bold; }
   .edu-item { margin-bottom: 10px; }
   .contact-row { display: flex; flex-wrap: wrap; gap: 16px; font-size: 10pt; }
   .port-item { font-size: 10pt; margin-bottom: 4px; }
   .sport-row { font-size: 10pt; margin-bottom: 3px; }
   .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 8px; text-align: center; font-size: 8pt; color: #aaa; }
-  a { color: #4F6ADB; text-decoration: none; }
+  a { color: #2B47B8; text-decoration: none; }
 </style></head><body><div class="page">`;
 
       // Header
