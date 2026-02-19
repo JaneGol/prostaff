@@ -7,18 +7,16 @@ export interface BankAvatar {
 }
 
 export const AVATAR_BANK: BankAvatar[] = [
-  { id: 1,  src: "/avatars/avatar-01.png", label: "Тренер" },
+  { id: 1,  src: "/avatars/avatar-01.png", label: "Главный тренер" },
   { id: 2,  src: "/avatars/avatar-02.png", label: "Тактический аналитик" },
   { id: 3,  src: "/avatars/avatar-03.png", label: "IT-специалист" },
   { id: 4,  src: "/avatars/avatar-04.png", label: "Тренер-женщина" },
   { id: 5,  src: "/avatars/avatar-05.png", label: "Директор" },
-  { id: 6,  src: "/avatars/avatar-06.png", label: "Врач" },
+  { id: 6,  src: "/avatars/avatar-06.png", label: "Врач-женщина" },
   { id: 7,  src: "/avatars/avatar-07.png", label: "Видеооператор" },
   { id: 8,  src: "/avatars/avatar-08.png", label: "Аналитик данных" },
-  { id: 9,  src: "/avatars/avatar-09.png", label: "Главный тренер" },
+  { id: 9,  src: "/avatars/avatar-09.png", label: "Спортивный врач" },
   { id: 10, src: "/avatars/avatar-10.png", label: "S&C тренер" },
-  { id: 11, src: "/avatars/avatar-11.png", label: "Спортивный аналитик" },
-  { id: 12, src: "/avatars/avatar-12.png", label: "Фитнес-тренер" },
 ];
 
 /**
