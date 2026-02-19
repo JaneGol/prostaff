@@ -338,44 +338,6 @@ function SpecialistDashboard({ userId }: { userId: string }) {
             <div className="hidden lg:block w-72 xl:w-80 shrink-0">
               <div className="sticky top-24 space-y-5">
                 {/* Mini preview card */}
-                <div className="bg-card rounded-2xl p-5 shadow-card">
-                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4">
-                    Как вас видят клубы
-                  </p>
-                  <div className="flex flex-col items-center text-center">
-                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden mb-3">
-                      {profile?.avatar_url ? (
-                        <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-lg font-medium text-muted-foreground">
-                          {profile?.first_name?.[0] || "?"}{profile?.last_name?.[0] || "?"}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[15px] font-medium text-foreground">
-                      {profile?.first_name || "Имя"} {profile?.last_name || "Фамилия"}
-                    </p>
-                    {roleName && (
-                      <p className="text-[13px] text-muted-foreground mt-0.5">{roleName}</p>
-                    )}
-                    {profile?.level && (
-                      <span className="inline-block text-[11px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-2">
-                        {levels[profile.level] || profile.level}
-                      </span>
-                    )}
-                    {(profile?.city || profile?.country) && (
-                      <p className="text-[12px] text-muted-foreground mt-2 flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {[profile.city, profile.country].filter(Boolean).join(", ")}
-                      </p>
-                    )}
-                    {profile?.search_status && (
-                      <p className="text-[11px] text-muted-foreground mt-2">
-                        {searchStatusLabel[profile.search_status] || profile.search_status}
-                      </p>
-                    )}
-                  </div>
-                </div>
 
                 {/* All sections checklist */}
                 <div className="bg-card rounded-2xl p-5 shadow-card">
