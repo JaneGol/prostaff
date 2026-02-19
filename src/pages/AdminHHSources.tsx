@@ -43,25 +43,30 @@ interface ImportRun {
   error_message: string | null;
 }
 
-type CategoryFilter = "all" | "coaches" | "analytics" | "medical" | "other";
+type CategoryFilter = "all" | "coaching" | "performance" | "analytics" | "medical" | "other";
 
 const categoryLabels: Record<CategoryFilter, string> = {
   all: "Все",
-  coaches: "Тренеры",
-  analytics: "Аналитики и скауты",
-  medical: "Медицина",
-  other: "Другие специалисты",
+  coaching: "Тренеры",
+  performance: "Тренеры по физической подготовке",
+  analytics: "Аналитика и данные",
+  medical: "Медицина и восстановление",
+  other: "Другое",
 };
+
+const PERFORMANCE_KEYWORDS = ["физподготовк", "физической подготовк", "офп", "s&c", "strength", "conditioning", "инструктор-методист"];
+const COACHING_KEYWORDS = ["тренер"];
+const ANALYTICS_KEYWORDS = ["аналитик", "видеоаналитик", "скаут", "селекционер"];
+const MEDICAL_KEYWORDS = ["врач", "массажист", "физиотерапевт", "реабилитолог", "диетолог", "нутрициолог", "лфк", "психолог"];
 
 const matchesCategory = (name: string, cat: CategoryFilter): boolean => {
   const lower = name.toLowerCase();
   if (cat === "all") return true;
-  if (cat === "coaches") return lower.includes("тренер");
-  if (cat === "analytics")
-    return ["аналитик", "видеоаналитик", "скаут", "селекционер"].some(k => lower.includes(k));
-  if (cat === "medical")
-    return ["врач", "массажист", "физиотерапевт", "реабилитолог", "диетолог", "нутрициолог", "лфк", "психолог"].some(k => lower.includes(k));
-  return !matchesCategory(name, "coaches") && !matchesCategory(name, "analytics") && !matchesCategory(name, "medical");
+  if (cat === "performance") return PERFORMANCE_KEYWORDS.some(k => lower.includes(k));
+  if (cat === "coaching") return COACHING_KEYWORDS.some(k => lower.includes(k)) && !PERFORMANCE_KEYWORDS.some(k => lower.includes(k));
+  if (cat === "analytics") return ANALYTICS_KEYWORDS.some(k => lower.includes(k));
+  if (cat === "medical") return MEDICAL_KEYWORDS.some(k => lower.includes(k));
+  return !matchesCategory(name, "coaching") && !matchesCategory(name, "performance") && !matchesCategory(name, "analytics") && !matchesCategory(name, "medical");
 };
 
 export default function AdminHHSources() {
