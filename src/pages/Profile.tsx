@@ -338,7 +338,7 @@ export default function Profile() {
                   <h1 className="font-display text-2xl md:text-3xl font-bold uppercase">{displayName}</h1>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     {profile.specialist_roles && (
-                      <p className="text-lg text-muted-foreground">{profile.specialist_roles.name}</p>
+                      <p className="text-lg font-semibold text-primary">{profile.specialist_roles.name}</p>
                     )}
                     {profile.secondary_role && (
                       <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium">+ {profile.secondary_role.name}</Badge>
@@ -406,7 +406,7 @@ export default function Profile() {
           {(profile.bio || profile.about_useful || profile.about_style || profile.about_goals) && (
             <Card>
               <CardContent className="py-6 space-y-4">
-                <h2 className="text-base font-semibold flex items-center gap-2">
+                <h2 className="text-base font-semibold flex items-center gap-2 mb-4">
                   <User className="h-5 w-5 text-muted-foreground" />
                   О себе
                 </h2>
@@ -437,7 +437,7 @@ export default function Profile() {
           {skills.length > 0 && (
             <Card>
               <CardContent className="py-6">
-                <h2 className="font-display text-lg font-bold uppercase mb-4">Навыки</h2>
+                <h2 className="text-base font-semibold flex items-center gap-2 mb-4"><Wrench className="h-5 w-5 text-muted-foreground" />Навыки</h2>
                 {topSkills.length > 0 && (
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
@@ -472,8 +472,8 @@ export default function Profile() {
           {sportsExp.length > 0 && (
             <Card>
               <CardContent className="py-6">
-                <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />Опыт по видам спорта
+                <h2 className="text-base font-semibold flex items-center gap-2 mb-4">
+                  <Trophy className="h-5 w-5 text-muted-foreground" />Опыт по видам спорта
                 </h2>
                 <div className="space-y-3">
                   {sportsExp.map(s => {
@@ -496,8 +496,8 @@ export default function Profile() {
           {sportsOpen.length > 0 && (
             <Card>
               <CardContent className="py-6">
-                <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
-                  <Handshake className="h-5 w-5" />Готов работать в
+                <h2 className="text-base font-semibold flex items-center gap-2 mb-4">
+                  <Handshake className="h-5 w-5 text-muted-foreground" />Готов работать в
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {sportsOpen.map((s, i) => {
@@ -532,8 +532,8 @@ export default function Profile() {
           {experiences.length > 0 && (
             <Card>
               <CardContent className="py-6">
-                <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
-                  <Briefcase className="h-5 w-5" />Опыт работы
+                <h2 className="text-base font-semibold flex items-center gap-2 mb-4">
+                  <Briefcase className="h-5 w-5 text-muted-foreground" />Опыт работы
                 </h2>
                 <div className="space-y-6">
                   {experiences.map((exp, index) => (
@@ -579,8 +579,8 @@ export default function Profile() {
           {(educationItems.length > 0 || certificateItems.length > 0) && (
             <Card>
               <CardContent className="py-6">
-                <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5" />Образование и сертификаты
+                <h2 className="text-base font-semibold flex items-center gap-2 mb-4">
+                  <GraduationCap className="h-5 w-5 text-muted-foreground" />Образование и сертификаты
                 </h2>
                 {educationItems.length > 0 && (
                   <div className="space-y-4 mb-4">
@@ -625,8 +625,8 @@ export default function Profile() {
           {portfolioItems.length > 0 && (
             <Card>
               <CardContent className="py-6">
-                <h2 className="font-display text-lg font-bold uppercase mb-4 flex items-center gap-2">
-                  <FolderOpen className="h-5 w-5" />Портфолио
+                <h2 className="text-base font-semibold flex items-center gap-2 mb-4">
+                  <FolderOpen className="h-5 w-5 text-muted-foreground" />Портфолио
                 </h2>
                 <div className="space-y-4">
                   {portfolioItems.map(item => (
