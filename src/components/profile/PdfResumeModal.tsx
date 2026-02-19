@@ -138,8 +138,8 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
   .meta { font-size: 10pt; color: #777; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 12px; }
   .section { margin-top: 20px; }
   .section-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #4355C5; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px; }
-  .skills-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
-  .skill-tag { display: block; float: left; background-color: #eceefb; border: 1px solid #c8cde8; border-radius: 6px; padding: 5px 12px; font-size: 10pt; font-weight: 500; color: #2a2a4a; line-height: 1.3; margin-bottom: 4px; margin-right: 6px; overflow: hidden; }
+  .skills-wrap { display: block; }
+  .skill-tag { display: inline-block; vertical-align: middle; background-color: #eceefb; border: 1px solid #c8cde8; border-radius: 6px; padding: 4px 10px; font-size: 10pt; font-weight: 500; color: #2a2a4a; line-height: 1.4; margin: 0 5px 5px 0; white-space: nowrap; }
   .skill-top { background-color: #4355C5; color: #ffffff; border-color: #4355C5; }
   .exp-item { margin-bottom: 14px; }
   .exp-org { font-weight: 600; font-size: 11pt; }
@@ -187,12 +187,12 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
       if (skills.length > 0) {
         html += `<div class="section"><div class="section-title">Навыки</div><div class="skills-wrap">`;
         if (topSkills.length > 0) {
-          topSkills.forEach(s => { html += `<div class="skill-tag skill-top">★ ${s.name} • ${profLabels[s.proficiency]}</div>`; });
+          topSkills.forEach(s => { html += `<span class="skill-tag skill-top">★ ${s.name} • ${profLabels[s.proficiency]}</span>`; });
         }
         if (otherSkills.length > 0) {
-          otherSkills.forEach(s => { html += `<div class="skill-tag">${s.name} • ${profLabels[s.proficiency]}</div>`; });
+          otherSkills.forEach(s => { html += `<span class="skill-tag">${s.name} • ${profLabels[s.proficiency]}</span>`; });
         }
-        html += `</div><div style="clear:both"></div></div>`;
+        html += `</div></div>`;
       }
 
       // Experience
