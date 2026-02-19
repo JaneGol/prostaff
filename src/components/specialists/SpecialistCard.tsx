@@ -80,11 +80,7 @@ export function SpecialistCard({
           <div className="flex items-start gap-3">
             {/* Avatar */}
             <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <User className="h-5 w-5 text-muted-foreground" />
-              )}
+              <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
             </div>
 
             <div className="flex-1 min-w-0">
