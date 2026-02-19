@@ -750,13 +750,22 @@ export default function ProfileEdit() {
                       </div>
                       <p className="text-xs text-muted-foreground -mt-1">Выберите в зависимости от вашего опыта и типа задач</p>
                       <Select value={level} onValueChange={setLevel}>
-                        <SelectTrigger className="text-[15px] max-w-xs"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="text-[15px] w-full">
+                          <SelectValue>
+                            {level && (
+                              <div className="flex flex-col items-start">
+                                <span>{levels.find(l => l.value === level)?.label}</span>
+                                <span className="text-xs text-muted-foreground">{levels.find(l => l.value === level)?.desc}</span>
+                              </div>
+                            )}
+                          </SelectValue>
+                        </SelectTrigger>
                         <SelectContent>
                           {levels.map(l => (
-                            <SelectItem key={l.value} value={l.value}>
+                            <SelectItem key={l.value} value={l.value} className="[&[data-highlighted]]:text-accent-foreground">
                               <div className="flex flex-col">
                                 <span>{l.label}</span>
-                                <span className="text-xs text-muted-foreground">{l.desc}</span>
+                                <span className="text-xs opacity-70">{l.desc}</span>
                               </div>
                             </SelectItem>
                           ))}
