@@ -655,22 +655,19 @@ export default function ProfileEdit() {
     }
   };
 
-  const SectionSaveButton = ({ section }: { section: string }) => (
-    <div className="flex justify-end pt-4 border-t border-border mt-4">
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => handleSectionSave(section)}
-        disabled={savingSection === section}
-        className="text-[13px] gap-1.5"
-      >
-        {savingSection === section ? (
-          <><Loader2 className="h-3.5 w-3.5 animate-spin" />Сохранение...</>
-        ) : (
-          <><Save className="h-3.5 w-3.5" />Сохранить</>
-        )}
-      </Button>
-    </div>
+  const SectionSaveIcon = ({ section }: { section: string }) => (
+    <button
+      onClick={() => handleSectionSave(section)}
+      disabled={savingSection === section}
+      className="text-muted-foreground/40 hover:text-primary transition-colors disabled:opacity-50"
+      title="Сохранить"
+    >
+      {savingSection === section ? (
+        <Loader2 className="h-5 w-5 animate-spin" />
+      ) : (
+        <Save className="h-5 w-5" />
+      )}
+    </button>
   );
 
   const scrollToSection = (sectionId: string) => {
@@ -770,12 +767,15 @@ export default function ProfileEdit() {
                       </Button>
                     </div>
                   </div>
-                  <SectionSaveButton section="photo" />
+                  
                 </div>
 
                 {/* Basic Info */}
                 <div className="bg-card rounded-2xl p-6 shadow-card space-y-6">
-                  <h2 className="text-[18px] font-medium">Основная информация</h2>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-[18px] font-medium">Основная информация</h2>
+                    <SectionSaveIcon section="basic" />
+                  </div>
 
                   {/* Personal */}
                   <div>
@@ -964,7 +964,7 @@ export default function ProfileEdit() {
                       </Select>
                     </div>
                   </div>
-                  <SectionSaveButton section="basic" />
+                  
                 </div>
               </div>
 
@@ -976,17 +976,19 @@ export default function ProfileEdit() {
                     onBioChange={setBio} onAboutUsefulChange={setAboutUseful}
                     onAboutStyleChange={setAboutStyle} onAboutGoalsChange={setAboutGoals}
                     roleName={primarySpecName}
+                    onSave={() => handleSectionSave("about")}
+                    isSaving={savingSection === "about"}
                   />
-                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
-                    <SectionSaveButton section="about" />
-                  </div>
                 </div>
               </div>
 
               {/* STATUS & PRIVACY */}
               <div ref={el => { sectionRefs.current["status"] = el; }}>
                 <div className="bg-card rounded-2xl p-6 shadow-card space-y-6">
-                  <h2 className="text-[18px] font-medium">Локация, статус и приватность</h2>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-[18px] font-medium">Локация, статус и приватность</h2>
+                    <SectionSaveIcon section="status" />
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -1080,7 +1082,7 @@ export default function ProfileEdit() {
                         <Switch checked={hideCurrentOrg} onCheckedChange={setHideCurrentOrg} />
                       </div>
                     </div>
-                  <SectionSaveButton section="status" />
+                  
                 </div>
               </div>
               </div>
@@ -1094,9 +1096,6 @@ export default function ProfileEdit() {
                     onChange={setSelectedSkills}
                     primaryRoleName={primarySpecName}
                   />
-                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
-                    <SectionSaveButton section="skills" />
-                  </div>
                 </div>
               </div>
 
@@ -1110,9 +1109,6 @@ export default function ProfileEdit() {
                     onExperienceChange={setSportsExperience}
                     onOpenToChange={setSportsOpenTo}
                   />
-                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
-                    <SectionSaveButton section="sports" />
-                  </div>
                 </div>
               </div>
 
@@ -1120,9 +1116,6 @@ export default function ProfileEdit() {
               <div ref={el => { sectionRefs.current["experience"] = el; }}>
                 <div className="space-y-0">
                   <ExperienceEditor experiences={experiences} onChange={setExperiences} />
-                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
-                    <SectionSaveButton section="experience" />
-                  </div>
                 </div>
               </div>
 
@@ -1135,9 +1128,6 @@ export default function ProfileEdit() {
                     onEducationChange={setEducation}
                     onCertificatesChange={setCertificates}
                   />
-                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
-                    <SectionSaveButton section="education" />
-                  </div>
                 </div>
               </div>
 
@@ -1145,9 +1135,6 @@ export default function ProfileEdit() {
               <div ref={el => { sectionRefs.current["portfolio"] = el; }}>
                 <div className="space-y-0">
                   <PortfolioEditor items={portfolio} onChange={setPortfolio} />
-                  <div className="bg-card rounded-b-2xl px-6 pb-6 -mt-1">
-                    <SectionSaveButton section="portfolio" />
-                  </div>
                 </div>
               </div>
 
@@ -1179,7 +1166,7 @@ export default function ProfileEdit() {
                     <Label className="text-[14px]">Портфолио / Сайт</Label>
                     <Input className="text-[15px]" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} placeholder="https://example.com" />
                   </div>
-                  <SectionSaveButton section="contacts" />
+                  
                 </div>
               </div>
 

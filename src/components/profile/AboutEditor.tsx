@@ -1,6 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { User } from "lucide-react";
+import { User, Save, Loader2 } from "lucide-react";
 
 interface AboutEditorProps {
   bio: string;
@@ -12,6 +12,8 @@ interface AboutEditorProps {
   onAboutStyleChange: (val: string) => void;
   onAboutGoalsChange: (val: string) => void;
   roleName?: string;
+  onSave?: () => void;
+  isSaving?: boolean;
 }
 
 const placeholders: Record<string, { useful: string; style: string; goals: string }> = {
@@ -25,16 +27,28 @@ const placeholders: Record<string, { useful: string; style: string; goals: strin
 export function AboutEditor({
   bio, aboutUseful, aboutStyle, aboutGoals,
   onBioChange, onAboutUsefulChange, onAboutStyleChange, onAboutGoalsChange,
-  roleName,
+  roleName, onSave, isSaving,
 }: AboutEditorProps) {
   const ph = placeholders.default;
 
   return (
     <div className="bg-card rounded-2xl p-6 shadow-card space-y-5">
-      <h2 className="text-[18px] font-medium flex items-center gap-2">
-        <User className="h-5 w-5 text-muted-foreground" />
-        О себе
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-[18px] font-medium flex items-center gap-2">
+          <User className="h-5 w-5 text-muted-foreground" />
+          О себе
+        </h2>
+        {onSave && (
+          <button
+            onClick={onSave}
+            disabled={isSaving}
+            className="text-muted-foreground/40 hover:text-primary transition-colors disabled:opacity-50"
+            title="Сохранить"
+          >
+            {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+          </button>
+        )}
+      </div>
 
       <div className="space-y-2">
         <Label className="text-[14px]">Общее описание</Label>
