@@ -24,6 +24,13 @@ import { AboutEditor } from "@/components/profile/AboutEditor";
 interface SpecialistRole {
   id: string;
   name: string;
+  specialization_id: string | null;
+}
+
+interface SpecializationOption {
+  id: string;
+  name: string;
+  group_key: string;
 }
 
 interface Skill {
@@ -66,6 +73,7 @@ export default function ProfileEdit() {
   // Basic info
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [specializationId, setSpecializationId] = useState("");
   const [roleId, setRoleId] = useState("");
   const [secondaryRoleId, setSecondaryRoleId] = useState("");
   const [level, setLevel] = useState("middle");
@@ -103,6 +111,7 @@ export default function ProfileEdit() {
 
   // Reference data
   const [roles, setRoles] = useState<SpecialistRole[]>([]);
+  const [specializations, setSpecializations] = useState<SpecializationOption[]>([]);
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [allowedSecondaryRoles, setAllowedSecondaryRoles] = useState<string[]>([]);
 
@@ -144,13 +153,15 @@ export default function ProfileEdit() {
 
   const fetchData = async () => {
     try {
-      const [rolesRes, skillsRes] = await Promise.all([
-        supabase.from("specialist_roles").select("id, name").order("name"),
-        supabase.from("skills").select("id, name, category").order("name")
+      const [rolesRes, skillsRes, specsRes] = await Promise.all([
+        supabase.from("specialist_roles").select("id, name, specialization_id").order("name"),
+        supabase.from("skills").select("id, name, category").order("name"),
+        supabase.from("specializations").select("id, name, group_key").order("sort_order"),
       ]);
 
       if (rolesRes.data) setRoles(rolesRes.data);
       if (skillsRes.data) setAllSkills(skillsRes.data);
+      if (specsRes.data) setSpecializations(specsRes.data);
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -162,6 +173,7 @@ export default function ProfileEdit() {
         setProfileId(profile.id);
         setFirstName(profile.first_name);
         setLastName(profile.last_name);
+        setSpecializationId((profile as any).specialization_id || "");
         setRoleId(profile.role_id || "");
         setSecondaryRoleId((profile as any).secondary_role_id || "");
         setLevel(profile.level || "middle");
@@ -300,6 +312,7 @@ export default function ProfileEdit() {
         user_id: user!.id,
         first_name: firstName.trim(),
         last_name: lastName.trim(),
+        specialization_id: specializationId || null,
         role_id: roleId || null,
         secondary_role_id: secondaryRoleId || null,
         level: level as any,
@@ -460,6 +473,9 @@ export default function ProfileEdit() {
   };
 
   const primaryRoleName = roles.find(r => r.id === roleId)?.name;
+  const rolesForSpecialization = specializationId
+    ? roles.filter(r => r.specialization_id === specializationId)
+    : roles;
   const secondaryRoleOptions = roles.filter(r => r.id !== roleId && (allowedSecondaryRoles.length === 0 || allowedSecondaryRoles.includes(r.id)));
 
   const profileFields = useMemo(() => [
@@ -571,18 +587,40 @@ export default function ProfileEdit() {
                   {/* Professional */}
                   <div>
                     <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider mb-3">Профессиональное</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    {/* Specialization */}
+                    <div className="space-y-2 mb-4">
+                      <Label className="text-[14px]">Специализация *</Label>
+                      <Select value={specializationId} onValueChange={(val) => {
+                        setSpecializationId(val);
+                        // Reset role if it doesn't belong to new specialization
+                        const currentRole = roles.find(r => r.id === roleId);
+                        if (currentRole && currentRole.specialization_id !== val) {
+                          setRoleId("");
+                        }
+                      }}>
+                        <SelectTrigger className="text-[15px]"><SelectValue placeholder="Выберите специализацию" /></SelectTrigger>
+                        <SelectContent>
+                          {specializations.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[12px] text-muted-foreground">Определяет категорию, в которой вас найдут клубы</p>
+                    </div>
+
+                    {/* Role + Secondary Role */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div className="space-y-2">
-                        <Label className="text-[14px]">Основная специализация</Label>
+                        <Label className="text-[14px]">Роль / должность *</Label>
                         <Select value={roleId} onValueChange={setRoleId}>
-                          <SelectTrigger className="text-[15px]"><SelectValue placeholder="Выберите роль" /></SelectTrigger>
+                          <SelectTrigger className="text-[15px]"><SelectValue placeholder={specializationId ? "Выберите роль" : "Сначала выберите специализацию"} /></SelectTrigger>
                           <SelectContent>
-                            {roles.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
+                            {rolesForSpecialization.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
+                        <p className="text-[12px] text-muted-foreground">Заголовок вашей карточки</p>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-[14px]">Смежная специализация</Label>
+                        <Label className="text-[14px]">Дополнительная роль</Label>
                         <Select value={secondaryRoleId} onValueChange={setSecondaryRoleId} disabled={!roleId}>
                           <SelectTrigger className="text-[15px]"><SelectValue placeholder="Опционально" /></SelectTrigger>
                           <SelectContent>
@@ -590,12 +628,13 @@ export default function ProfileEdit() {
                             {secondaryRoleOptions.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                        <p className="text-[12px] text-muted-foreground max-w-[320px]">Помогает клубам находить вас шире</p>
+                        <p className="text-[12px] text-muted-foreground">Помогает клубам находить вас шире</p>
                       </div>
                     </div>
 
-                    <div className="space-y-2 mt-4">
-                      <Label className="text-[14px]">Уровень</Label>
+                    {/* Level */}
+                    <div className="space-y-2">
+                      <Label className="text-[14px]">Уровень *</Label>
                       <Select value={level} onValueChange={setLevel}>
                         <SelectTrigger className="text-[15px] max-w-xs"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -819,7 +858,12 @@ export default function ProfileEdit() {
                       {firstName || "Имя"} {lastName || "Фамилия"}
                     </p>
                     {roleName && (
-                      <p className="text-[13px] text-muted-foreground mt-0.5">{roleName}</p>
+                      <p className="text-[13px] text-foreground/80 mt-0.5">{roleName}</p>
+                    )}
+                    {specializationId && (
+                      <p className="text-[12px] text-muted-foreground mt-0.5">
+                        {specializations.find(s => s.id === specializationId)?.name}
+                      </p>
                     )}
                     {level && (
                       <span className="inline-block text-[11px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-2">

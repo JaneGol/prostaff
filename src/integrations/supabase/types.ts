@@ -970,6 +970,7 @@ export type Database = {
           secondary_role_id: string | null
           show_contacts: boolean
           show_name: boolean
+          specialization_id: string | null
           telegram: string | null
           updated_at: string | null
           user_id: string
@@ -1005,6 +1006,7 @@ export type Database = {
           secondary_role_id?: string | null
           show_contacts?: boolean
           show_name?: boolean
+          specialization_id?: string | null
           telegram?: string | null
           updated_at?: string | null
           user_id: string
@@ -1040,6 +1042,7 @@ export type Database = {
           secondary_role_id?: string | null
           show_contacts?: boolean
           show_name?: boolean
+          specialization_id?: string | null
           telegram?: string | null
           updated_at?: string | null
           user_id?: string
@@ -1058,6 +1061,13 @@ export type Database = {
             columns: ["secondary_role_id"]
             isOneToOne: false
             referencedRelation: "specialist_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_specialization_id_fkey"
+            columns: ["specialization_id"]
+            isOneToOne: false
+            referencedRelation: "specializations"
             referencedColumns: ["id"]
           },
         ]
