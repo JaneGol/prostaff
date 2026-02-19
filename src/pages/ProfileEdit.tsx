@@ -783,11 +783,11 @@ export default function ProfileEdit() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className="text-[14px]">Имя *</Label>
-                        <Input className="!text-[20px] !font-semibold h-12" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
+                        <Input className="!text-[18px] !font-semibold h-12" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-[14px]">Фамилия *</Label>
-                        <Input className="!text-[20px] !font-semibold h-12" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
+                        <Input className="!text-[18px] !font-semibold h-12" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
                       </div>
                     </div>
                   </div>
