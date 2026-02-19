@@ -194,7 +194,7 @@ async function handleList(
   const { data: ps, error: e } = await ac
     .from("profiles")
     .select(
-      "id, avatar_url, city, country, level, search_status, is_relocatable, is_remote_available, show_name, secondary_role_id, visibility_level, specialist_roles!profiles_role_id_fkey (id, name)",
+      "id, avatar_url, city, country, level, search_status, is_relocatable, is_remote_available, show_name, secondary_role_id, visibility_level, about_useful, specialist_roles!profiles_role_id_fkey (id, name)",
     )
     .eq("is_public", true)
     .in("visibility_level", ["public_preview", "clubs_only"])
@@ -219,6 +219,7 @@ async function handleList(
     show_name: x.show_name,
     specialist_roles: x.specialist_roles,
     secondary_role_id: x.secondary_role_id,
+    about_useful: x.about_useful ? (x.about_useful as string).slice(0, 120) : null,
     first_name: null,
     last_name: null,
   }));
@@ -226,9 +227,10 @@ async function handleList(
   const ids = res.map((x: Record<string, unknown>) => x.id);
   const psp: Record<string, unknown[]> = {};
   const psk: Record<string, unknown[]> = {};
+  const pex: Record<string, { count: number; latest_position: string | null; latest_company: string | null; total_years: number }> = {};
 
   if (ids.length > 0) {
-    const [sd, kd] = await Promise.all([
+    const [sd, kd, ed] = await Promise.all([
       ac.from("profile_sports_experience")
         .select("profile_id, sport_id, years, sports:sport_id (name, icon)")
         .in("profile_id", ids)
@@ -237,6 +239,10 @@ async function handleList(
         .select("profile_id, skill_id, is_top, custom_name, is_custom")
         .in("profile_id", ids)
         .eq("is_top", true),
+      ac.from("experiences")
+        .select("profile_id, position, company_name, start_date, end_date, is_current")
+        .in("profile_id", ids)
+        .order("start_date", { ascending: false }),
     ]);
 
     for (const s of (sd.data || []) as Record<string, unknown>[]) {
@@ -249,7 +255,25 @@ async function handleList(
       if (!psk[k]) psk[k] = [];
       psk[k].push(s);
     }
+    // Aggregate experience data per profile
+    for (const e of (ed.data || []) as Record<string, unknown>[]) {
+      const k = e.profile_id as string;
+      if (!pex[k]) pex[k] = { count: 0, latest_position: null, latest_company: null, total_years: 0 };
+      pex[k].count++;
+      if (!pex[k].latest_position) {
+        pex[k].latest_position = e.position as string;
+        pex[k].latest_company = e.company_name as string;
+      }
+      // Calculate years
+      const start = new Date(e.start_date as string);
+      const end = e.is_current ? new Date() : (e.end_date ? new Date(e.end_date as string) : new Date());
+      pex[k].total_years += (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    }
+    // Round total years
+    for (const k of Object.keys(pex)) {
+      pex[k].total_years = Math.round(pex[k].total_years);
+    }
   }
 
-  return j({ profiles: san, profileSports: psp, profileSkills: psk });
+  return j({ profiles: san, profileSports: psp, profileSkills: psk, profileExperience: pex });
 }
