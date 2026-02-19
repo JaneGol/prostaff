@@ -88,7 +88,7 @@ export function SpecialistCard({
               {isCustomImage ? (
                 <img src={avatarUrl!} alt="" className="w-full h-full object-cover" loading="lazy" />
               ) : resolvedBank ? (
-                <img src={resolvedBank.src} alt={resolvedBank.label} className={`object-cover ${isSilhouetteAvatar(resolvedBank) ? "w-9 h-9 opacity-40" : "w-full h-full"}`} />
+                <img src={resolvedBank.src} alt={resolvedBank.label} className={`object-cover ${isSilhouetteAvatar(resolvedBank) ? "w-full h-full scale-110 opacity-40" : "w-full h-full"}`} />
               ) : (
                 <User className="h-5 w-5 text-muted-foreground/50" />
               )}
