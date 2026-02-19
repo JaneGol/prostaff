@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +22,13 @@ import { ExperienceEditor, Experience } from "@/components/profile/ExperienceEdi
 import { EducationEditor, Education, Certificate } from "@/components/profile/EducationEditor";
 import { PortfolioEditor, PortfolioItem } from "@/components/profile/PortfolioEditor";
 import { AboutEditor } from "@/components/profile/AboutEditor";
+
+// --- Shared label classNames for consistent typography ---
+const LABEL = "text-[13px] font-medium text-muted-foreground";
+const HINT = "text-[12px] text-muted-foreground/60";
+const SECTION_TITLE = "text-[16px] font-semibold text-foreground";
+const SUB_TITLE = "text-[13px] font-medium text-muted-foreground";
+const FIELD_TEXT = "text-[14px]";
 
 interface SpecialistRole {
   id: string;
@@ -148,8 +154,6 @@ export default function ProfileEdit() {
     if (user) fetchData();
   }, [user, authLoading]);
 
-  // (role_relations logic removed — roles no longer shown in basic info)
-
   const fetchData = async () => {
     try {
       const [rolesRes, skillsRes, specsRes, sportsRes] = await Promise.all([
@@ -175,7 +179,6 @@ export default function ProfileEdit() {
         setFirstName(profile.first_name);
         setLastName(profile.last_name);
         setSpecializationId((profile as any).specialization_id || "");
-        // Derive group from specialization
         if ((profile as any).specialization_id && specsRes.data) {
           const spec = specsRes.data.find((s: any) => s.id === (profile as any).specialization_id);
           if (spec) setSelectedGroupKey(spec.group_key);
@@ -208,7 +211,6 @@ export default function ProfileEdit() {
         setPortfolioUrl(profile.portfolio_url || "");
         setAvatarUrl(profile.avatar_url || "");
 
-        // Fetch all related data in parallel
         const [skillsData, expData, eduData, certData, portData, sportsExpData, sportsOpenData] = await Promise.all([
           supabase.from("profile_skills").select("*").eq("profile_id", profile.id),
           supabase.from("experiences").select("*").eq("profile_id", profile.id).order("start_date", { ascending: false }),
@@ -221,69 +223,35 @@ export default function ProfileEdit() {
 
         if (skillsData.data) {
           setSelectedSkills(skillsData.data.map((s: any) => ({
-            skill_id: s.skill_id,
-            proficiency: s.proficiency || 2,
-            is_top: s.is_top || false,
-            is_custom: s.is_custom || false,
-            custom_name: s.custom_name || undefined,
-            custom_group: s.custom_group || undefined,
+            skill_id: s.skill_id, proficiency: s.proficiency || 2, is_top: s.is_top || false,
+            is_custom: s.is_custom || false, custom_name: s.custom_name || undefined, custom_group: s.custom_group || undefined,
           })));
         }
-
         if (expData.data) {
           setExperiences(expData.data.map((e: any) => ({
-            id: e.id,
-            company_name: e.company_name,
-            position: e.position,
-            league: e.league || "",
-            team_level: e.team_level || "",
-            start_date: e.start_date,
-            end_date: e.end_date || "",
-            is_current: e.is_current || false,
-            description: e.description || "",
-            employment_type: e.employment_type || "full_time",
-            achievements: Array.isArray(e.achievements) ? e.achievements : [],
-            is_remote: e.is_remote || false,
-            hide_org: e.hide_org || false,
+            id: e.id, company_name: e.company_name, position: e.position, league: e.league || "",
+            team_level: e.team_level || "", start_date: e.start_date, end_date: e.end_date || "",
+            is_current: e.is_current || false, description: e.description || "", employment_type: e.employment_type || "full_time",
+            achievements: Array.isArray(e.achievements) ? e.achievements : [], is_remote: e.is_remote || false, hide_org: e.hide_org || false,
           })));
         }
-
         if (eduData.data) {
           setEducation(eduData.data.map((e: any) => ({
-            id: e.id,
-            institution: e.institution,
-            degree: e.degree || "",
-            field_of_study: e.field_of_study || "",
-            start_year: e.start_year,
-            end_year: e.end_year,
-            country: e.country || "",
-            city: e.city || "",
-            is_current: e.is_current || false,
+            id: e.id, institution: e.institution, degree: e.degree || "", field_of_study: e.field_of_study || "",
+            start_year: e.start_year, end_year: e.end_year, country: e.country || "", city: e.city || "", is_current: e.is_current || false,
           })));
         }
-
         if (certData.data) {
           setCertificates(certData.data.map((c: any) => ({
-            id: c.id,
-            name: c.name,
-            issuer: c.issuer || "",
-            year: c.year,
-            url: c.url || "",
+            id: c.id, name: c.name, issuer: c.issuer || "", year: c.year, url: c.url || "",
           })));
         }
-
         if (portData.data) {
           setPortfolio(portData.data.map((p: any) => ({
-            id: p.id,
-            type: p.type || "other",
-            title: p.title,
-            url: p.url,
-            description: p.description || "",
-            tags: Array.isArray(p.tags) ? p.tags : [],
-            visibility: p.visibility || "public",
+            id: p.id, type: p.type || "other", title: p.title, url: p.url,
+            description: p.description || "", tags: Array.isArray(p.tags) ? p.tags : [], visibility: p.visibility || "public",
           })));
         }
-
         if (sportsExpData.data) {
           const mapped = sportsExpData.data.map((s: any) => ({
             id: s.id, sport_id: s.sport_id, years: s.years || 1, level: s.level || "intermediate", sport: s.sports,
@@ -291,7 +259,6 @@ export default function ProfileEdit() {
           setSportsExperience(mapped);
           setSelectedSportIds(mapped.map((s: any) => s.sport_id));
         }
-
         if (sportsOpenData.data) {
           setSportsOpenTo(sportsOpenData.data.map((s: any) => ({
             id: s.id, sport_id: s.sport_id || undefined, sport_group: s.sport_group || undefined, sport: s.sports || undefined,
@@ -313,46 +280,23 @@ export default function ProfileEdit() {
       toast({ title: "Ошибка", description: "Заполните имя и фамилию", variant: "destructive" });
       return;
     }
-
     setSaving(true);
-
     try {
       const profileData = {
-        user_id: user!.id,
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        specialization_id: specializationId || null,
-        secondary_specialization_id: secondarySpecializationId || null,
-        role_id: roleId || null,
-        secondary_role_id: secondaryRoleId || null,
-        level: level as any,
-        bio: bio.trim() || null,
-        about_useful: aboutUseful.trim() || null,
-        about_style: aboutStyle.trim() || null,
-        about_goals: aboutGoals.trim() || null,
-        city: city.trim() || null,
-        country: country.trim() || null,
-        is_relocatable: isRelocatable,
-        is_remote_available: isRemoteAvailable,
-        search_status: searchStatus as any,
-        desired_city: desiredCity.trim() || null,
-        desired_country: desiredCountry.trim() || null,
-        desired_contract_type: desiredContractType || null,
-        is_public: isPublic,
-        visibility_level: visibilityLevel,
-        show_name: showName,
-        show_contacts: showContacts,
-        hide_current_org: hideCurrentOrg,
-        email: email.trim() || null,
-        phone: phone.trim() || null,
-        telegram: telegram.trim() || null,
-        linkedin_url: linkedinUrl.trim() || null,
-        portfolio_url: portfolioUrl.trim() || null,
-        avatar_url: avatarUrl || null
+        user_id: user!.id, first_name: firstName.trim(), last_name: lastName.trim(),
+        specialization_id: specializationId || null, secondary_specialization_id: secondarySpecializationId || null,
+        role_id: roleId || null, secondary_role_id: secondaryRoleId || null, level: level as any,
+        bio: bio.trim() || null, about_useful: aboutUseful.trim() || null, about_style: aboutStyle.trim() || null,
+        about_goals: aboutGoals.trim() || null, city: city.trim() || null, country: country.trim() || null,
+        is_relocatable: isRelocatable, is_remote_available: isRemoteAvailable, search_status: searchStatus as any,
+        desired_city: desiredCity.trim() || null, desired_country: desiredCountry.trim() || null,
+        desired_contract_type: desiredContractType || null, is_public: isPublic, visibility_level: visibilityLevel,
+        show_name: showName, show_contacts: showContacts, hide_current_org: hideCurrentOrg,
+        email: email.trim() || null, phone: phone.trim() || null, telegram: telegram.trim() || null,
+        linkedin_url: linkedinUrl.trim() || null, portfolio_url: portfolioUrl.trim() || null, avatar_url: avatarUrl || null,
       } as any;
 
       let newProfileId = profileId;
-
       if (profileId) {
         const { error } = await supabase.from("profiles").update(profileData).eq("id", profileId);
         if (error) throw error;
@@ -364,96 +308,61 @@ export default function ProfileEdit() {
       }
 
       if (newProfileId) {
-        // Skills
         await supabase.from("profile_skills").delete().eq("profile_id", newProfileId);
         if (selectedSkills.length > 0) {
           await supabase.from("profile_skills").insert(
             selectedSkills.map(s => ({
-              profile_id: newProfileId!,
-              skill_id: s.skill_id,
-              proficiency: s.proficiency,
-              is_top: s.is_top,
-              is_custom: s.is_custom,
-              custom_name: s.custom_name || null,
-              custom_group: s.custom_group || null,
-              status: s.is_custom ? "pending" : "approved",
+              profile_id: newProfileId!, skill_id: s.skill_id, proficiency: s.proficiency,
+              is_top: s.is_top, is_custom: s.is_custom, custom_name: s.custom_name || null,
+              custom_group: s.custom_group || null, status: s.is_custom ? "pending" : "approved",
             })) as any
           );
         }
 
-        // Experiences
         await supabase.from("experiences").delete().eq("profile_id", newProfileId);
         for (const exp of experiences) {
           await supabase.from("experiences").insert({
-            profile_id: newProfileId,
-            company_name: exp.company_name,
-            position: exp.position,
-            league: exp.league || null,
-            team_level: exp.team_level || null,
-            start_date: exp.start_date,
-            end_date: exp.end_date || null,
-            is_current: exp.is_current,
-            description: exp.description || null,
-            employment_type: exp.employment_type,
-            achievements: exp.achievements,
-            is_remote: exp.is_remote,
-            hide_org: exp.hide_org,
+            profile_id: newProfileId, company_name: exp.company_name, position: exp.position,
+            league: exp.league || null, team_level: exp.team_level || null,
+            start_date: exp.start_date, end_date: exp.end_date || null, is_current: exp.is_current,
+            description: exp.description || null, employment_type: exp.employment_type,
+            achievements: exp.achievements, is_remote: exp.is_remote, hide_org: exp.hide_org,
           } as any);
         }
 
-        // Education
         await supabase.from("candidate_education").delete().eq("profile_id", newProfileId);
         for (const edu of education) {
           if (!edu.institution.trim()) continue;
           await supabase.from("candidate_education").insert({
-            profile_id: newProfileId,
-            institution: edu.institution,
-            degree: edu.degree || null,
-            field_of_study: edu.field_of_study || null,
-            start_year: edu.start_year,
-            end_year: edu.end_year,
-            country: edu.country || null,
-            city: edu.city || null,
-            is_current: edu.is_current,
+            profile_id: newProfileId, institution: edu.institution, degree: edu.degree || null,
+            field_of_study: edu.field_of_study || null, start_year: edu.start_year, end_year: edu.end_year,
+            country: edu.country || null, city: edu.city || null, is_current: edu.is_current,
           } as any);
         }
 
-        // Certificates
         await supabase.from("candidate_certificates").delete().eq("profile_id", newProfileId);
         for (const cert of certificates) {
           if (!cert.name.trim()) continue;
           await supabase.from("candidate_certificates").insert({
-            profile_id: newProfileId,
-            name: cert.name,
-            issuer: cert.issuer || null,
-            year: cert.year,
-            url: cert.url || null,
+            profile_id: newProfileId, name: cert.name, issuer: cert.issuer || null,
+            year: cert.year, url: cert.url || null,
           } as any);
         }
 
-        // Portfolio
         await supabase.from("candidate_portfolio").delete().eq("profile_id", newProfileId);
         for (const item of portfolio) {
           if (!item.title.trim() || !item.url.trim()) continue;
           await supabase.from("candidate_portfolio").insert({
-            profile_id: newProfileId,
-            type: item.type,
-            title: item.title,
-            url: item.url,
-            description: item.description || null,
-            tags: item.tags,
-            visibility: item.visibility,
+            profile_id: newProfileId, type: item.type, title: item.title, url: item.url,
+            description: item.description || null, tags: item.tags, visibility: item.visibility,
           } as any);
         }
 
-        // Sports experience — merge chip selections with detailed entries
         await supabase.from("profile_sports_experience").delete().eq("profile_id", newProfileId);
         const existingSportIds = new Set(sportsExperience.map(s => s.sport_id));
         const mergedSports = [
           ...sportsExperience,
-          ...selectedSportIds
-            .filter(id => !existingSportIds.has(id))
-            .map(id => ({ sport_id: id, years: 1, level: "intermediate" })),
+          ...selectedSportIds.filter(id => !existingSportIds.has(id)).map(id => ({ sport_id: id, years: 1, level: "intermediate" })),
         ];
         if (mergedSports.length > 0) {
           await supabase.from("profile_sports_experience").insert(
@@ -461,15 +370,10 @@ export default function ProfileEdit() {
           );
         }
 
-        // Sports open to
         await supabase.from("profile_sports_open_to").delete().eq("profile_id", newProfileId);
         if (sportsOpenTo.length > 0) {
           await supabase.from("profile_sports_open_to").insert(
-            sportsOpenTo.map(s => ({
-              profile_id: newProfileId!,
-              sport_id: s.sport_id || null,
-              sport_group: s.sport_group || null,
-            }))
+            sportsOpenTo.map(s => ({ profile_id: newProfileId!, sport_id: s.sport_id || null, sport_group: s.sport_group || null }))
           );
         }
       }
@@ -486,16 +390,10 @@ export default function ProfileEdit() {
 
   const ensureProfileId = async (): Promise<string> => {
     if (profileId) return profileId;
-    if (!firstName.trim() || !lastName.trim()) {
-      throw new Error("Заполните имя и фамилию");
-    }
+    if (!firstName.trim() || !lastName.trim()) throw new Error("Заполните имя и фамилию");
     const profileData = {
-      user_id: user!.id,
-      first_name: firstName.trim(),
-      last_name: lastName.trim(),
-      level: level as any,
-      search_status: searchStatus as any,
-      country: country.trim() || null,
+      user_id: user!.id, first_name: firstName.trim(), last_name: lastName.trim(),
+      level: level as any, search_status: searchStatus as any, country: country.trim() || null,
     } as any;
     const { data, error } = await supabase.from("profiles").insert(profileData).select("id").single();
     if (error) throw error;
@@ -510,26 +408,18 @@ export default function ProfileEdit() {
 
       if (section === "basic" || section === "photo") {
         const updateData = {
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          specialization_id: specializationId || null,
-          secondary_specialization_id: secondarySpecializationId || null,
-          role_id: roleId || null,
-          secondary_role_id: secondaryRoleId || null,
-          level: level as any,
-          avatar_url: avatarUrl || null,
+          first_name: firstName.trim(), last_name: lastName.trim(),
+          specialization_id: specializationId || null, secondary_specialization_id: secondarySpecializationId || null,
+          role_id: roleId || null, secondary_role_id: secondaryRoleId || null,
+          level: level as any, avatar_url: avatarUrl || null,
         } as any;
         const { error } = await supabase.from("profiles").update(updateData).eq("id", pid);
         if (error) throw error;
-
-        // Also save sports chips (selected in basic card)
         await supabase.from("profile_sports_experience").delete().eq("profile_id", pid);
         const existingSportIds = new Set(sportsExperience.map(s => s.sport_id));
         const mergedSports = [
           ...sportsExperience,
-          ...selectedSportIds
-            .filter(id => !existingSportIds.has(id))
-            .map(id => ({ sport_id: id, years: 1, level: "intermediate" })),
+          ...selectedSportIds.filter(id => !existingSportIds.has(id)).map(id => ({ sport_id: id, years: 1, level: "intermediate" })),
         ];
         if (mergedSports.length > 0) {
           await supabase.from("profile_sports_experience").insert(
@@ -538,27 +428,18 @@ export default function ProfileEdit() {
         }
       } else if (section === "about") {
         const { error } = await supabase.from("profiles").update({
-          bio: bio.trim() || null,
-          about_useful: aboutUseful.trim() || null,
-          about_style: aboutStyle.trim() || null,
-          about_goals: aboutGoals.trim() || null,
+          bio: bio.trim() || null, about_useful: aboutUseful.trim() || null,
+          about_style: aboutStyle.trim() || null, about_goals: aboutGoals.trim() || null,
         } as any).eq("id", pid);
         if (error) throw error;
       } else if (section === "status") {
         const { error } = await supabase.from("profiles").update({
-          city: city.trim() || null,
-          country: country.trim() || null,
-          is_relocatable: isRelocatable,
-          is_remote_available: isRemoteAvailable,
-          search_status: searchStatus as any,
-          desired_city: desiredCity.trim() || null,
-          desired_country: desiredCountry.trim() || null,
-          desired_contract_type: desiredContractType || null,
-          is_public: isPublic,
-          visibility_level: visibilityLevel,
-          show_name: showName,
-          show_contacts: showContacts,
-          hide_current_org: hideCurrentOrg,
+          city: city.trim() || null, country: country.trim() || null,
+          is_relocatable: isRelocatable, is_remote_available: isRemoteAvailable,
+          search_status: searchStatus as any, desired_city: desiredCity.trim() || null,
+          desired_country: desiredCountry.trim() || null, desired_contract_type: desiredContractType || null,
+          is_public: isPublic, visibility_level: visibilityLevel, show_name: showName,
+          show_contacts: showContacts, hide_current_org: hideCurrentOrg,
         } as any).eq("id", pid);
         if (error) throw error;
       } else if (section === "skills") {
@@ -566,14 +447,9 @@ export default function ProfileEdit() {
         if (selectedSkills.length > 0) {
           await supabase.from("profile_skills").insert(
             selectedSkills.map(s => ({
-              profile_id: pid,
-              skill_id: s.skill_id,
-              proficiency: s.proficiency,
-              is_top: s.is_top,
-              is_custom: s.is_custom,
-              custom_name: s.custom_name || null,
-              custom_group: s.custom_group || null,
-              status: s.is_custom ? "pending" : "approved",
+              profile_id: pid, skill_id: s.skill_id, proficiency: s.proficiency,
+              is_top: s.is_top, is_custom: s.is_custom, custom_name: s.custom_name || null,
+              custom_group: s.custom_group || null, status: s.is_custom ? "pending" : "approved",
             })) as any
           );
         }
@@ -582,9 +458,7 @@ export default function ProfileEdit() {
         const existingSportIds = new Set(sportsExperience.map(s => s.sport_id));
         const mergedSports = [
           ...sportsExperience,
-          ...selectedSportIds
-            .filter(id => !existingSportIds.has(id))
-            .map(id => ({ sport_id: id, years: 1, level: "intermediate" })),
+          ...selectedSportIds.filter(id => !existingSportIds.has(id)).map(id => ({ sport_id: id, years: 1, level: "intermediate" })),
         ];
         if (mergedSports.length > 0) {
           await supabase.from("profile_sports_experience").insert(
@@ -659,13 +533,13 @@ export default function ProfileEdit() {
     <button
       onClick={() => handleSectionSave(section)}
       disabled={savingSection === section}
-      className="text-muted-foreground/40 hover:text-primary transition-colors disabled:opacity-50"
+      className="text-muted-foreground/30 hover:text-primary transition-colors disabled:opacity-50"
       title="Сохранить"
     >
       {savingSection === section ? (
-        <Loader2 className="h-5 w-5 animate-spin" />
+        <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
-        <Save className="h-5 w-5" />
+        <Save className="h-4 w-4" />
       )}
     </button>
   );
@@ -679,7 +553,6 @@ export default function ProfileEdit() {
   const specsForGroup = selectedGroupKey
     ? specializations.filter(s => s.group_key === selectedGroupKey)
     : specializations;
-  // Additional specializations from same group, excluding primary
   const additionalSpecOptions = specsForGroup.filter(s => s.id !== specializationId);
 
   const profileFields = useMemo(() => [
@@ -704,14 +577,12 @@ export default function ProfileEdit() {
     );
   }
 
-  const roleName = primarySpecName;
-
   return (
     <Layout>
       <div className="bg-secondary/30 min-h-screen">
         <div className="container max-w-6xl py-6 md:py-8">
           <div className="flex gap-6 lg:gap-8 relative">
-            {/* Sidebar - sticky left */}
+            {/* Sidebar */}
             <div className="hidden lg:block w-48 shrink-0">
               <div className="sticky top-24 space-y-6">
                 <ProfileSidebar activeSection={activeSection} onSectionClick={scrollToSection} />
@@ -719,21 +590,21 @@ export default function ProfileEdit() {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 min-w-0 space-y-6">
+            <div className="flex-1 min-w-0 space-y-5">
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl md:text-[28px] font-medium tracking-tight">
+                  <h1 className="text-[22px] font-semibold text-foreground tracking-tight">
                     {profileId ? "Редактирование профиля" : "Создание профиля"}
                   </h1>
-                  <p className="text-muted-foreground text-[15px] mt-1">Заполните профиль — и клубы смогут вас найти</p>
+                  <p className="text-[14px] text-muted-foreground mt-0.5">Заполните профиль — и клубы смогут вас найти</p>
                 </div>
                 <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate(-1)}>
                   <X className="h-4 w-4 mr-1.5" />Отмена
                 </Button>
               </div>
 
-              {/* Progress visible on mobile/tablet, hidden on xl */}
+              {/* Progress visible on mobile/tablet */}
               <div className="xl:hidden">
                 <ProfileProgress fields={profileFields} onFieldClick={(key) => {
                   const sectionMap: Record<string, string> = { avatar: "basic", role: "basic", about: "about", location: "status", skills: "skills", experience: "experience", education: "education", sports: "sports", contacts: "contacts" };
@@ -741,11 +612,10 @@ export default function ProfileEdit() {
                 }} />
               </div>
 
-              {/* BASIC — Photo + Info */}
+              {/* ═══════════════════ IDENTITY BLOCK ═══════════════════ */}
               <div ref={el => { sectionRefs.current["basic"] = el; }} className="space-y-5">
-                {/* Photo + Name */}
-                <div className="bg-card rounded-2xl p-6 shadow-card">
-                  <div className="flex items-start gap-6">
+                <div className="bg-card rounded-xl p-5 md:p-6 shadow-card">
+                  <div className="flex items-start gap-5">
                     <ImageUpload
                       currentImageUrl={avatarUrl}
                       onImageUploaded={setAvatarUrl}
@@ -754,44 +624,51 @@ export default function ProfileEdit() {
                       size="lg"
                       shape="circle"
                       placeholder={
-                        <span className="text-2xl font-display font-bold text-muted-foreground">
+                        <span className="text-xl font-semibold text-muted-foreground/60">
                           {firstName?.[0] || "?"}{lastName?.[0] || "?"}
                         </span>
                       }
                     />
-                    <div className="flex-1 pt-1">
+                    <div className="flex-1 pt-1 space-y-3">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Имя *</Label>
-                          <Input className="!text-[18px] !font-semibold h-11 border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
+                        <div className="space-y-1">
+                          <Label className={LABEL}>Имя</Label>
+                          <Input className="text-[18px] font-semibold h-11 border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
                         </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Фамилия *</Label>
-                          <Input className="!text-[18px] !font-semibold h-11 border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
+                        <div className="space-y-1">
+                          <Label className={LABEL}>Фамилия</Label>
+                          <Input className="text-[18px] font-semibold h-11 border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
                         </div>
                       </div>
+                      {/* Role subtitle under name */}
+                      {primarySpecName && (
+                        <p className="text-[14px] text-muted-foreground">
+                          {primarySpecName}
+                          {level && <> · {levels.find(l => l.value === level)?.label}</>}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* Basic Info */}
-                <div className="bg-card rounded-2xl p-6 shadow-card space-y-6">
+                {/* ═══════════════════ BASIC INFO ═══════════════════ */}
+                <div className="bg-card rounded-xl p-5 md:p-6 shadow-card space-y-5">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-[18px] font-medium">Основная информация</h2>
+                    <h2 className={SECTION_TITLE}>Основная информация</h2>
                     <SectionSaveIcon section="basic" />
                   </div>
 
-                  {/* Group Selection Cards */}
+                  {/* Direction */}
                   <div>
-                    <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider mb-3">Направление</p>
+                    <p className={`${SUB_TITLE} mb-2.5`}>Направление</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                       {GROUPS.map(g => {
                         const icons: Record<string, React.ReactNode> = {
-                          coaching: <Users className="h-5 w-5" />,
-                          performance: <Activity className="h-5 w-5" />,
-                          analytics: <BarChart3 className="h-5 w-5" />,
-                          medical: <HeartPulse className="h-5 w-5" />,
-                          other: <Briefcase className="h-5 w-5" />,
+                          coaching: <Users className="h-4 w-4" />,
+                          performance: <Activity className="h-4 w-4" />,
+                          analytics: <BarChart3 className="h-4 w-4" />,
+                          medical: <HeartPulse className="h-4 w-4" />,
+                          other: <Briefcase className="h-4 w-4" />,
                         };
                         const isActive = selectedGroupKey === g.key;
                         return (
@@ -800,7 +677,6 @@ export default function ProfileEdit() {
                             type="button"
                             onClick={() => {
                               setSelectedGroupKey(g.key);
-                              // Reset downstream if group changed
                               const currentSpec = specializations.find(s => s.id === specializationId);
                               if (currentSpec && currentSpec.group_key !== g.key) {
                                 setSpecializationId("");
@@ -808,13 +684,13 @@ export default function ProfileEdit() {
                                 setSecondaryRoleId("");
                               }
                             }}
-                            className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 text-center transition-all ${
+                            className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center transition-all ${
                               isActive
                                 ? "border-primary bg-primary/5 text-primary"
-                                : "border-border bg-background text-muted-foreground hover:border-primary/40"
+                                : "border-transparent bg-secondary/60 text-muted-foreground hover:bg-secondary"
                             }`}
                           >
-                            {icons[g.key] || <Briefcase className="h-5 w-5" />}
+                            {icons[g.key] || <Briefcase className="h-4 w-4" />}
                             <span className="text-[11px] font-medium leading-tight">{g.shortTitle}</span>
                           </button>
                         );
@@ -822,30 +698,28 @@ export default function ProfileEdit() {
                     </div>
                   </div>
 
-                  {/* Professional */}
+                  {/* Specialization + Sport */}
                   <div>
-                    <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider mb-3">Профессиональное</p>
-                    
-                    {/* Primary Specialization + Sport */}
+                    <p className={`${SUB_TITLE} mb-2.5`}>Специализация</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-1.5">
-                        <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Специализация *</Label>
+                      <div className="space-y-1">
+                        <Label className={LABEL}>Специализация</Label>
                         <Select value={specializationId} onValueChange={(val) => {
                           setSpecializationId(val);
                           if (secondarySpecializationId === val) setSecondarySpecializationId("");
                         }} disabled={!selectedGroupKey}>
-                          <SelectTrigger className="text-[15px]"><SelectValue placeholder={selectedGroupKey ? "Выберите специализацию" : "Сначала выберите направление"} /></SelectTrigger>
+                          <SelectTrigger className={FIELD_TEXT}><SelectValue placeholder={selectedGroupKey ? "Выберите специализацию" : "Сначала выберите направление"} /></SelectTrigger>
                           <SelectContent>
                             {specsForGroup.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                        <p className="text-[11px] text-muted-foreground/70">Определяет категорию, в которой вас найдут клубы</p>
+                        <p className={HINT}>Определяет категорию, в которой вас найдут клубы</p>
                       </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Вид спорта *</Label>
+                      <div className="space-y-1">
+                        <Label className={LABEL}>Вид спорта</Label>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" role="combobox" className="w-full justify-between text-[15px] h-10 font-normal">
+                            <Button variant="outline" role="combobox" className={`w-full justify-between ${FIELD_TEXT} h-10 font-normal`}>
                               <span className="truncate">
                                 {selectedSportIds.length > 0
                                   ? `Выбрано: ${selectedSportIds.length}`
@@ -867,7 +741,7 @@ export default function ProfileEdit() {
                                         isSelected ? prev.filter(id => id !== sport.id) : [...prev, sport.id]
                                       );
                                     }}
-                                    className="flex items-center gap-2 w-full px-3 py-2 text-[14px] rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                                    className="flex items-center gap-2 w-full px-3 py-2 text-[13px] rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors"
                                   >
                                     <div className={`flex h-4 w-4 items-center justify-center rounded-sm border ${isSelected ? "bg-primary border-primary text-primary-foreground" : "border-input"}`}>
                                       {isSelected && <Check className="h-3 w-3" />}
@@ -884,7 +758,7 @@ export default function ProfileEdit() {
                             {selectedSportIds.map(id => {
                               const sport = allSports.find(s => s.id === id);
                               return sport ? (
-                                <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[12px] font-medium">
+                                <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium">
                                   {sport.name}
                                   <button type="button" onClick={() => setSelectedSportIds(prev => prev.filter(sid => sid !== id))} className="hover:text-destructive">
                                     <X className="h-3 w-3" />
@@ -899,42 +773,42 @@ export default function ProfileEdit() {
 
                     {/* Additional Specialization */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-1.5">
-                        <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Доп. специализация</Label>
+                      <div className="space-y-1">
+                        <Label className={LABEL}>Доп. специализация</Label>
                         <Select value={secondarySpecializationId} onValueChange={setSecondarySpecializationId} disabled={!specializationId}>
-                          <SelectTrigger className="text-[15px]"><SelectValue placeholder="Опционально" /></SelectTrigger>
+                          <SelectTrigger className={FIELD_TEXT}><SelectValue placeholder="Опционально" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="none">Нет</SelectItem>
                             {additionalSpecOptions.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                        <p className="text-[11px] text-muted-foreground/70">Помогает клубам находить вас шире</p>
+                        <p className={HINT}>Помогает клубам находить вас шире</p>
                       </div>
-                      <div>{/* Empty right column for alignment */}</div>
+                      <div>{/* alignment */}</div>
                     </div>
 
                     {/* Level */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <div className="flex items-center gap-1.5">
-                        <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Уровень позиции *</Label>
+                        <Label className={LABEL}>Уровень позиции</Label>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                              <Info className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-[260px] text-xs">
-                              Уровень помогает клубам понять, с какими задачами вы работали и какой уровень ответственности вам подходит. Это не влияет на «оценку» специалиста.
+                              Уровень помогает клубам понять, с какими задачами вы работали и какой уровень ответственности вам подходит.
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </div>
                       <Select value={level} onValueChange={setLevel}>
-                        <SelectTrigger className="text-[15px] w-full">
+                        <SelectTrigger className={`${FIELD_TEXT} w-full`}>
                           <SelectValue>
                             {level && (
                               <div className="flex flex-col items-start">
                                 <span>{levels.find(l => l.value === level)?.label}</span>
-                                <span className="text-xs text-muted-foreground">{levels.find(l => l.value === level)?.desc}</span>
+                                <span className="text-[12px] text-muted-foreground/60">{levels.find(l => l.value === level)?.desc}</span>
                               </div>
                             )}
                           </SelectValue>
@@ -944,7 +818,7 @@ export default function ProfileEdit() {
                             <SelectItem key={l.value} value={l.value} className="[&[data-highlighted]]:text-accent-foreground">
                               <div className="flex flex-col">
                                 <span>{l.label}</span>
-                                <span className="text-xs opacity-70">{l.desc}</span>
+                                <span className="text-[12px] text-muted-foreground/60">{l.desc}</span>
                               </div>
                             </SelectItem>
                           ))}
@@ -952,47 +826,44 @@ export default function ProfileEdit() {
                       </Select>
                     </div>
                   </div>
-                  
                 </div>
               </div>
 
-              {/* ABOUT */}
+              {/* ═══════════════════ ABOUT ═══════════════════ */}
               <div ref={el => { sectionRefs.current["about"] = el; }}>
-                <div className="space-y-0">
-                  <AboutEditor
-                    bio={bio} aboutUseful={aboutUseful} aboutStyle={aboutStyle} aboutGoals={aboutGoals}
-                    onBioChange={setBio} onAboutUsefulChange={setAboutUseful}
-                    onAboutStyleChange={setAboutStyle} onAboutGoalsChange={setAboutGoals}
-                    roleName={primarySpecName}
-                    onSave={() => handleSectionSave("about")}
-                    isSaving={savingSection === "about"}
-                  />
-                </div>
+                <AboutEditor
+                  bio={bio} aboutUseful={aboutUseful} aboutStyle={aboutStyle} aboutGoals={aboutGoals}
+                  onBioChange={setBio} onAboutUsefulChange={setAboutUseful}
+                  onAboutStyleChange={setAboutStyle} onAboutGoalsChange={setAboutGoals}
+                  roleName={primarySpecName}
+                  onSave={() => handleSectionSave("about")}
+                  isSaving={savingSection === "about"}
+                />
               </div>
 
-              {/* STATUS & PRIVACY */}
+              {/* ═══════════════════ STATUS & PRIVACY ═══════════════════ */}
               <div ref={el => { sectionRefs.current["status"] = el; }}>
-                <div className="bg-card rounded-2xl p-6 shadow-card space-y-6">
+                <div className="bg-card rounded-xl p-5 md:p-6 shadow-card space-y-5">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-[18px] font-medium">Локация, статус и приватность</h2>
+                    <h2 className={SECTION_TITLE}>Локация, статус и приватность</h2>
                     <SectionSaveIcon section="status" />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Город</Label>
-                      <Input className="text-[15px]" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Москва" />
+                    <div className="space-y-1">
+                      <Label className={LABEL}>Город</Label>
+                      <Input className={FIELD_TEXT} value={city} onChange={(e) => setCity(e.target.value)} placeholder="Москва" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Страна</Label>
-                      <Input className="text-[15px]" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Россия" />
+                    <div className="space-y-1">
+                      <Label className={LABEL}>Страна</Label>
+                      <Input className={FIELD_TEXT} value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Россия" />
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Статус поиска</Label>
+                  <div className="space-y-1">
+                    <Label className={LABEL}>Статус поиска</Label>
                     <Select value={searchStatus} onValueChange={setSearchStatus}>
-                      <SelectTrigger className="text-[15px]"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className={FIELD_TEXT}><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {searchStatuses.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                       </SelectContent>
@@ -1000,13 +871,13 @@ export default function ProfileEdit() {
                   </div>
 
                   {searchStatus !== "not_looking" && (
-                    <div className="border-t border-border pt-5 space-y-4">
-                      <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Что ищу</p>
+                    <div className="border-t border-border/50 pt-4 space-y-4">
+                      <p className={SUB_TITLE}>Предпочтения</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Формат</Label>
+                        <div className="space-y-1">
+                          <Label className={LABEL}>Формат</Label>
                           <Select value={desiredContractType} onValueChange={setDesiredContractType}>
-                            <SelectTrigger className="text-[15px]"><SelectValue placeholder="Любой" /></SelectTrigger>
+                            <SelectTrigger className={FIELD_TEXT}><SelectValue placeholder="Любой" /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="any">Любой</SelectItem>
                               <SelectItem value="full_time">Полная занятость</SelectItem>
@@ -1016,15 +887,15 @@ export default function ProfileEdit() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Желаемый город</Label>
-                          <Input className="text-[15px]" value={desiredCity} onChange={(e) => setDesiredCity(e.target.value)} placeholder="Любой" />
+                        <div className="space-y-1">
+                          <Label className={LABEL}>Желаемый город</Label>
+                          <Input className={FIELD_TEXT} value={desiredCity} onChange={(e) => setDesiredCity(e.target.value)} placeholder="Любой" />
                         </div>
                       </div>
                     </div>
                   )}
 
-                  <div className="flex flex-col gap-4 border-t border-border pt-5">
+                  <div className="flex flex-col gap-3 border-t border-border/50 pt-4">
                     <div className="flex items-center justify-between">
                       <Label className="text-[13px]">Готов к релокации</Label>
                       <Switch checked={isRelocatable} onCheckedChange={setIsRelocatable} />
@@ -1035,133 +906,121 @@ export default function ProfileEdit() {
                     </div>
                   </div>
 
-                  <div className="border-t border-border pt-5 space-y-3">
-                    <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Видимость профиля</p>
+                  <div className="border-t border-border/50 pt-4 space-y-3">
+                    <p className={SUB_TITLE}>Видимость профиля</p>
                     <Select value={visibilityLevel} onValueChange={setVisibilityLevel}>
-                      <SelectTrigger className="text-[15px]"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className={FIELD_TEXT}><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {visibilityLevels.map(v => <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div className="border-t border-border pt-5 space-y-4">
-                    <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Настройки приватности</p>
-                    <div className="flex flex-col gap-4">
+                  <div className="border-t border-border/50 pt-4 space-y-3">
+                    <p className={SUB_TITLE}>Приватность</p>
+                    <div className="flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <div>
                           <Label className="text-[13px]">Показывать имя клубам</Label>
-                          <p className="text-[11px] text-muted-foreground/70 mt-0.5">Если выключено — клубы увидят только роль</p>
+                          <p className={HINT}>Если выключено — клубы увидят только роль</p>
                         </div>
                         <Switch checked={showName} onCheckedChange={setShowName} />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
                           <Label className="text-[13px]">Показывать контакты</Label>
-                          <p className="text-[11px] text-muted-foreground/70 mt-0.5">Видны только после разблокировки</p>
+                          <p className={HINT}>Видны только после разблокировки</p>
                         </div>
                         <Switch checked={showContacts} onCheckedChange={setShowContacts} />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
                           <Label className="text-[13px]">Скрыть текущую организацию</Label>
-                          <p className="text-[11px] text-muted-foreground/70 mt-0.5">Название текущей работы будет скрыто</p>
+                          <p className={HINT}>Название текущей работы будет скрыто</p>
                         </div>
                         <Switch checked={hideCurrentOrg} onCheckedChange={setHideCurrentOrg} />
                       </div>
                     </div>
-                  
+                  </div>
                 </div>
               </div>
-              </div>
 
-              {/* SKILLS */}
+              {/* ═══════════════════ SKILLS ═══════════════════ */}
               <div ref={el => { sectionRefs.current["skills"] = el; }}>
-                <div className="space-y-0">
-                  <SkillsEditor
-                    allSkills={allSkills}
-                    selectedSkills={selectedSkills}
-                    onChange={setSelectedSkills}
-                    primaryRoleName={primarySpecName}
-                  />
-                </div>
+                <SkillsEditor
+                  allSkills={allSkills}
+                  selectedSkills={selectedSkills}
+                  onChange={setSelectedSkills}
+                  primaryRoleName={primarySpecName}
+                />
               </div>
 
-              {/* SPORTS */}
+              {/* ═══════════════════ SPORTS ═══════════════════ */}
               <div ref={el => { sectionRefs.current["sports"] = el; }}>
-                <div className="space-y-0">
-                  <SportsEditor
-                    profileId={profileId}
-                    sportsExperience={sportsExperience}
-                    sportsOpenTo={sportsOpenTo}
-                    onExperienceChange={setSportsExperience}
-                    onOpenToChange={setSportsOpenTo}
-                  />
-                </div>
+                <SportsEditor
+                  profileId={profileId}
+                  sportsExperience={sportsExperience}
+                  sportsOpenTo={sportsOpenTo}
+                  onExperienceChange={setSportsExperience}
+                  onOpenToChange={setSportsOpenTo}
+                />
               </div>
 
-              {/* EXPERIENCE */}
+              {/* ═══════════════════ EXPERIENCE ═══════════════════ */}
               <div ref={el => { sectionRefs.current["experience"] = el; }}>
-                <div className="space-y-0">
-                  <ExperienceEditor experiences={experiences} onChange={setExperiences} />
-                </div>
+                <ExperienceEditor experiences={experiences} onChange={setExperiences} />
               </div>
 
-              {/* EDUCATION */}
+              {/* ═══════════════════ EDUCATION ═══════════════════ */}
               <div ref={el => { sectionRefs.current["education"] = el; }}>
-                <div className="space-y-0">
-                  <EducationEditor
-                    education={education}
-                    certificates={certificates}
-                    onEducationChange={setEducation}
-                    onCertificatesChange={setCertificates}
-                  />
-                </div>
+                <EducationEditor
+                  education={education}
+                  certificates={certificates}
+                  onEducationChange={setEducation}
+                  onCertificatesChange={setCertificates}
+                />
               </div>
 
-              {/* PORTFOLIO */}
+              {/* ═══════════════════ PORTFOLIO ═══════════════════ */}
               <div ref={el => { sectionRefs.current["portfolio"] = el; }}>
-                <div className="space-y-0">
-                  <PortfolioEditor items={portfolio} onChange={setPortfolio} />
-                </div>
+                <PortfolioEditor items={portfolio} onChange={setPortfolio} />
               </div>
 
-              {/* CONTACTS */}
+              {/* ═══════════════════ CONTACTS ═══════════════════ */}
               <div ref={el => { sectionRefs.current["contacts"] = el; }}>
-                <div className="bg-card rounded-2xl p-6 shadow-card space-y-5">
-                  <h2 className="text-[18px] font-medium">Контакты</h2>
+                <div className="bg-card rounded-xl p-5 md:p-6 shadow-card space-y-5">
+                  <h2 className={SECTION_TITLE}>Контакты</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Email</Label>
-                      <Input className="text-[15px]" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ivan@example.com" />
+                    <div className="space-y-1">
+                      <Label className={LABEL}>Email</Label>
+                      <Input className={FIELD_TEXT} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ivan@example.com" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Телефон</Label>
-                      <Input className="text-[15px]" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 (999) 123-45-67" />
+                    <div className="space-y-1">
+                      <Label className={LABEL}>Телефон</Label>
+                      <Input className={FIELD_TEXT} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 (999) 123-45-67" />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Telegram</Label>
-                      <Input className="text-[15px]" value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
+                    <div className="space-y-1">
+                      <Label className={LABEL}>Telegram</Label>
+                      <Input className={FIELD_TEXT} value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">LinkedIn</Label>
-                      <Input className="text-[15px]" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/username" />
+                    <div className="space-y-1">
+                      <Label className={LABEL}>LinkedIn</Label>
+                      <Input className={FIELD_TEXT} value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/username" />
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Портфолио / Сайт</Label>
-                    <Input className="text-[15px]" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} placeholder="https://example.com" />
+                  <div className="space-y-1">
+                    <Label className={LABEL}>Портфолио / Сайт</Label>
+                    <Input className={FIELD_TEXT} value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} placeholder="https://example.com" />
                   </div>
-                  
                 </div>
               </div>
 
-              {/* Save — clear hierarchy */}
+              {/* Save */}
               <div className="flex justify-end gap-3 pb-10 pt-2">
                 <Button variant="ghost" className="text-muted-foreground" onClick={() => navigate(-1)}>Отмена</Button>
-                <Button onClick={handleSave} disabled={saving} size="lg" className="px-8 text-[15px]">
+                <Button onClick={handleSave} disabled={saving} size="lg" className="px-8 text-[14px]">
                   {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Сохранение...</> : <><Save className="h-4 w-4 mr-2" />Сохранить профиль</>}
                 </Button>
               </div>
@@ -1171,31 +1030,31 @@ export default function ProfileEdit() {
             <div className="hidden xl:block w-72 shrink-0">
               <div className="sticky top-24 space-y-5">
                 {/* Mini Preview Card */}
-                <div className="bg-card rounded-2xl p-5 shadow-card">
-                  <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Как вас видят клубы</p>
+                <div className="bg-card rounded-xl p-5 shadow-card">
+                  <p className={`${SUB_TITLE} mb-4`}>Как вас видят клубы</p>
                   <div className="flex flex-col items-center text-center">
-                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden mb-3">
+                    <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center overflow-hidden mb-3">
                       {avatarUrl ? (
                         <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-lg font-medium text-muted-foreground">
+                        <span className="text-lg font-medium text-muted-foreground/60">
                           {firstName?.[0] || "?"}{lastName?.[0] || "?"}
                         </span>
                       )}
                     </div>
-                    <p className="text-[15px] font-medium text-foreground">
+                    <p className="text-[15px] font-semibold text-foreground">
                       {firstName || "Имя"} {lastName || "Фамилия"}
                     </p>
                     {primarySpecName && (
-                      <p className="text-[13px] text-foreground/80 mt-0.5">{primarySpecName}</p>
+                      <p className="text-[13px] text-muted-foreground mt-0.5">{primarySpecName}</p>
                     )}
                     {secondarySpecializationId && (
-                      <p className="text-[12px] text-muted-foreground mt-0.5">
+                      <p className="text-[12px] text-muted-foreground/60 mt-0.5">
                         + {specializations.find(s => s.id === secondarySpecializationId)?.name}
                       </p>
                     )}
                     {selectedSportIds.length > 0 && (
-                      <p className="text-[12px] text-muted-foreground mt-0.5">
+                      <p className="text-[12px] text-muted-foreground/60 mt-0.5">
                         {allSports.filter(s => selectedSportIds.includes(s.id)).map(s => s.name).join(", ")}
                       </p>
                     )}
@@ -1205,7 +1064,7 @@ export default function ProfileEdit() {
                       </span>
                     )}
                     {(city || country) && (
-                      <p className="text-[12px] text-muted-foreground mt-2">
+                      <p className="text-[12px] text-muted-foreground/60 mt-2">
                         {[city, country].filter(Boolean).join(", ")}
                       </p>
                     )}

@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,13 +37,11 @@ const proficiencyLabels: Record<number, string> = {
   3: "Эксперт",
 };
 
+const LABEL = "text-[13px] font-medium text-muted-foreground";
+const HINT = "text-[12px] text-muted-foreground/60";
+
 export function SkillsEditor({
-  allSkills,
-  selectedSkills,
-  onChange,
-  maxSkills = 20,
-  maxTopSkills = 5,
-  primaryRoleName,
+  allSkills, selectedSkills, onChange, maxSkills = 20, maxTopSkills = 5, primaryRoleName,
 }: SkillsEditorProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [customName, setCustomName] = useState("");
@@ -95,12 +92,8 @@ export function SkillsEditor({
   const addCustomSkill = () => {
     if (!customName.trim() || selectedSkills.length >= maxSkills) return;
     onChange([...selectedSkills, {
-      skill_id: null,
-      proficiency: 2,
-      is_top: false,
-      is_custom: true,
-      custom_name: customName.trim(),
-      custom_group: customGroup.trim() || "Прочее",
+      skill_id: null, proficiency: 2, is_top: false, is_custom: true,
+      custom_name: customName.trim(), custom_group: customGroup.trim() || "Прочее",
     }]);
     setCustomName("");
     setCustomGroup("");
@@ -115,149 +108,121 @@ export function SkillsEditor({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-display uppercase">Навыки</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">
-            Выбрано: <strong>{selectedSkills.length}</strong>/{maxSkills}
-          </span>
-          <span className="text-muted-foreground">
-            Ключевых: <strong>{topCount}</strong>/{maxTopSkills}
-          </span>
+    <div className="bg-card rounded-xl p-5 md:p-6 shadow-card space-y-4">
+      <h2 className="text-[16px] font-semibold text-foreground">Навыки</h2>
+
+      <div className="flex items-center justify-between text-[13px]">
+        <span className="text-muted-foreground">
+          Выбрано: <strong className="text-foreground">{selectedSkills.length}</strong>/{maxSkills}
+        </span>
+        <span className="text-muted-foreground">
+          Ключевых: <strong className="text-foreground">{topCount}</strong>/{maxTopSkills}
+        </span>
+      </div>
+
+      {primaryRoleName && (
+        <p className={`${HINT} bg-secondary/60 rounded-lg p-3`}>
+          Рекомендуем выбрать навыки, релевантные роли «{primaryRoleName}»
+        </p>
+      )}
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
+        <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Поиск навыка..." className="pl-10 text-[14px]" />
+      </div>
+
+      {/* Search results */}
+      {filteredSkills && (
+        <div className="flex flex-wrap gap-2 p-3 rounded-lg bg-secondary/40">
+          {filteredSkills.length === 0 ? (
+            <p className={HINT}>Ничего не найдено</p>
+          ) : (
+            filteredSkills.map(skill => (
+              <Badge key={skill.id} variant={selectedIds.has(skill.id) ? "default" : "outline"} className="cursor-pointer text-[12px]" onClick={() => toggleSkill(skill.id)}>
+                {skill.name}
+              </Badge>
+            ))
+          )}
         </div>
+      )}
 
-        {primaryRoleName && (
-          <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
-            💡 Рекомендуем выбрать навыки, релевантные роли «{primaryRoleName}»
-          </p>
-        )}
-
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Поиск навыка..."
-            className="pl-10"
-          />
-        </div>
-
-        {/* Search results */}
-        {filteredSkills && (
-          <div className="flex flex-wrap gap-2 p-3 border rounded-lg bg-muted/30">
-            {filteredSkills.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Ничего не найдено</p>
-            ) : (
-              filteredSkills.map(skill => (
-                <Badge
-                  key={skill.id}
-                  variant={selectedIds.has(skill.id) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => toggleSkill(skill.id)}
-                >
+      {/* Categories */}
+      {!filteredSkills && Object.entries(skillsByCategory).map(([category, skills]) => (
+        <Collapsible key={category} open={openCategories[category] ?? false} onOpenChange={() => toggleCategory(category)}>
+          <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-[13px] font-medium text-muted-foreground hover:text-foreground py-1">
+            <ChevronDown className={cn("h-4 w-4 transition-transform", openCategories[category] && "rotate-180")} />
+            {category}
+            <span className="text-[11px] text-muted-foreground/60">({skills.filter(s => selectedIds.has(s.id)).length}/{skills.length})</span>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="flex flex-wrap gap-2 pt-2 pb-3">
+              {skills.map(skill => (
+                <Badge key={skill.id} variant={selectedIds.has(skill.id) ? "default" : "outline"} className="cursor-pointer text-[12px]" onClick={() => toggleSkill(skill.id)}>
                   {skill.name}
                 </Badge>
-              ))
-            )}
-          </div>
-        )}
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      ))}
 
-        {/* Categories */}
-        {!filteredSkills && Object.entries(skillsByCategory).map(([category, skills]) => (
-          <Collapsible key={category} open={openCategories[category] ?? false} onOpenChange={() => toggleCategory(category)}>
-            <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-medium text-muted-foreground hover:text-foreground py-1">
-              <ChevronDown className={cn("h-4 w-4 transition-transform", openCategories[category] && "rotate-180")} />
-              {category}
-              <span className="text-xs">({skills.filter(s => selectedIds.has(s.id)).length}/{skills.length})</span>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div className="flex flex-wrap gap-2 pt-2 pb-3">
-                {skills.map(skill => (
-                  <Badge
-                    key={skill.id}
-                    variant={selectedIds.has(skill.id) ? "default" : "outline"}
-                    className="cursor-pointer"
-                    onClick={() => toggleSkill(skill.id)}
-                  >
-                    {skill.name}
-                  </Badge>
-                ))}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        ))}
-
-        {/* Custom skill */}
-        <div className="border-t pt-4 space-y-3">
-          <Label className="text-sm font-medium">Добавить свой навык</Label>
-          <div className="flex gap-2">
-            <Input
-              value={customName}
-              onChange={(e) => setCustomName(e.target.value)}
-              placeholder="Название навыка"
-              className="flex-1"
-            />
-            <Input
-              value={customGroup}
-              onChange={(e) => setCustomGroup(e.target.value)}
-              placeholder="Группа"
-              className="w-[140px]"
-            />
-            <Button variant="outline" size="sm" onClick={addCustomSkill} disabled={!customName.trim()}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
+      {/* Custom skill */}
+      <div className="border-t border-border/50 pt-4 space-y-3">
+        <Label className={LABEL}>Добавить свой навык</Label>
+        <div className="flex gap-2">
+          <Input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="Название навыка" className="flex-1 text-[14px]" />
+          <Input value={customGroup} onChange={(e) => setCustomGroup(e.target.value)} placeholder="Группа" className="w-[140px] text-[14px]" />
+          <Button variant="outline" size="sm" onClick={addCustomSkill} disabled={!customName.trim()}>
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
+      </div>
 
-        {/* Selected skills with levels */}
-        {selectedSkills.length > 0 && (
-          <div className="border-t pt-4 space-y-2">
-            <Label className="text-sm font-medium">Уровни и ключевые навыки</Label>
-            <p className="text-xs text-muted-foreground mb-2">
-              Выберите ⭐ для 5 ключевых навыков — они будут показаны в карточке
-            </p>
-            {selectedSkills.map((sel, index) => {
-              const skill = sel.skill_id ? allSkills.find(s => s.id === sel.skill_id) : null;
-              const name = skill?.name || sel.custom_name || "—";
-              return (
-                <div key={index} className="flex items-center gap-2 text-sm">
-                  <button
-                    type="button"
-                    onClick={() => toggleTop(sel.skill_id, sel.custom_name)}
-                    className={cn("flex-shrink-0", sel.is_top ? "text-yellow-500" : "text-muted-foreground hover:text-yellow-400")}
-                  >
-                    <Star className="h-4 w-4" fill={sel.is_top ? "currentColor" : "none"} />
-                  </button>
-                  <span className="flex-1 truncate">{name}</span>
-                  {sel.is_custom && <Badge variant="outline" className="text-xs">custom</Badge>}
-                  <div className="flex gap-1">
-                    {[1, 2, 3].map(lvl => (
-                      <button
-                        key={lvl}
-                        type="button"
-                        onClick={() => updateProficiency(sel.skill_id, sel.custom_name, lvl)}
-                        className={cn(
-                          "px-2 py-0.5 rounded text-xs border",
-                          sel.proficiency === lvl
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "border-border hover:bg-muted"
-                        )}
-                      >
-                        {proficiencyLabels[lvl]}
-                      </button>
-                    ))}
-                  </div>
-                  <button type="button" onClick={() => removeSkill(index)} className="text-destructive hover:text-destructive/80 text-xs">✕</button>
+      {/* Selected skills with levels */}
+      {selectedSkills.length > 0 && (
+        <div className="border-t border-border/50 pt-4 space-y-2">
+          <Label className={LABEL}>Уровни и ключевые навыки</Label>
+          <p className={HINT}>
+            Отметьте ⭐ для 5 ключевых навыков — они будут показаны в карточке
+          </p>
+          {selectedSkills.map((sel, index) => {
+            const skill = sel.skill_id ? allSkills.find(s => s.id === sel.skill_id) : null;
+            const name = skill?.name || sel.custom_name || "—";
+            return (
+              <div key={index} className="flex items-center gap-2 text-[13px]">
+                <button
+                  type="button"
+                  onClick={() => toggleTop(sel.skill_id, sel.custom_name)}
+                  className={cn("flex-shrink-0", sel.is_top ? "text-yellow-500" : "text-muted-foreground/40 hover:text-yellow-400")}
+                >
+                  <Star className="h-4 w-4" fill={sel.is_top ? "currentColor" : "none"} />
+                </button>
+                <span className="flex-1 truncate text-foreground">{name}</span>
+                {sel.is_custom && <Badge variant="outline" className="text-[10px]">custom</Badge>}
+                <div className="flex gap-1">
+                  {[1, 2, 3].map(lvl => (
+                    <button
+                      key={lvl}
+                      type="button"
+                      onClick={() => updateProficiency(sel.skill_id, sel.custom_name, lvl)}
+                      className={cn(
+                        "px-2 py-0.5 rounded text-[11px] border",
+                        sel.proficiency === lvl
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border/60 hover:bg-secondary text-muted-foreground"
+                      )}
+                    >
+                      {proficiencyLabels[lvl]}
+                    </button>
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                <button type="button" onClick={() => removeSkill(index)} className="text-muted-foreground/40 hover:text-destructive text-[11px]">✕</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
