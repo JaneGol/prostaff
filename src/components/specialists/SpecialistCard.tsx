@@ -44,6 +44,7 @@ interface SpecialistCardProps {
   avatarUrl?: string | null;
   aboutSnippet?: string | null;
   experience?: ExperienceSummary | null;
+  secondarySpecName?: string | null;
 }
 
 export function SpecialistCard({
@@ -60,6 +61,7 @@ export function SpecialistCard({
   avatarUrl,
   aboutSnippet,
   experience,
+  secondarySpecName,
 }: SpecialistCardProps) {
   const isActive = searchStatus === "actively_looking";
   const isOpen = searchStatus === "open_to_offers";
@@ -118,17 +120,17 @@ export function SpecialistCard({
               </div>
 
               {/* Experience & bio row */}
-              {(experience?.latest_position || aboutSnippet) && (
+              {(roleName || secondarySpecName || experience?.latest_company || aboutSnippet) && (
                 <div className="mt-1.5">
-                  {experience?.latest_position && (
+                  {(roleName || secondarySpecName || experience?.latest_company) && (
                     <p className="text-[13px] text-muted-foreground flex items-center gap-1.5 line-clamp-1">
                       <Briefcase className="h-3 w-3 flex-shrink-0" />
-                      <span className="font-medium text-foreground/80">{experience.latest_position}</span>
-                      {experience.latest_company && (
-                        <span className="text-muted-foreground">· {experience.latest_company}</span>
+                      <span className="font-medium text-foreground/80">{roleName || "—"}</span>
+                      {secondarySpecName && (
+                        <span className="text-muted-foreground">+ {secondarySpecName}</span>
                       )}
-                      {experience.total_years > 0 && (
-                        <span className="text-muted-foreground/70">· {experience.total_years} {experience.total_years === 1 ? "год" : experience.total_years < 5 ? "года" : "лет"}</span>
+                      {experience?.latest_company && (
+                        <span className="text-muted-foreground">· {experience.latest_company}</span>
                       )}
                     </p>
                   )}
@@ -148,14 +150,14 @@ export function SpecialistCard({
                 {isRemoteAvailable && (
                   <Badge variant="outline" className="text-xs px-2 py-0.5">Удалённо</Badge>
                 )}
-                {skills.slice(0, 3).map((s, i) => (
+                {skills.slice(0, 5).map((s, i) => (
                   <Badge key={i} variant="outline" className="text-xs px-2 py-0.5">
                     {s.name}
                   </Badge>
                 ))}
-                {skills.length > 3 && (
+                {skills.length > 5 && (
                   <Badge variant="outline" className="text-xs px-2 py-0.5">
-                    +{skills.length - 3}
+                    +{skills.length - 5}
                   </Badge>
                 )}
               </div>

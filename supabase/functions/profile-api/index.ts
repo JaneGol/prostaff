@@ -194,7 +194,7 @@ async function handleList(
   const { data: ps, error: e } = await ac
     .from("profiles")
     .select(
-      "id, avatar_url, city, country, level, search_status, is_relocatable, is_remote_available, show_name, secondary_role_id, visibility_level, about_useful, specialist_roles!profiles_role_id_fkey (id, name)",
+      "id, avatar_url, city, country, level, search_status, is_relocatable, is_remote_available, show_name, secondary_role_id, specialization_id, secondary_specialization_id, visibility_level, about_useful, specialist_roles!profiles_role_id_fkey (id, name)",
     )
     .eq("is_public", true)
     .in("visibility_level", ["public_preview", "clubs_only"])
@@ -219,6 +219,8 @@ async function handleList(
     show_name: x.show_name,
     specialist_roles: x.specialist_roles,
     secondary_role_id: x.secondary_role_id,
+    specialization_id: x.specialization_id,
+    secondary_specialization_id: x.secondary_specialization_id,
     about_useful: x.about_useful ? (x.about_useful as string).slice(0, 120) : null,
     first_name: null,
     last_name: null,

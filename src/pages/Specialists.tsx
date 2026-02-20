@@ -32,6 +32,8 @@ interface ProfileCard {
   show_name: boolean;
   specialist_roles: { id: string; name: string } | null;
   secondary_role_id: string | null;
+  specialization_id?: string | null;
+  secondary_specialization_id?: string | null;
   about_useful: string | null;
 }
 
@@ -556,11 +558,13 @@ export default function Specialists() {
                   {filteredProfiles.map((p) => {
                     const pSkills = (displaySkills[p.id] || []).map((s) => ({ name: getSkillName(s) }));
                     const pSports = displaySports[p.id] || [];
+                    const specName = p.specialization_id ? specializations.find(s => s.id === p.specialization_id)?.name || null : null;
+                    const secSpecName = p.secondary_specialization_id ? specializations.find(s => s.id === p.secondary_specialization_id)?.name || null : null;
                     return (
                       <SpecialistCard
                         key={p.id}
                         id={p.id}
-                        roleName={p.specialist_roles?.name || null}
+                        roleName={specName || p.specialist_roles?.name || null}
                         level={p.level}
                         city={p.city}
                         country={p.country}
@@ -572,6 +576,7 @@ export default function Specialists() {
                         avatarUrl={p.avatar_url}
                         aboutSnippet={p.about_useful}
                         experience={profileExperience[p.id] || null}
+                        secondarySpecName={secSpecName}
                       />
                     );
                   })}
