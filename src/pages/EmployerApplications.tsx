@@ -39,7 +39,7 @@ import {
   ArrowLeft,
   Printer
 } from "lucide-react";
-import { PdfResumeModal } from "@/components/profile/PdfResumeModal";
+
 import type { Database } from "@/integrations/supabase/types";
 
 type ApplicationStatus = Database["public"]["Enums"]["application_status"];
@@ -119,16 +119,8 @@ export default function EmployerApplications() {
   const [notes, setNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
 
-  // PDF modal
-  const [showPdfModal, setShowPdfModal] = useState(false);
+  // PDF generation
   const [pdfLoading, setPdfLoading] = useState(false);
-  const [pdfProfile, setPdfProfile] = useState<any>(null);
-  const [pdfExperiences, setPdfExperiences] = useState<any[]>([]);
-  const [pdfSkills, setPdfSkills] = useState<any[]>([]);
-  const [pdfSportsExp, setPdfSportsExp] = useState<any[]>([]);
-  const [pdfEducation, setPdfEducation] = useState<any[]>([]);
-  const [pdfCertificates, setPdfCertificates] = useState<any[]>([]);
-  const [pdfPortfolio, setPdfPortfolio] = useState<any[]>([]);
 
   useEffect(() => {
     if (!authLoading && (!user || userRole !== "employer")) {
@@ -288,7 +280,7 @@ export default function EmployerApplications() {
     return true;
   });
 
-  const openPdfModal = async (profileId: string) => {
+  const generatePdf = async (profileId: string) => {
     setPdfLoading(true);
     try {
       const [profileRes, expRes, skillsRes, sportsRes, eduRes, certsRes, portRes] = await Promise.all([
@@ -306,31 +298,172 @@ export default function EmployerApplications() {
         return;
       }
 
-      setPdfProfile(profileRes.data);
-      setPdfExperiences((expRes.data || []).map(e => ({
+      const profile = profileRes.data;
+      const experiences = (expRes.data || []).map(e => ({
         ...e,
         achievements: Array.isArray(e.achievements) ? e.achievements : [],
-        hide_org: e.hide_org || false,
+        hide_org: false,
         is_current: e.is_current || false,
         is_remote: e.is_remote || false,
-      })));
-      setPdfSkills((skillsRes.data || []).map(s => ({
+      }));
+      const skills = (skillsRes.data || []).map(s => ({
         name: s.custom_name || (s.skills as any)?.name || "—",
         proficiency: s.proficiency || 2,
         is_top: s.is_top || false,
-      })));
-      setPdfSportsExp((sportsRes.data || []).map(s => ({
+      }));
+      const sportsExp = (sportsRes.data || []).map(s => ({
         years: s.years || 1,
         level: s.level,
         sport: s.sport,
-      })));
-      setPdfEducation(eduRes.data || []);
-      setPdfCertificates(certsRes.data || []);
-      setPdfPortfolio(portRes.data || []);
-      setShowPdfModal(true);
+      }));
+      const education = eduRes.data || [];
+      const certificates = certsRes.data || [];
+      const portfolio = portRes.data || [];
+
+      // Generate PDF directly (no modal for employers)
+      const profLabels: Record<number, string> = { 1: "Базовый", 2: "Уверенный", 3: "Эксперт" };
+      const empLabels: Record<string, string> = { full_time: "Полная", part_time: "Частичная", contract: "Контракт", internship: "Стажировка", freelance: "Фриланс" };
+      const degLabels: Record<string, string> = { bachelor: "Бакалавр", master: "Магистр", phd: "К.н./Д.н.", specialist: "Специалист", courses: "Курсы", other: "Другое" };
+
+      const location = [profile.city, profile.country].filter(Boolean).join(", ");
+      const roleName = profile.specialist_roles?.name || "";
+      const secondaryRoleName = (profile as any).secondary_role?.name || "";
+      const lvl = profile.level ? (levelLabels[profile.level] || profile.level) : "";
+      const topSkills = skills.filter(s => s.is_top);
+      const otherSkills = skills.filter(s => !s.is_top);
+
+      let html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11pt; line-height: 1.5; color: #1a1a2e; }
+  .page { max-width: 800px; margin: 0 auto; padding: 10px 24px; }
+  .header { border-bottom: 3px solid #4355C5; padding-bottom: 16px; margin-bottom: 20px; }
+  .name { font-size: 24pt; font-weight: 700; color: #4355C5; text-transform: uppercase; }
+  .role { font-size: 13pt; color: #555; margin-top: 4px; }
+  .meta { font-size: 10pt; color: #777; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .section { margin-top: 20px; }
+  .section-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #4355C5; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 10px; }
+  .exp-item { margin-bottom: 14px; }
+  .exp-org { font-weight: 600; }
+  .exp-pos { color: #555; }
+  .exp-dates { font-size: 9.5pt; color: #888; }
+  .ach { margin-left: 16px; position: relative; padding-left: 14px; font-size: 10pt; }
+  .ach::before { content: "✓"; position: absolute; left: 0; color: #4355C5; font-weight: bold; }
+  .edu-item { margin-bottom: 10px; }
+  .skill-line { font-size: 10pt; margin-bottom: 3px; padding-left: 14px; position: relative; }
+  .skill-dot { width: 6px; height: 6px; border-radius: 50%; background: #c8cde8; display: inline-block; position: absolute; left: 0; top: 6px; }
+  .skill-dot.top-dot { background: #4355C5; }
+  .sport-row { font-size: 10pt; margin-bottom: 3px; }
+  .port-item { font-size: 10pt; margin-bottom: 4px; }
+  .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 8px; text-align: center; font-size: 8pt; color: #aaa; }
+  a { color: #4355C5; text-decoration: none; }
+</style></head><body><div class="page">`;
+
+      html += `<div class="header">`;
+      html += `<div class="name">${profile.first_name} ${profile.last_name}</div>`;
+      html += `<div class="role">${roleName}${secondaryRoleName ? ` • ${secondaryRoleName}` : ""}${lvl ? ` • ${lvl}` : ""}</div>`;
+      html += `<div class="meta">`;
+      if (location) html += `<span>📍 ${location}</span>`;
+      if (profile.is_relocatable) html += `<span>🔄 Релокация</span>`;
+      if (profile.is_remote_available) html += `<span>💻 Удалённо</span>`;
+      html += `</div>`;
+      html += `<div class="meta" style="margin-top:6px">`;
+      if (profile.email) html += `<span>✉ ${profile.email}</span>`;
+      if (profile.phone) html += `<span>📱 ${profile.phone}</span>`;
+      if (profile.telegram) html += `<span>💬 ${profile.telegram}</span>`;
+      if (profile.linkedin_url) html += `<span><a href="${profile.linkedin_url}">LinkedIn</a></span>`;
+      html += `</div></div>`;
+
+      if (profile.bio || profile.about_useful || profile.about_goals) {
+        html += `<div class="section"><div class="section-title">О себе</div>`;
+        if (profile.bio) html += `<p style="margin-bottom:6px">${profile.bio}</p>`;
+        if (profile.about_useful) html += `<p style="font-size:10pt;color:#555"><strong>Полезен команде:</strong> ${profile.about_useful}</p>`;
+        if (profile.about_goals) html += `<p style="font-size:10pt;color:#555"><strong>Цели:</strong> ${profile.about_goals}</p>`;
+        html += `</div>`;
+      }
+
+      if (skills.length > 0) {
+        html += `<div class="section"><div class="section-title">Навыки</div>`;
+        if (topSkills.length > 0) {
+          html += `<div style="margin-bottom:6px"><strong style="font-size:10pt;color:#4355C5">Ключевые навыки</strong></div>`;
+          topSkills.forEach(s => { html += `<div class="skill-line"><span class="skill-dot top-dot"></span><strong>${s.name}</strong> <span style="color:#777">— ${profLabels[s.proficiency]}</span></div>`; });
+        }
+        if (otherSkills.length > 0) {
+          html += `<div style="margin-top:8px;margin-bottom:6px"><strong style="font-size:10pt;color:#555">Дополнительные</strong></div>`;
+          otherSkills.forEach(s => { html += `<div class="skill-line"><span class="skill-dot"></span>${s.name} <span style="color:#777">— ${profLabels[s.proficiency]}</span></div>`; });
+        }
+        html += `</div>`;
+      }
+
+      if (experiences.length > 0) {
+        html += `<div class="section"><div class="section-title">Опыт работы</div>`;
+        experiences.slice(0, 4).forEach(exp => {
+          const start = new Date(exp.start_date).toLocaleDateString("ru-RU", { month: "short", year: "numeric" });
+          const end = exp.is_current ? "настоящее время" : exp.end_date ? new Date(exp.end_date).toLocaleDateString("ru-RU", { month: "short", year: "numeric" }) : "";
+          html += `<div class="exp-item">`;
+          html += `<div class="exp-org">${exp.company_name}</div>`;
+          html += `<div class="exp-pos">${exp.position}${exp.employment_type ? ` • ${empLabels[exp.employment_type] || exp.employment_type}` : ""}</div>`;
+          html += `<div class="exp-dates">${start} — ${end}</div>`;
+          if (exp.description) html += `<p style="font-size:10pt;margin-top:4px">${exp.description}</p>`;
+          if (exp.achievements && exp.achievements.length > 0) exp.achievements.forEach((a: string) => { html += `<div class="ach">${a}</div>`; });
+          html += `</div>`;
+        });
+        html += `</div>`;
+      }
+
+      if (education.length > 0 || certificates.length > 0) {
+        html += `<div class="section"><div class="section-title">Образование и сертификаты</div>`;
+        education.forEach((e: any) => {
+          html += `<div class="edu-item"><strong>${e.institution}</strong>`;
+          const deg = e.degree ? (degLabels[e.degree] || e.degree) : "";
+          if (deg || e.field_of_study) html += ` — ${deg}${e.field_of_study ? `, ${e.field_of_study}` : ""}`;
+          if (e.start_year) html += ` <span style="color:#888;font-size:9.5pt">(${e.start_year}${e.end_year ? `–${e.end_year}` : e.is_current ? "–н.в." : ""})</span>`;
+          html += `</div>`;
+        });
+        certificates.forEach((c: any) => {
+          html += `<div class="edu-item" style="font-size:10pt">🏅 ${c.name}${c.issuer ? ` — ${c.issuer}` : ""}${c.year ? ` (${c.year})` : ""}</div>`;
+        });
+        html += `</div>`;
+      }
+
+      if (sportsExp.length > 0) {
+        html += `<div class="section"><div class="section-title">Виды спорта</div>`;
+        sportsExp.forEach(s => {
+          html += `<div class="sport-row">⚽ ${s.sport?.name || "—"} — ${s.years} ${s.years === 1 ? "год" : s.years < 5 ? "года" : "лет"}${s.level ? ` (${s.level})` : ""}</div>`;
+        });
+        html += `</div>`;
+      }
+
+      if (portfolio.length > 0) {
+        html += `<div class="section"><div class="section-title">Портфолио</div>`;
+        portfolio.slice(0, 5).forEach((p: any) => {
+          html += `<div class="port-item">📎 <a href="${p.url}">${p.title}</a> <span style="color:#888">(${p.type})</span></div>`;
+        });
+        html += `</div>`;
+      }
+
+      html += `<div class="footer">Сгенерировано на ProStaff • ${new Date().toLocaleDateString("ru-RU")}</div>`;
+      html += `</div></body></html>`;
+
+      const { default: html2pdf } = await import("html2pdf.js");
+      const container = document.createElement("div");
+      container.style.position = "absolute";
+      container.style.left = "-9999px";
+      container.innerHTML = html;
+      document.body.appendChild(container);
+      const el = container.querySelector(".page") as HTMLElement;
+      const pdfBlob = await html2pdf().set({
+        margin: [2, 5, 2, 5],
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      }).from(el).outputPdf("blob");
+      document.body.removeChild(container);
+      const blobUrl = URL.createObjectURL(new Blob([pdfBlob], { type: "application/pdf" }));
+      window.open(blobUrl, "_blank");
     } catch (err) {
-      console.error("Error loading profile for PDF:", err);
-      toast({ title: "Ошибка", description: "Не удалось загрузить данные для PDF", variant: "destructive" });
+      console.error("Error generating PDF:", err);
+      toast({ title: "Ошибка", description: "Не удалось сгенерировать PDF", variant: "destructive" });
     } finally {
       setPdfLoading(false);
     }
@@ -523,7 +656,7 @@ export default function EmployerApplications() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => openPdfModal(application.profiles.id)}
+                        onClick={() => generatePdf(application.profiles.id)}
                         disabled={pdfLoading}
                         className="w-full"
                       >
@@ -594,20 +727,6 @@ export default function EmployerApplications() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {/* PDF Resume Modal */}
-      {pdfProfile && (
-        <PdfResumeModal
-          open={showPdfModal}
-          onClose={() => setShowPdfModal(false)}
-          profile={pdfProfile}
-          experiences={pdfExperiences}
-          skills={pdfSkills}
-          sportsExp={pdfSportsExp}
-          education={pdfEducation}
-          certificates={pdfCertificates}
-          portfolio={pdfPortfolio}
-        />
-      )}
     </Layout>
   );
 }
