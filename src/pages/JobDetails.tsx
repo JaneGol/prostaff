@@ -339,29 +339,29 @@ export default function JobDetails() {
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mt-4">
                   {job.specialist_roles && (
-                    <Badge variant="secondary">
+                    <Badge variant="secondary" className="rounded-md px-4 py-1.5 text-sm font-medium">
                       {job.specialist_roles.name}
                     </Badge>
                   )}
                   {job.level && (
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="rounded-md px-4 py-1.5 text-sm font-medium">
                       <GraduationCap className="h-3 w-3 mr-1" />
                       {levelLabels[job.level] || job.level}
                     </Badge>
                   )}
                   {job.contract_type && (
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="rounded-md px-4 py-1.5 text-sm font-medium">
                       {contractLabels[job.contract_type] || job.contract_type}
                     </Badge>
                   )}
                   {job.is_remote && (
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="rounded-md px-4 py-1.5 text-sm font-medium">
                       <Globe className="h-3 w-3 mr-1" />
                       Удалённо
                     </Badge>
                   )}
                   {job.is_relocatable && (
-                    <Badge variant="outline">Релокация</Badge>
+                    <Badge variant="outline" className="rounded-md px-4 py-1.5 text-sm font-medium">Релокация</Badge>
                   )}
                 </div>
 
