@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import {
   User, FileText, Briefcase, Settings, Search, PlusCircle,
   Users, Eye, ChevronRight, Loader2, ArrowRight,
@@ -113,6 +114,27 @@ function SpecialistDashboard({ userId }: { userId: string }) {
         .select("id", { count: "exact", head: true })
         .eq("profile_id", profile.id);
       return count || 0;
+    },
+    enabled: !!profile?.id,
+  });
+
+  const { data: recentApplications } = useQuery({
+    queryKey: ["dashboard-recent-applications", userId],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+      const { data } = await supabase
+        .from("applications")
+        .select(`
+          id, status, created_at,
+          jobs!inner (
+            id, title,
+            companies!inner (name, logo_url, city)
+          )
+        `)
+        .eq("profile_id", profile.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      return data || [];
     },
     enabled: !!profile?.id,
   });
@@ -318,6 +340,60 @@ function SpecialistDashboard({ userId }: { userId: string }) {
                     <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                   </div>
                 </Link>
+              )}
+
+              {/* My Applications */}
+              {recentApplications && recentApplications.length > 0 && (
+                <div className="bg-card rounded-2xl p-5 shadow-card">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-[16px] font-medium text-foreground">Мои отклики</h2>
+                    <Link to="/my-applications" className="text-[13px] text-primary hover:underline flex items-center gap-1">
+                      Все <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                  <div className="space-y-3">
+                    {recentApplications.map((app: any) => {
+                      const statusLabel: Record<string, string> = {
+                        pending: "На рассмотрении",
+                        reviewed: "Просмотрено",
+                        shortlisted: "Шорт-лист",
+                        interview: "Интервью",
+                        rejected: "Отклонён",
+                        hired: "Принят",
+                      };
+                      const statusColor: Record<string, string> = {
+                        pending: "bg-muted text-muted-foreground",
+                        reviewed: "bg-blue-100 text-blue-800",
+                        shortlisted: "bg-yellow-100 text-yellow-800",
+                        interview: "bg-purple-100 text-purple-800",
+                        rejected: "bg-red-100 text-red-800",
+                        hired: "bg-green-100 text-green-800",
+                      };
+                      return (
+                        <Link key={app.id} to={`/jobs/${app.jobs?.id}`} className="block">
+                          <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary/50 transition-colors">
+                            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                              {app.jobs?.companies?.logo_url ? (
+                                <img src={app.jobs.companies.logo_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <Briefcase className="h-4 w-4 text-primary" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[13px] font-medium text-foreground truncate">{app.jobs?.title}</p>
+                              <p className="text-[12px] text-muted-foreground truncate">
+                                {app.jobs?.companies?.name}{app.jobs?.companies?.city ? ` · ${app.jobs.companies.city}` : ""}
+                              </p>
+                            </div>
+                            <Badge className={`text-[11px] px-2 py-0.5 ${statusColor[app.status] || statusColor.pending}`}>
+                              {statusLabel[app.status] || app.status}
+                            </Badge>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
 
               {/* Quick actions */}
