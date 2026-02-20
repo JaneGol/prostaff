@@ -274,7 +274,18 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
       }).from(el).outputPdf("blob");
       document.body.removeChild(container);
       const blobUrl = URL.createObjectURL(new Blob([pdfBlob], { type: "application/pdf" }));
-      window.open(blobUrl, "_blank");
+      // On mobile, use download link since window.open may be blocked
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = `${showName ? `${profile.first_name}_${profile.last_name}` : "ProStaff"}_CV.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        window.open(blobUrl, "_blank");
+      }
     } finally {
       setGenerating(false);
     }

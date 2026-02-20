@@ -297,17 +297,24 @@ function SpecialistDashboard({ userId }: { userId: string }) {
 
               {/* Ready state — compact */}
               {state === "ready" && (
-                <div className="bg-card rounded-2xl p-5 shadow-card flex items-center gap-4">
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="h-4 w-4 text-primary" />
+                <div className="bg-card rounded-2xl p-5 shadow-card">
+                  <div className="flex items-center gap-4">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-medium text-foreground">Профиль заполнен на {pct}%</p>
+                      <p className="text-[13px] text-muted-foreground">Ваш профиль виден работодателям</p>
+                    </div>
+                    <Link to="/profile/edit" className="hidden md:block">
+                      <Button variant="outline" size="sm" className="text-[13px]">Редактировать</Button>
+                    </Link>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-medium text-foreground">Профиль заполнен на {pct}%</p>
-                    <p className="text-[13px] text-muted-foreground">Ваш профиль виден работодателям</p>
+                  <div className="flex justify-end mt-3 md:hidden">
+                    <Link to="/profile/edit">
+                      <Button variant="outline" size="sm" className="text-[13px]">Редактировать</Button>
+                    </Link>
                   </div>
-                  <Link to="/profile/edit">
-                    <Button variant="outline" size="sm" className="text-[13px]">Редактировать</Button>
-                  </Link>
                 </div>
               )}
 
@@ -372,7 +379,7 @@ function SpecialistDashboard({ userId }: { userId: string }) {
                       return (
                         <Link key={app.id} to={`/jobs/${app.jobs?.id}`} className="block">
                           <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary/50 transition-colors">
-                            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            <div className="w-9 h-9 rounded-lg bg-primary/10 hidden md:flex items-center justify-center flex-shrink-0 overflow-hidden">
                               {app.jobs?.companies?.logo_url ? (
                                 <img src={app.jobs.companies.logo_url} alt="" className="w-full h-full object-cover" />
                               ) : (
