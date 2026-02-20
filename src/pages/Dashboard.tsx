@@ -508,7 +508,7 @@ function EmployerDashboard({ userId }: { userId: string }) {
 
               {/* My Jobs */}
               {(jobs && jobs.length > 0) && (
-                <div>
+                <div className="mt-10">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold text-foreground">Мои вакансии</h2>
                     <Link to="/jobs/new">
