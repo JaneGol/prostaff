@@ -119,6 +119,12 @@ export default function EmployerApplications() {
   const [notes, setNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
 
+  // Interview message modal
+  const [showInterviewModal, setShowInterviewModal] = useState(false);
+  const [interviewAppId, setInterviewAppId] = useState<string | null>(null);
+  const [interviewMessage, setInterviewMessage] = useState("");
+  const [savingInterview, setSavingInterview] = useState(false);
+
   // PDF generation
   const [pdfLoading, setPdfLoading] = useState(false);
 
@@ -206,6 +212,14 @@ export default function EmployerApplications() {
   };
 
   const updateStatus = async (applicationId: string, newStatus: ApplicationStatus) => {
+    // If switching to interview, show message modal instead of updating directly
+    if (newStatus === "interview") {
+      setInterviewAppId(applicationId);
+      setInterviewMessage("");
+      setShowInterviewModal(true);
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("applications")
@@ -231,6 +245,47 @@ export default function EmployerApplications() {
         description: "Не удалось обновить статус",
         variant: "destructive"
       });
+    }
+  };
+
+  const confirmInterview = async () => {
+    if (!interviewAppId) return;
+    setSavingInterview(true);
+    try {
+      const updateData: Record<string, unknown> = { status: "interview" as ApplicationStatus };
+      if (interviewMessage.trim()) {
+        updateData.employer_notes = interviewMessage.trim();
+      }
+
+      const { error } = await supabase
+        .from("applications")
+        .update(updateData)
+        .eq("id", interviewAppId);
+
+      if (error) throw error;
+
+      setApplications(prev =>
+        prev.map(app =>
+          app.id === interviewAppId
+            ? { ...app, status: "interview" as ApplicationStatus, employer_notes: interviewMessage.trim() || app.employer_notes }
+            : app
+        )
+      );
+
+      setShowInterviewModal(false);
+      toast({
+        title: "Приглашение на интервью",
+        description: "Статус изменён и сообщение сохранено"
+      });
+    } catch (err) {
+      console.error("Error updating to interview:", err);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить статус",
+        variant: "destructive"
+      });
+    } finally {
+      setSavingInterview(false);
     }
   };
 
@@ -723,6 +778,33 @@ export default function EmployerApplications() {
             <Button onClick={saveNotes} disabled={savingNotes}>
               {savingNotes && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Сохранить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Interview Message Modal */}
+      <Dialog open={showInterviewModal} onOpenChange={setShowInterviewModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Приглашение на интервью</DialogTitle>
+            <DialogDescription>
+              Напишите сообщение кандидату с деталями интервью (дата, время, формат и т.д.)
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={interviewMessage}
+            onChange={(e) => setInterviewMessage(e.target.value)}
+            placeholder="Здравствуйте! Приглашаем вас на интервью. Дата: ..., Время: ..., Формат: ..."
+            rows={5}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowInterviewModal(false)}>
+              Отмена
+            </Button>
+            <Button onClick={confirmInterview} disabled={savingInterview}>
+              {savingInterview && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Отправить и подтвердить
             </Button>
           </DialogFooter>
         </DialogContent>
