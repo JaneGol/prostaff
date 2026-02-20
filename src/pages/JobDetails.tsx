@@ -437,6 +437,7 @@ export default function JobDetails() {
                       <Badge 
                         key={skill.id} 
                         variant={skill.is_required ? "default" : "secondary"}
+                        className="rounded-md px-4 py-1.5 text-sm font-medium"
                       >
                         {skill.name}
                         {skill.is_required && " *"}
