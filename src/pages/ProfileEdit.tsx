@@ -1046,45 +1046,95 @@ export default function ProfileEdit() {
             {/* Right column — sticky progress + mini-preview */}
             <div className="hidden xl:block w-72 shrink-0">
               <div className="sticky top-24 space-y-5">
-                {/* Mini Preview Card */}
-                <div className="bg-card rounded-xl p-5 shadow-card">
-                  <p className={`${SUB_TITLE} mb-4`}>Как вас видят клубы</p>
-                  <div className="flex flex-col items-center text-center">
-                    <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center overflow-hidden mb-3">
+                {/* Mini Preview Card — matches SpecialistCard layout */}
+                <div className="bg-card rounded-xl p-4 shadow-card">
+                  <p className={`${SUB_TITLE} mb-3`}>Как вас видят клубы</p>
+                  <div className="flex items-start gap-3">
+                    {/* Avatar */}
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {avatarUrl ? (
-                        <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                        (() => {
+                          const bankRef = isBankAvatar(avatarUrl) ? decodeBankAvatar(avatarUrl) : null;
+                          if (bankRef) {
+                            return <img src={bankRef.src} alt="" className="w-full h-full object-cover" />;
+                          }
+                          return <img src={avatarUrl} alt="" className="w-full h-full object-cover" />;
+                        })()
                       ) : (
-                        <span className="text-lg font-medium text-muted-foreground/60">
+                        <span className="text-xs font-medium text-muted-foreground/50">
                           {firstName?.[0] || "?"}{lastName?.[0] || "?"}
                         </span>
                       )}
                     </div>
-                    <p className="text-[15px] font-semibold text-foreground">
-                      {firstName || "Имя"} {lastName || "Фамилия"}
-                    </p>
-                    {primarySpecName && (
-                      <p className="text-[13px] text-muted-foreground mt-0.5">{primarySpecName}</p>
-                    )}
-                    {secondarySpecializationId && (
-                      <p className="text-[12px] text-muted-foreground/60 mt-0.5">
-                        + {specializations.find(s => s.id === secondarySpecializationId)?.name}
-                      </p>
-                    )}
-                    {selectedSportIds.length > 0 && (
-                      <p className="text-[12px] text-muted-foreground/60 mt-0.5">
-                        {allSports.filter(s => selectedSportIds.includes(s.id)).map(s => s.name).join(", ")}
-                      </p>
-                    )}
-                    {level && (
-                      <span className="inline-block text-[11px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-2">
-                        {levels.find(l => l.value === level)?.label || level}
-                      </span>
-                    )}
-                    {(city || country) && (
-                      <p className="text-[12px] text-muted-foreground/60 mt-2">
-                        {[city, country].filter(Boolean).join(", ")}
-                      </p>
-                    )}
+                    <div className="flex-1 min-w-0">
+                      {/* Role + level */}
+                      <div className="flex items-start justify-between gap-1">
+                        <p className="text-[13px] font-semibold text-foreground line-clamp-1">
+                          {primarySpecName || "Без специализации"}
+                        </p>
+                        {level && (
+                          <span className="text-[10px] font-medium border border-border rounded px-1.5 py-0.5 shrink-0">
+                            {levels.find(l => l.value === level)?.label || level}
+                          </span>
+                        )}
+                      </div>
+                      {/* Status */}
+                      {searchStatus && searchStatus !== "not_looking" && (
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                          <span className={`h-1.5 w-1.5 rounded-full inline-block ${searchStatus === "actively_looking" ? "bg-primary" : "bg-primary/40"}`} />
+                          {searchStatuses.find(s => s.value === searchStatus)?.label}
+                        </p>
+                      )}
+                      {/* Experience snippet */}
+                      {experiences.length > 0 && experiences[0]?.position && (
+                        <p className="text-[11px] text-muted-foreground line-clamp-1 mt-1">
+                          <span className="font-medium text-foreground/80">{experiences[0].position}</span>
+                          {experiences[0].company_name && <span> · {experiences[0].company_name}</span>}
+                        </p>
+                      )}
+                      {/* About snippet */}
+                      {aboutUseful && (
+                        <p className="text-[10px] text-muted-foreground/70 line-clamp-1 mt-0.5 italic">
+                          {aboutUseful.slice(0, 80)}
+                        </p>
+                      )}
+                      {/* Skills */}
+                      {selectedSkills.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {selectedSkills.slice(0, 3).map((s, i) => {
+                            const skill = allSkills.find(sk => sk.id === s.skill_id);
+                            return (
+                              <span key={i} className="text-[10px] border border-border rounded px-1.5 py-0.5">
+                                {s.is_custom ? s.custom_name : skill?.name || "—"}
+                              </span>
+                            );
+                          })}
+                          {selectedSkills.length > 3 && (
+                            <span className="text-[10px] border border-border rounded px-1.5 py-0.5">
+                              +{selectedSkills.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {/* Location + sports */}
+                      <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[11px] text-muted-foreground">
+                        {(city || country) && (
+                          <span className="flex items-center gap-0.5">
+                            📍 {[city, country].filter(Boolean).join(", ")}
+                          </span>
+                        )}
+                        {selectedSportIds.slice(0, 2).map(id => {
+                          const sport = allSports.find(s => s.id === id);
+                          const exp = sportsExperience.find(se => se.sport_id === id);
+                          return sport ? (
+                            <span key={id} className="flex items-center gap-0.5">
+                              {sport.name}
+                              {exp && exp.years > 0 && <span className="text-muted-foreground/50">({exp.years}л)</span>}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
