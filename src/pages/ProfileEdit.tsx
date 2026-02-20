@@ -1069,29 +1069,30 @@ export default function ProfileEdit() {
                     <div className="flex-1 min-w-0">
                       {/* Role + level */}
                       <div className="flex items-start justify-between gap-1">
-                        <p className="text-[13px] font-semibold text-foreground line-clamp-1">
-                          {primarySpecName || "Без специализации"}
-                        </p>
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-semibold text-foreground line-clamp-1">
+                            {primarySpecName || "Без специализации"}
+                          </p>
+                          {/* Secondary spec + experience on second line */}
+                          {(() => {
+                            const secondaryName = secondarySpecializationId ? specializations.find(s => s.id === secondarySpecializationId)?.name : null;
+                            const latestExp = experiences.length > 0 && experiences[0]?.position ? experiences[0] : null;
+                            const parts: string[] = [];
+                            if (secondaryName) parts.push(`+ ${secondaryName}`);
+                            if (latestExp?.company_name) parts.push(latestExp.company_name);
+                            return parts.length > 0 ? (
+                              <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                                {parts.join(" · ")}
+                              </p>
+                            ) : null;
+                          })()}
+                        </div>
                         {level && (
                           <span className="text-[10px] font-medium border border-border rounded px-1.5 py-0.5 shrink-0">
                             {levels.find(l => l.value === level)?.label || level}
                           </span>
                         )}
                       </div>
-                      {/* Status */}
-                      {searchStatus && searchStatus !== "not_looking" && (
-                        <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                          <span className={`h-1.5 w-1.5 rounded-full inline-block ${searchStatus === "actively_looking" ? "bg-primary" : "bg-primary/40"}`} />
-                          {searchStatuses.find(s => s.value === searchStatus)?.label}
-                        </p>
-                      )}
-                      {/* Experience snippet */}
-                      {experiences.length > 0 && experiences[0]?.position && (
-                        <p className="text-[11px] text-muted-foreground line-clamp-1 mt-1">
-                          <span className="font-medium text-foreground/80">{experiences[0].position}</span>
-                          {experiences[0].company_name && <span> · {experiences[0].company_name}</span>}
-                        </p>
-                      )}
                       {/* About snippet */}
                       {aboutUseful && (
                         <p className="text-[10px] text-muted-foreground/70 line-clamp-1 mt-0.5 italic">
