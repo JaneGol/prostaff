@@ -275,19 +275,20 @@ export default function EmployerApplications() {
       setShowInterviewModal(false);
 
       // Send email notification
-      try {
-        await supabase.functions.invoke("send-interview-email", {
-          body: { applicationId: interviewAppId, message: interviewMessage.trim() },
+      const { data: emailData, error: emailError } = await supabase.functions.invoke("send-interview-email", {
+        body: { applicationId: interviewAppId, message: interviewMessage.trim() },
+      });
+
+      if (emailError || emailData?.error) {
+        console.error("Email send error:", emailError || emailData?.error);
+        toast({
+          title: "Приглашение на интервью",
+          description: "Статус изменён, но email не удалось отправить",
         });
+      } else {
         toast({
           title: "Приглашение на интервью",
           description: "Статус изменён и email-уведомление отправлено"
-        });
-      } catch (emailErr) {
-        console.error("Email send error:", emailErr);
-        toast({
-          title: "Приглашение на интервью",
-          description: "Статус изменён, но email не удалось отправить"
         });
       }
     } catch (err) {
