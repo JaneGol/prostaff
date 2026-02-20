@@ -211,7 +211,6 @@ export default function MyApplications() {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <Send className="h-8 w-8 text-muted-foreground" />
             <div className="text-right">
               <p className="text-2xl font-bold">{applications.length}</p>
               <p className="text-sm text-muted-foreground">всего откликов</p>
