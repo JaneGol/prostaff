@@ -179,7 +179,7 @@ export default function EmployerApplications() {
             city,
             country,
             level,
-            specialist_roles (name)
+            specialist_roles!profiles_role_id_fkey (name)
           ),
           jobs!inner (id, title)
         `)
