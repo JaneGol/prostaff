@@ -17,7 +17,8 @@ import {
   Clock,
   ChevronRight,
   Send,
-  ArrowLeft
+  ArrowLeft,
+  MessageSquare
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -26,6 +27,7 @@ type ApplicationStatus = Database["public"]["Enums"]["application_status"];
 interface MyApplication {
   id: string;
   cover_letter: string | null;
+  employer_notes: string | null;
   status: ApplicationStatus;
   created_at: string;
   updated_at: string;
@@ -120,6 +122,7 @@ export default function MyApplications() {
         .select(`
           id,
           cover_letter,
+          employer_notes,
           status,
           created_at,
           updated_at,
@@ -332,6 +335,19 @@ function ApplicationCard({ application }: { application: MyApplication }) {
                   <p className="text-sm text-muted-foreground line-clamp-2">
                     <FileText className="h-4 w-4 inline mr-1" />
                     {application.cover_letter}
+                  </p>
+                </div>
+              )}
+
+              {/* Employer message (e.g. interview invitation) */}
+              {application.employer_notes && application.status === "interview" && (
+                <div className="mt-3 bg-purple-50 border border-purple-200 rounded-lg p-3">
+                  <p className="text-sm font-medium text-purple-800 mb-1 flex items-center gap-1.5">
+                    <MessageSquare className="h-4 w-4" />
+                    Сообщение от работодателя
+                  </p>
+                  <p className="text-sm text-purple-700">
+                    {application.employer_notes}
                   </p>
                 </div>
               )}

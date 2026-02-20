@@ -125,7 +125,7 @@ function SpecialistDashboard({ userId }: { userId: string }) {
       const { data } = await supabase
         .from("applications")
         .select(`
-          id, status, created_at,
+          id, status, created_at, employer_notes,
           jobs!inner (
             id, title,
             companies!inner (name, logo_url, city)
@@ -384,6 +384,11 @@ function SpecialistDashboard({ userId }: { userId: string }) {
                               <p className="text-[12px] text-muted-foreground truncate">
                                 {app.jobs?.companies?.name}{app.jobs?.companies?.city ? ` · ${app.jobs.companies.city}` : ""}
                               </p>
+                              {app.status === "interview" && app.employer_notes && (
+                                <p className="text-[11px] text-purple-700 mt-0.5 truncate">
+                                  💬 {app.employer_notes}
+                                </p>
+                              )}
                             </div>
                             <Badge className={`text-[11px] px-2 py-0.5 ${statusColor[app.status] || statusColor.pending}`}>
                               {statusLabel[app.status] || app.status}
