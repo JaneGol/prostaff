@@ -113,14 +113,14 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-base group-hover:text-accent transition-colors line-clamp-1">
+                  <h3 className="font-semibold text-base group-hover:text-accent transition-colors md:line-clamp-1">
                     {job.title}
                   </h3>
                   {job.companies && (
                     <p className="text-sm text-muted-foreground">{job.companies.name}</p>
                   )}
                 </div>
-                <div className="flex items-center gap-2.5 flex-shrink-0">
+                <div className="hidden md:flex items-center gap-2.5 flex-shrink-0">
                   {onToggleFavorite && (
                     <button
                       onClick={handleFavorite}
@@ -143,7 +143,7 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-1 mt-1.5">
+              <div className="flex flex-wrap items-center gap-1 mt-1.5">
                 {job.level && (
                   <Badge variant="outline" className="text-xs px-2 py-0.5">
                     {levelLabels[job.level] || job.level}
@@ -162,6 +162,28 @@ export function JobCardItem({ job, isFavorite, onToggleFavorite }: JobCardItemPr
                     HH
                   </Badge>
                 )}
+                {/* Mobile-only: heart + date */}
+                <div className="flex md:hidden items-center gap-2 ml-auto">
+                  {onToggleFavorite && (
+                    <button
+                      onClick={handleFavorite}
+                      className="p-1 rounded-full hover:bg-muted transition-colors"
+                      aria-label={isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
+                    >
+                      <Heart
+                        className={`h-5 w-5 transition-colors ${
+                          isFavorite
+                            ? "fill-destructive text-destructive"
+                            : "text-muted-foreground hover:text-destructive"
+                        }`}
+                      />
+                    </button>
+                  )}
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {formatDate(job.created_at)}
+                  </span>
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-3 mt-2 text-sm">
