@@ -285,6 +285,35 @@ export default function JobEdit() {
     });
   };
 
+  /** Ensure a skill exists in DB by name; create if missing. Returns skill id. */
+  const ensureSkillByName = async (name: string): Promise<string | null> => {
+    // Check local cache first
+    const existing = allSkills.find(s => s.name === name);
+    if (existing) return existing.id;
+    // Create in DB
+    const { data, error } = await supabase
+      .from("skills")
+      .insert({ name, category: "Рекомендованные" })
+      .select("id, name, category")
+      .single();
+    if (error || !data) return null;
+    // Update local cache
+    setAllSkills(prev => [...prev, data as Skill]);
+    return data.id;
+  };
+
+  const handleRecommendedClick = async (skillName: string) => {
+    const skillId = await ensureSkillByName(skillName);
+    if (skillId) toggleSkill(skillId);
+  };
+
+  const handleRecommendedDoubleClick = async (skillName: string) => {
+    const skillId = allSkills.find(s => s.name === skillName)?.id;
+    if (skillId && selectedSkills.find(s => s.id === skillId)) {
+      toggleRequired(skillId);
+    }
+  };
+
   const toggleRequired = (skillId: string) => {
     setSelectedSkills(prev =>
       prev.map(s => s.id === skillId ? { ...s, required: !s.required } : s)
@@ -543,9 +572,9 @@ export default function JobEdit() {
                         <Badge
                           key={skillName}
                           variant={selected ? (selected.required ? "default" : "secondary") : "outline"}
-                          className={`cursor-pointer text-xs ${!skillId ? "opacity-60 cursor-not-allowed" : ""}`}
-                          onClick={() => skillId && toggleSkill(skillId)}
-                          onDoubleClick={() => skillId && selected && toggleRequired(skillId)}
+                          className="cursor-pointer text-xs"
+                          onClick={() => handleRecommendedClick(skillName)}
+                          onDoubleClick={() => handleRecommendedDoubleClick(skillName)}
                         >
                           {skillName}
                           {selected?.required && " *"}
