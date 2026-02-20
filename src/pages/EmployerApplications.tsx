@@ -36,8 +36,10 @@ import {
   MessageSquare,
   ChevronDown,
   Loader2,
-  ArrowLeft
+  ArrowLeft,
+  Printer
 } from "lucide-react";
+import { PdfResumeModal } from "@/components/profile/PdfResumeModal";
 import type { Database } from "@/integrations/supabase/types";
 
 type ApplicationStatus = Database["public"]["Enums"]["application_status"];
@@ -116,6 +118,17 @@ export default function EmployerApplications() {
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [notes, setNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
+
+  // PDF modal
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfProfile, setPdfProfile] = useState<any>(null);
+  const [pdfExperiences, setPdfExperiences] = useState<any[]>([]);
+  const [pdfSkills, setPdfSkills] = useState<any[]>([]);
+  const [pdfSportsExp, setPdfSportsExp] = useState<any[]>([]);
+  const [pdfEducation, setPdfEducation] = useState<any[]>([]);
+  const [pdfCertificates, setPdfCertificates] = useState<any[]>([]);
+  const [pdfPortfolio, setPdfPortfolio] = useState<any[]>([]);
 
   useEffect(() => {
     if (!authLoading && (!user || userRole !== "employer")) {
@@ -274,6 +287,54 @@ export default function EmployerApplications() {
     if (selectedStatus !== "all" && app.status !== selectedStatus) return false;
     return true;
   });
+
+  const openPdfModal = async (profileId: string) => {
+    setPdfLoading(true);
+    try {
+      const [profileRes, expRes, skillsRes, sportsRes, eduRes, certsRes, portRes] = await Promise.all([
+        supabase.from("profiles").select("*, specialist_roles!profiles_role_id_fkey(id, name), secondary_role:specialist_roles!profiles_secondary_role_id_fkey(id, name)").eq("id", profileId).maybeSingle(),
+        supabase.from("experiences").select("*").eq("profile_id", profileId).order("start_date", { ascending: false }),
+        supabase.from("profile_skills").select("*, skills(name)").eq("profile_id", profileId),
+        supabase.from("profile_sports_experience").select("*, sport:sports(name)").eq("profile_id", profileId),
+        supabase.from("candidate_education").select("*").eq("profile_id", profileId),
+        supabase.from("candidate_certificates").select("*").eq("profile_id", profileId),
+        supabase.from("candidate_portfolio").select("*").eq("profile_id", profileId),
+      ]);
+
+      if (!profileRes.data) {
+        toast({ title: "Ошибка", description: "Не удалось загрузить профиль", variant: "destructive" });
+        return;
+      }
+
+      setPdfProfile(profileRes.data);
+      setPdfExperiences((expRes.data || []).map(e => ({
+        ...e,
+        achievements: Array.isArray(e.achievements) ? e.achievements : [],
+        hide_org: e.hide_org || false,
+        is_current: e.is_current || false,
+        is_remote: e.is_remote || false,
+      })));
+      setPdfSkills((skillsRes.data || []).map(s => ({
+        name: s.custom_name || (s.skills as any)?.name || "—",
+        proficiency: s.proficiency || 2,
+        is_top: s.is_top || false,
+      })));
+      setPdfSportsExp((sportsRes.data || []).map(s => ({
+        years: s.years || 1,
+        level: s.level,
+        sport: s.sport,
+      })));
+      setPdfEducation(eduRes.data || []);
+      setPdfCertificates(certsRes.data || []);
+      setPdfPortfolio(portRes.data || []);
+      setShowPdfModal(true);
+    } catch (err) {
+      console.error("Error loading profile for PDF:", err);
+      toast({ title: "Ошибка", description: "Не удалось загрузить данные для PDF", variant: "destructive" });
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
   if (authLoading || loading) {
     return (
@@ -462,6 +523,16 @@ export default function EmployerApplications() {
                       <Button 
                         variant="outline" 
                         size="sm"
+                        onClick={() => openPdfModal(application.profiles.id)}
+                        disabled={pdfLoading}
+                        className="w-full"
+                      >
+                        {pdfLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Printer className="h-4 w-4 mr-1" />}
+                        Резюме
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
                         onClick={() => openNotesModal(application)}
                         className="w-full"
                       >
@@ -523,6 +594,20 @@ export default function EmployerApplications() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* PDF Resume Modal */}
+      {pdfProfile && (
+        <PdfResumeModal
+          open={showPdfModal}
+          onClose={() => setShowPdfModal(false)}
+          profile={pdfProfile}
+          experiences={pdfExperiences}
+          skills={pdfSkills}
+          sportsExp={pdfSportsExp}
+          education={pdfEducation}
+          certificates={pdfCertificates}
+          portfolio={pdfPortfolio}
+        />
+      )}
     </Layout>
   );
 }
