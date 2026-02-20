@@ -303,7 +303,7 @@ function ApplicationCard({ application }: { application: MyApplication }) {
                     </p>
                   )}
                 </div>
-                <Badge className={`${statusColors[application.status]} flex items-center gap-1`}>
+                <Badge className={`${statusColors[application.status]} flex items-center gap-1 w-fit`}>
                   <span>{statusIcons[application.status]}</span>
                   {statusLabels[application.status]}
                 </Badge>
