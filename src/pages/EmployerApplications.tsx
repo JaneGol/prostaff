@@ -153,6 +153,13 @@ export default function EmployerApplications() {
 
       setJobs(jobsData || []);
 
+      const jobIds = (jobsData || []).map(j => j.id);
+      if (jobIds.length === 0) {
+        setApplications([]);
+        setLoading(false);
+        return;
+      }
+
       // Get all applications for company's jobs
       const { data: applicationsData, error } = await supabase
         .from("applications")
@@ -162,7 +169,7 @@ export default function EmployerApplications() {
           status,
           employer_notes,
           created_at,
-          profiles (
+          profiles!inner (
             id,
             first_name,
             last_name,
@@ -174,9 +181,9 @@ export default function EmployerApplications() {
             level,
             specialist_roles (name)
           ),
-          jobs (id, title)
+          jobs!inner (id, title)
         `)
-        .in("job_id", (jobsData || []).map(j => j.id))
+        .in("job_id", jobIds)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
