@@ -429,6 +429,21 @@ function EmployerDashboard({ userId }: { userId: string }) {
     enabled: !!company?.id,
   });
 
+  const { data: jobs } = useQuery({
+    queryKey: ["dashboard-employer-jobs", userId],
+    queryFn: async () => {
+      if (!company?.id) return [];
+      const { data } = await supabase
+        .from("jobs")
+        .select("id, title, status, city, level, contract_type, created_at, applications_count, views_count")
+        .eq("company_id", company.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      return data || [];
+    },
+    enabled: !!company?.id,
+  });
+
   if (isLoading) {
     return (
       <Layout>
@@ -489,7 +504,77 @@ function EmployerDashboard({ userId }: { userId: string }) {
                     description="Редактировать информацию"
                     to="/company/edit"
                   />
+              </div>
+
+              {/* My Jobs */}
+              {(jobs && jobs.length > 0) && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-foreground">Мои вакансии</h2>
+                    <Link to="/jobs/new">
+                      <Button variant="outline" size="sm" className="text-[13px]">
+                        <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
+                        Новая
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className="space-y-3">
+                    {jobs.map(job => {
+                      const statusLabel: Record<string, string> = {
+                        draft: "Черновик", active: "Активна", paused: "На паузе", closed: "Закрыта"
+                      };
+                      const statusColor: Record<string, string> = {
+                        draft: "bg-muted text-muted-foreground",
+                        active: "bg-primary/10 text-primary",
+                        paused: "bg-yellow-100 text-yellow-700",
+                        closed: "bg-destructive/10 text-destructive",
+                      };
+                      const levelLabels: Record<string, string> = {
+                        intern: "Стажёр", junior: "Junior", middle: "Middle", senior: "Senior", head: "Head",
+                      };
+                      const contractLabels: Record<string, string> = {
+                        full_time: "Полная", part_time: "Частичная", contract: "Контракт", internship: "Стажировка", freelance: "Фриланс",
+                      };
+                      return (
+                        <Link key={job.id} to={`/jobs/${job.id}`} className="block">
+                          <div className="bg-card border border-border rounded-xl p-4 hover:shadow-md hover:border-primary/20 transition-all group">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="text-[15px] font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                                    {job.title}
+                                  </h4>
+                                  <span className={`text-[11px] px-2 py-0.5 rounded-full flex-shrink-0 ${statusColor[job.status || "draft"]}`}>
+                                    {statusLabel[job.status || "draft"]}
+                                  </span>
+                                </div>
+                                <p className="text-[13px] text-muted-foreground truncate">
+                                  {[
+                                    job.level ? levelLabels[job.level] : null,
+                                    job.contract_type ? contractLabels[job.contract_type] : null,
+                                    job.city,
+                                  ].filter(Boolean).join(" · ") || "Без деталей"}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-4 flex-shrink-0 text-[12px] text-muted-foreground">
+                                <span className="flex items-center gap-1" title="Откликов">
+                                  <Users className="h-3.5 w-3.5" />
+                                  {job.applications_count || 0}
+                                </span>
+                                <span className="flex items-center gap-1" title="Просмотров">
+                                  <Eye className="h-3.5 w-3.5" />
+                                  {job.views_count || 0}
+                                </span>
+                                <ChevronRight className="h-4 w-4" />
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
+              )}
               </div>
 
               <div>
