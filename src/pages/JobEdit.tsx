@@ -12,7 +12,11 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, X, Trash2 } from "lucide-react";
+import { Loader2, Save, X, Trash2, Plus, Search } from "lucide-react";
+import { useSpecializations } from "@/hooks/useSpecializations";
+import { getRecommendedSkills } from "@/lib/recommendedSkills";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface SpecialistRole {
   id: string;
@@ -54,6 +58,7 @@ export default function JobEdit() {
   const { user, userRole, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const isNew = !id || id === "new";
+  const { getGroupForRoleId } = useSpecializations();
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -296,13 +301,22 @@ export default function JobEdit() {
     );
   }
 
-  // Group skills by category
-  const skillsByCategory = allSkills.reduce((acc, skill) => {
+  // Get recommended skills based on selected role's group
+  const groupKey = getGroupForRoleId(roleId || null);
+  const recommendedSections = getRecommendedSkills(groupKey === "other" && !roleId ? null : groupKey);
+
+  // Group remaining DB skills by category (excluding already recommended names)
+  const recommendedNames = new Set(recommendedSections.flatMap(s => s.skills));
+  const extraSkills = allSkills.filter(s => !recommendedNames.has(s.name));
+  const skillsByCategory = extraSkills.reduce((acc, skill) => {
     const cat = skill.category || "Прочее";
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(skill);
     return acc;
   }, {} as Record<string, Skill[]>);
+
+  // Helper: find skill id by name (or null)
+  const findSkillId = (name: string) => allSkills.find(s => s.name === name)?.id || null;
 
   return (
     <Layout>
@@ -510,23 +524,30 @@ export default function JobEdit() {
           <Card>
             <CardHeader>
               <CardTitle className="font-display uppercase">Требуемые навыки</CardTitle>
+              {roleId && (
+                <p className="text-sm text-muted-foreground">
+                  Рекомендации на основе выбранной специализации. Клик — выбрать, двойной клик — обязательный (*).
+                </p>
+              )}
             </CardHeader>
-            <CardContent className="space-y-4">
-              {Object.entries(skillsByCategory).map(([category, skills]) => (
-                <div key={category}>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">{category}</h4>
+            <CardContent className="space-y-5">
+              {/* Recommended skills from specialization */}
+              {recommendedSections.map((section, si) => (
+                <div key={si}>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">{section.title}</h4>
                   <div className="flex flex-wrap gap-2">
-                    {skills.map(skill => {
-                      const selected = selectedSkills.find(s => s.id === skill.id);
+                    {section.skills.map(skillName => {
+                      const skillId = findSkillId(skillName);
+                      const selected = skillId ? selectedSkills.find(s => s.id === skillId) : null;
                       return (
                         <Badge
-                          key={skill.id}
+                          key={skillName}
                           variant={selected ? (selected.required ? "default" : "secondary") : "outline"}
-                          className="cursor-pointer"
-                          onClick={() => toggleSkill(skill.id)}
-                          onDoubleClick={() => selected && toggleRequired(skill.id)}
+                          className={`cursor-pointer text-xs ${!skillId ? "opacity-60 cursor-not-allowed" : ""}`}
+                          onClick={() => skillId && toggleSkill(skillId)}
+                          onDoubleClick={() => skillId && selected && toggleRequired(skillId)}
                         >
-                          {skill.name}
+                          {skillName}
                           {selected?.required && " *"}
                         </Badge>
                       );
@@ -534,9 +555,48 @@ export default function JobEdit() {
                   </div>
                 </div>
               ))}
-              <p className="text-xs text-muted-foreground">
-                Клик — выбрать навык, двойной клик — отметить как обязательный (*)
-              </p>
+
+              {/* Extra skills from DB */}
+              {Object.keys(skillsByCategory).length > 0 && (
+                <Collapsible>
+                  <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-primary hover:underline mt-2">
+                    <Plus className="h-3.5 w-3.5" />
+                    Добавить другие навыки
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-3 space-y-3">
+                    {Object.entries(skillsByCategory).map(([category, skills]) => (
+                      <div key={category}>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-2">{category}</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {skills.map(skill => {
+                            const selected = selectedSkills.find(s => s.id === skill.id);
+                            return (
+                              <Badge
+                                key={skill.id}
+                                variant={selected ? (selected.required ? "default" : "secondary") : "outline"}
+                                className="cursor-pointer text-xs"
+                                onClick={() => toggleSkill(skill.id)}
+                                onDoubleClick={() => selected && toggleRequired(skill.id)}
+                              >
+                                {skill.name}
+                                {selected?.required && " *"}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
+              {selectedSkills.length > 0 && (
+                <div className="pt-3 border-t border-border/50">
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Выбрано: {selectedSkills.length} {selectedSkills.filter(s => s.required).length > 0 && `(обязательных: ${selectedSkills.filter(s => s.required).length})`}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
