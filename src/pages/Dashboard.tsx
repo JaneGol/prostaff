@@ -12,6 +12,7 @@ import {
   CheckCircle2, Circle, Sparkles, TrendingUp, MapPin, Heart
 } from "lucide-react";
 import { isBankAvatar, decodeBankAvatar, getDefaultAvatar, isSilhouetteAvatar } from "@/lib/defaultAvatars";
+import { GROUPS } from "@/lib/specialistSections";
 
 export default function Dashboard() {
   const { user, userRole, loading } = useAuth();
@@ -609,15 +610,15 @@ function EmployerDashboard({ userId }: { userId: string }) {
 
             <div>
               <div className="bg-card border border-border rounded-2xl p-6">
-                <h3 className="font-semibold text-foreground mb-4">Быстрый поиск по роли</h3>
+                <h3 className="font-semibold text-foreground mb-4">Быстрый поиск по специализации</h3>
                 <div className="space-y-1">
-                  {["Видеоаналитик", "Аналитик данных", "S&C тренер", "Тренер", "Спортивный врач", "Скаут"].map(role => (
+                  {GROUPS.map(group => (
                     <Link
-                      key={role}
-                      to={`/specialists?search=${encodeURIComponent(role)}`}
+                      key={group.key}
+                      to={`/specialists?section=${group.key}`}
                       className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary transition-colors text-[15px]"
                     >
-                      <span className="text-foreground">{role}</span>
+                      <span className="text-foreground">{group.shortTitle}</span>
                       <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </Link>
                   ))}
