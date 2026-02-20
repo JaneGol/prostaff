@@ -1273,6 +1273,10 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
+      is_applicant_to_my_jobs: {
+        Args: { _profile_id: string }
+        Returns: boolean
+      }
       is_application_owner: {
         Args: { _application_id: string }
         Returns: boolean
