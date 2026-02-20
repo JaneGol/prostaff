@@ -444,6 +444,25 @@ function EmployerDashboard({ userId }: { userId: string }) {
     enabled: !!company?.id,
   });
 
+  const { data: applicationsCount } = useQuery({
+    queryKey: ["dashboard-applications-count", company?.id],
+    queryFn: async () => {
+      if (!company?.id) return 0;
+      const { data: companyJobs } = await supabase
+        .from("jobs")
+        .select("id")
+        .eq("company_id", company.id);
+      const jobIds = (companyJobs || []).map(j => j.id);
+      if (jobIds.length === 0) return 0;
+      const { count } = await supabase
+        .from("applications")
+        .select("id", { count: "exact", head: true })
+        .in("job_id", jobIds);
+      return count || 0;
+    },
+    enabled: !!company?.id,
+  });
+
   if (isLoading) {
     return (
       <Layout>
@@ -497,6 +516,7 @@ function EmployerDashboard({ userId }: { userId: string }) {
                     title="Отклики кандидатов"
                     description="Просмотр заявок на вакансии"
                     to="/employer/applications"
+                    badge={applicationsCount && applicationsCount > 0 ? applicationsCount : undefined}
                   />
                   <QuickAction
                     icon={<Settings className="h-5 w-5" />}
@@ -613,17 +633,18 @@ function EmployerDashboard({ userId }: { userId: string }) {
 
 /* ─────────────── SHARED COMPONENTS ─────────────── */
 
-function QuickAction({ icon, title, description, to, highlight }: {
+function QuickAction({ icon, title, description, to, highlight, badge }: {
   icon: React.ReactNode;
   title: string;
   description: string;
   to: string;
   highlight?: boolean;
+  badge?: number;
 }) {
   return (
     <Link
       to={to}
-      className={`group flex items-start gap-4 p-5 rounded-2xl border transition-all hover:shadow-md ${
+      className={`group flex items-start gap-4 p-5 rounded-2xl border transition-all hover:shadow-md relative ${
         highlight
           ? "bg-primary/[0.03] border-primary/20 hover:border-primary/40"
           : "bg-card border-border hover:border-primary/20"
@@ -637,7 +658,14 @@ function QuickAction({ icon, title, description, to, highlight }: {
         {icon}
       </div>
       <div>
-        <h4 className="font-medium text-foreground text-[15px]">{title}</h4>
+        <h4 className="font-medium text-foreground text-[15px] flex items-center gap-2">
+          {title}
+          {badge !== undefined && badge > 0 && (
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+              {badge}
+            </span>
+          )}
+        </h4>
         <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
       </div>
     </Link>
