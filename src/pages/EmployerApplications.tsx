@@ -126,6 +126,11 @@ export default function EmployerApplications() {
   const [interviewMessage, setInterviewMessage] = useState("");
   const [savingInterview, setSavingInterview] = useState(false);
 
+  // Rejection message modal
+  const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [rejectionAppId, setRejectionAppId] = useState<string | null>(null);
+  const [rejectionMessage, setRejectionMessage] = useState("");
+  const [savingRejection, setSavingRejection] = useState(false);
   // PDF generation
   const [pdfLoading, setPdfLoading] = useState(false);
 
@@ -239,6 +244,27 @@ ${companyName}`;
       return;
     }
 
+    // If switching to rejected, show rejection message modal
+    if (newStatus === "rejected") {
+      const app = applications.find(a => a.id === applicationId);
+      const jobTitle = app?.jobs?.title || "";
+      const template = `Здравствуйте!
+
+Благодарим вас за интерес к вакансии «${jobTitle}» и за отклик.
+
+К сожалению, на данном этапе мы приняли решение продолжить работу с другими кандидатами.
+Мы сохраним ваш профиль и, при появлении подходящих возможностей, обязательно свяжемся с вами.
+
+Желаем вам успехов и благодарим за интерес к нашей компании.
+
+С уважением,
+Команда ${companyName}`;
+      setRejectionAppId(applicationId);
+      setRejectionMessage(template);
+      setShowRejectionModal(true);
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("applications")
@@ -319,6 +345,43 @@ ${companyName}`;
       });
     } finally {
       setSavingInterview(false);
+    }
+  };
+
+  const confirmRejection = async () => {
+    if (!rejectionAppId) return;
+    setSavingRejection(true);
+    try {
+      const updateData: Record<string, unknown> = { status: "rejected" as ApplicationStatus };
+      if (rejectionMessage.trim()) {
+        updateData.employer_notes = rejectionMessage.trim();
+      }
+      const { error } = await supabase
+        .from("applications")
+        .update(updateData)
+        .eq("id", rejectionAppId);
+      if (error) throw error;
+      setApplications(prev =>
+        prev.map(app =>
+          app.id === rejectionAppId
+            ? { ...app, status: "rejected" as ApplicationStatus, employer_notes: rejectionMessage.trim() || app.employer_notes }
+            : app
+        )
+      );
+      setShowRejectionModal(false);
+      const { data: emailData, error: emailError } = await supabase.functions.invoke("send-interview-email", {
+        body: { applicationId: rejectionAppId, message: rejectionMessage.trim(), type: "rejection" },
+      });
+      if (emailError || emailData?.error) {
+        toast({ title: "Отказ", description: "Статус изменён, но email не удалось отправить" });
+      } else {
+        toast({ title: "Отказ", description: "Статус изменён и email-уведомление отправлено" });
+      }
+    } catch (err) {
+      console.error("Error updating to rejected:", err);
+      toast({ title: "Ошибка", description: "Не удалось обновить статус", variant: "destructive" });
+    } finally {
+      setSavingRejection(false);
     }
   };
 
@@ -837,6 +900,33 @@ ${companyName}`;
             <Button onClick={confirmInterview} disabled={savingInterview}>
               {savingInterview && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Отправить и подтвердить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rejection Message Modal */}
+      <Dialog open={showRejectionModal} onOpenChange={setShowRejectionModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Отказ кандидату</DialogTitle>
+            <DialogDescription>
+              Отредактируйте текст письма с отказом перед отправкой.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={rejectionMessage}
+            onChange={(e) => setRejectionMessage(e.target.value)}
+            rows={12}
+            className="font-mono text-sm leading-relaxed"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRejectionModal(false)}>
+              Отмена
+            </Button>
+            <Button variant="destructive" onClick={confirmRejection} disabled={savingRejection}>
+              {savingRejection && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Отправить отказ
             </Button>
           </DialogFooter>
         </DialogContent>
