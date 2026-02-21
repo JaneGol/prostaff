@@ -101,7 +101,13 @@ Deno.serve(async (req) => {
         if (source.type === "employer" && source.employer_id) {
           searchUrl += `&employer_id=${source.employer_id}`;
         } else if (source.type === "search" && source.search_query) {
-          searchUrl += `&text=${encodeURIComponent(source.search_query)}`;
+          // Wrap multi-word queries in quotes for exact phrase matching
+          // Prevents "тренер по регби" from matching "тренер" OR "регби" separately
+          const rawQuery = source.search_query.trim();
+          const hhQuery = rawQuery.includes(" ") && !rawQuery.startsWith('"')
+            ? `"${rawQuery}"`
+            : rawQuery;
+          searchUrl += `&text=${encodeURIComponent(hhQuery)}`;
           // Search field: default to "name" to avoid irrelevant results
           const searchField = filters.search_field || "name";
           if (searchField !== "all") {
