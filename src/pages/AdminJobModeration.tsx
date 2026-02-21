@@ -44,7 +44,7 @@ export default function AdminJobModeration() {
       supabase.from("jobs").select("id", { count: "exact", head: true })
         .or("status.eq.draft,moderation_status.eq.draft"),
       supabase.from("jobs").select("id", { count: "exact", head: true })
-        .eq("status", "active").eq("moderation_status", "published"),
+        .eq("moderation_status", "published"),
       supabase.from("jobs").select("id", { count: "exact", head: true })
         .eq("moderation_status", "rejected"),
       supabase.from("jobs").select("id", { count: "exact", head: true }),
@@ -70,7 +70,7 @@ export default function AdminJobModeration() {
     if (tab === "draft") {
       query = query.or("status.eq.draft,moderation_status.eq.draft");
     } else if (tab === "active") {
-      query = query.eq("status", "active").eq("moderation_status", "published");
+      query = query.eq("moderation_status", "published");
     } else if (tab === "rejected") {
       query = query.eq("moderation_status", "rejected");
     }
