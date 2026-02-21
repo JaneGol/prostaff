@@ -145,7 +145,7 @@ export function ExperienceEditor({ experiences, onChange }: ExperienceEditorProp
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch checked={exp.hide_org} onCheckedChange={(v) => update(index, "hide_org", v)} />
-                  <Label className="text-[13px]">Скрыть орг.</Label>
+                  <Label className="text-[13px]">Скрыть организацию для незарегистрированных компаний</Label>
                 </div>
               </div>
             </div>

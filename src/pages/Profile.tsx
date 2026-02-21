@@ -614,10 +614,13 @@ export default function Profile() {
                         <span className="font-medium">{cert.name}</span>
                         {cert.issuer && <span className="text-muted-foreground">— {cert.issuer}</span>}
                         {cert.year && <span className="text-muted-foreground">({cert.year})</span>}
-                        {cert.url && (
+                        {cert.url && canSeeDetails && (
                           <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
                             <ExternalLink className="h-3 w-3" />
                           </a>
+                        )}
+                        {cert.url && !canSeeDetails && (
+                          <span className="text-muted-foreground/50 text-xs flex items-center gap-1"><Lock className="h-3 w-3" />ссылка скрыта</span>
                         )}
                       </div>
                     ))}
@@ -642,9 +645,13 @@ export default function Profile() {
                           <h3 className="font-semibold">{item.title}</h3>
                           <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium mt-1">{item.type}</Badge>
                         </div>
-                        <a href={item.url} target="_blank" rel="noopener noreferrer">
-                          <Button variant="outline" size="sm"><ExternalLink className="h-3 w-3 mr-1" />Открыть</Button>
-                        </a>
+                        {canSeeDetails ? (
+                          <a href={item.url} target="_blank" rel="noopener noreferrer">
+                            <Button variant="outline" size="sm"><ExternalLink className="h-3 w-3 mr-1" />Открыть</Button>
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground/50 text-xs flex items-center gap-1"><Lock className="h-3 w-3" />Доступно после регистрации</span>
+                        )}
                       </div>
                       {item.description && <p className="text-sm text-muted-foreground mt-2">{item.description}</p>}
                       {item.tags.length > 0 && (
