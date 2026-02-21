@@ -109,6 +109,7 @@ export default function EmployerApplications() {
 
   const [applications, setApplications] = useState<Application[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [companyName, setCompanyName] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
@@ -146,7 +147,7 @@ export default function EmployerApplications() {
       // Get company
       const { data: company } = await supabase
         .from("companies")
-        .select("id")
+        .select("id, name")
         .eq("user_id", user!.id)
         .maybeSingle();
 
@@ -154,6 +155,7 @@ export default function EmployerApplications() {
         setLoading(false);
         return;
       }
+      setCompanyName(company.name || "");
 
       // Get jobs
       const { data: jobsData } = await supabase
@@ -214,8 +216,25 @@ export default function EmployerApplications() {
   const updateStatus = async (applicationId: string, newStatus: ApplicationStatus) => {
     // If switching to interview, show message modal instead of updating directly
     if (newStatus === "interview") {
+      const app = applications.find(a => a.id === applicationId);
+      const jobTitle = app?.jobs?.title || "";
+      const template = `Здравствуйте!
+
+Приглашаем вас на интервью по вакансии «${jobTitle}».
+
+Дата и время: 
+Формат: онлайн / офлайн
+Место / ссылка: 
+
+Контактное лицо:
+
+
+Пожалуйста, дайте знать, если время вам не подходит.
+
+С уважением,
+${companyName}`;
       setInterviewAppId(applicationId);
-      setInterviewMessage("");
+      setInterviewMessage(template);
       setShowInterviewModal(true);
       return;
     }
@@ -798,18 +817,18 @@ export default function EmployerApplications() {
 
       {/* Interview Message Modal */}
       <Dialog open={showInterviewModal} onOpenChange={setShowInterviewModal}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Приглашение на интервью</DialogTitle>
             <DialogDescription>
-              Напишите сообщение кандидату с деталями интервью (дата, время, формат и т.д.)
+              Отредактируйте шаблон письма — заполните дату, время, формат и контактное лицо.
             </DialogDescription>
           </DialogHeader>
           <Textarea
             value={interviewMessage}
             onChange={(e) => setInterviewMessage(e.target.value)}
-            placeholder="Здравствуйте! Приглашаем вас на интервью. Дата: ..., Время: ..., Формат: ..."
-            rows={5}
+            rows={14}
+            className="font-mono text-sm leading-relaxed"
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowInterviewModal(false)}>
