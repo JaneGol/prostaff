@@ -102,9 +102,10 @@ Deno.serve(async (req) => {
           searchUrl += `&employer_id=${source.employer_id}`;
         } else if (source.type === "search" && source.search_query) {
           searchUrl += `&text=${encodeURIComponent(source.search_query)}`;
-          // Search field: name only, description, or everywhere
-          if (filters.search_field && filters.search_field !== "all") {
-            searchUrl += `&search_field=${filters.search_field}`;
+          // Search field: default to "name" to avoid irrelevant results
+          const searchField = filters.search_field || "name";
+          if (searchField !== "all") {
+            searchUrl += `&search_field=${searchField}`;
           }
         }
 
