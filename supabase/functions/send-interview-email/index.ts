@@ -40,7 +40,7 @@ serve(async (req) => {
       });
     }
 
-    const { applicationId, message } = await req.json();
+    const { applicationId, message, type } = await req.json();
 
     if (!applicationId) {
       return new Response(JSON.stringify({ error: "applicationId is required" }), {
@@ -81,6 +81,14 @@ serve(async (req) => {
       });
     }
 
+    const isRejection = type === "rejection";
+    const emailSubject = isRejection
+      ? `Ответ по вакансии — ${jobTitle} (${companyName})`
+      : `Приглашение на интервью — ${jobTitle} (${companyName})`;
+    const headerText = isRejection
+      ? `Ответ по вакансии «${jobTitle}»`
+      : `Приглашение на интервью по вакансии «${jobTitle}»`;
+
     // Send email via Resend
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -90,11 +98,10 @@ serve(async (req) => {
         <div style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px;">
           <p style="font-size: 16px; color: #0B1A2B;">Здравствуйте${candidateName ? `, ${candidateName}` : ""}!</p>
           <p style="font-size: 15px; color: #0B1A2B;">
-            Компания <strong>${companyName}</strong> приглашает вас на интервью по вакансии <strong>«${jobTitle}»</strong>.
+            ${headerText}
           </p>
           ${employerMessage ? `
-          <div style="background: #F3F0FF; border-left: 4px solid #7C3AED; padding: 16px; margin: 16px 0; border-radius: 4px;">
-            <p style="margin: 0 0 4px 0; font-size: 13px; color: #6B7280; font-weight: 600;">Сообщение от работодателя:</p>
+          <div style="background: #F3F0FF; border-left: 4px solid ${isRejection ? '#6B7280' : '#7C3AED'}; padding: 16px; margin: 16px 0; border-radius: 4px; white-space: pre-line;">
             <p style="margin: 0; font-size: 15px; color: #0B1A2B;">${employerMessage}</p>
           </div>
           ` : ""}
@@ -118,7 +125,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: "ProStaff <noreply@prostaff.icu>",
         to: [candidateEmail],
-        subject: `Приглашение на интервью — ${jobTitle} (${companyName})`,
+        subject: emailSubject,
         html: emailHtml,
       }),
     });
