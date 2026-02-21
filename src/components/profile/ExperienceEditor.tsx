@@ -135,7 +135,7 @@ export function ExperienceEditor({ experiences, onChange }: ExperienceEditorProp
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label className={LABEL}>Лига</Label>
+                <Label className={LABEL}>Лига / уровень</Label>
                 <Input className={FIELD_TEXT} value={exp.league} onChange={(e) => update(index, "league", e.target.value)} placeholder="РПЛ" />
               </div>
               <div className="flex flex-col gap-3 pt-5">
