@@ -149,6 +149,21 @@ export default function AdminJobModeration() {
     fetchCounts();
   };
 
+  const publishSelected = async () => {
+    if (selected.size === 0) return;
+    if (!confirm(`Опубликовать ${selected.size} вакансий?`)) return;
+    setActing("batch");
+    const ids = Array.from(selected);
+    for (let i = 0; i < ids.length; i += 100) {
+      await supabase.from("jobs").update({ status: "active", moderation_status: "published" }).in("id", ids.slice(i, i + 100));
+    }
+    toast.success(`${ids.length} вакансий опубликовано`);
+    setActing(null);
+    setSelected(new Set());
+    fetchJobs();
+    fetchCounts();
+  };
+
   const deleteSelected = async () => {
     if (selected.size === 0) return;
     if (!confirm(`Удалить ${selected.size} вакансий навсегда?`)) return;
@@ -257,6 +272,11 @@ export default function AdminJobModeration() {
               </TabsList>
 
               <div className="flex items-center gap-2 flex-wrap">
+                {selected.size > 0 && (
+                  <Button size="sm" onClick={publishSelected} disabled={acting === "batch"} className="gap-1">
+                    <CheckCircle className="h-4 w-4" /> Опубликовать ({selected.size})
+                  </Button>
+                )}
                 {selected.size > 0 && (
                   <Button variant="destructive" size="sm" onClick={deleteSelected} disabled={acting === "batch"} className="gap-1">
                     <Trash2 className="h-4 w-4" /> Удалить ({selected.size})
