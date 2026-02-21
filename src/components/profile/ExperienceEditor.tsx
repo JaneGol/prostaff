@@ -138,7 +138,7 @@ export function ExperienceEditor({ experiences, onChange }: ExperienceEditorProp
                 <Label className={LABEL}>Лига</Label>
                 <Input className={FIELD_TEXT} value={exp.league} onChange={(e) => update(index, "league", e.target.value)} placeholder="РПЛ" />
               </div>
-              <div className="flex items-center gap-4 pt-5">
+              <div className="flex flex-col gap-3 pt-5">
                 <div className="flex items-center gap-2">
                   <Switch checked={exp.is_remote} onCheckedChange={(v) => update(index, "is_remote", v)} />
                   <Label className="text-[13px]">Удалённо</Label>
