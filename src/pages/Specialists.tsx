@@ -558,13 +558,12 @@ export default function Specialists() {
                   {filteredProfiles.map((p) => {
                     const pSkills = (displaySkills[p.id] || []).map((s) => ({ name: getSkillName(s) }));
                     const pSports = displaySports[p.id] || [];
-                    const specName = p.specialization_id ? specializations.find(s => s.id === p.specialization_id)?.name || null : null;
                     const secSpecName = p.secondary_specialization_id ? specializations.find(s => s.id === p.secondary_specialization_id)?.name || null : null;
                     return (
                       <SpecialistCard
                         key={p.id}
                         id={p.id}
-                        roleName={specName || p.specialist_roles?.name || null}
+                        roleName={p.specialist_roles?.name || null}
                         level={p.level}
                         city={p.city}
                         country={p.country}
