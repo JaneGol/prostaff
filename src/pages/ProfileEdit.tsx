@@ -728,6 +728,9 @@ export default function ProfileEdit() {
                         <Select value={specializationId} onValueChange={(val) => {
                           setSpecializationId(val);
                           if (secondarySpecializationId === val) setSecondarySpecializationId("");
+                          // Auto-set role_id to match the specialization
+                          const matchingRole = roles.find((r) => r.specialization_id === val);
+                          if (matchingRole) setRoleId(matchingRole.id);
                         }} disabled={!selectedGroupKey}>
                           <SelectTrigger className={FIELD_TEXT}><SelectValue placeholder={selectedGroupKey ? "Выберите специализацию" : "Сначала выберите направление"} /></SelectTrigger>
                           <SelectContent>
