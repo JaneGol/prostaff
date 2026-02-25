@@ -15,6 +15,13 @@ import {
   Activity, UserPlus, Target, Lock, Unlock, ExternalLink
 } from "lucide-react";
 import ArticleEditor from "@/components/admin/ArticleEditor";
+import {
+  DailyVisitsChart,
+  RegistrationsChart,
+  EmployerActivityChart,
+  DevicePieChart,
+  HourlyHeatChart,
+} from "@/components/admin/AnalyticsCharts";
 
 type DateRange = "today" | "7d" | "30d" | "all";
 
@@ -661,113 +668,17 @@ export default function AdminDashboard() {
 
             <TabsContent value="devices" className="space-y-4 mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Распределение по устройствам</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {Object.entries(analytics.deviceMap).map(([device, count]) => {
-                        const pct = analytics.totalViews > 0 ? ((count / analytics.totalViews) * 100) : 0;
-                        return (
-                          <div key={device} className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                              {deviceIcons[device] || <Globe className="h-4 w-4" />}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex justify-between mb-1">
-                                <span className="capitalize font-medium text-sm">{device}</span>
-                                <span className="text-sm font-semibold">{pct.toFixed(1)}%</span>
-                              </div>
-                              <div className="w-full bg-muted rounded-full h-2">
-                                <div
-                                  className="bg-accent rounded-full h-2 transition-all"
-                                  style={{ width: `${pct}%` }}
-                                />
-                              </div>
-                            </div>
-                            <span className="text-sm text-muted-foreground w-12 text-right">{count}</span>
-                          </div>
-                        );
-                      })}
-                      {Object.keys(analytics.deviceMap).length === 0 && (
-                        <p className="text-muted-foreground text-sm text-center py-8">Нет данных</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-primary" />
-                      Активность по часам
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-6 gap-1">
-                      {Array.from({ length: 24 }, (_, h) => {
-                        const count = analytics.hourMap[h] || 0;
-                        const maxCount = Math.max(...Object.values(analytics.hourMap), 1);
-                        const intensity = count / maxCount;
-                        return (
-                          <div
-                            key={h}
-                            className="flex flex-col items-center gap-1"
-                            title={`${h}:00 — ${count} просмотров`}
-                          >
-                            <div
-                              className="w-full aspect-square rounded-md transition-colors"
-                              style={{
-                                backgroundColor: count > 0
-                                  ? `hsl(222 80% ${80 - intensity * 50}%)`
-                                  : "hsl(var(--muted))"
-                              }}
-                            />
-                            <span className="text-[10px] text-muted-foreground">{h}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-3 text-center">
-                      Чем темнее — тем больше активность
-                    </p>
-                  </CardContent>
-                </Card>
+                <DevicePieChart pageViews={pageViews} />
+                <HourlyHeatChart pageViews={pageViews} />
               </div>
             </TabsContent>
 
             <TabsContent value="activity" className="space-y-4 mt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Посещения по дням</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {analytics.dailyVisits.map(([date, count]) => {
-                      const maxDay = Math.max(...analytics.dailyVisits.map(d => d[1] as number), 1);
-                      const pct = (count as number / maxDay) * 100;
-                      return (
-                        <div key={date} className="flex items-center gap-3">
-                          <span className="text-sm text-muted-foreground w-24 shrink-0">{date}</span>
-                          <div className="flex-1">
-                            <div className="w-full bg-muted rounded-full h-3">
-                              <div
-                                className="bg-primary rounded-full h-3 transition-all"
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                          </div>
-                          <span className="text-sm font-semibold w-10 text-right">{count}</span>
-                        </div>
-                      );
-                    })}
-                    {analytics.dailyVisits.length === 0 && (
-                      <p className="text-muted-foreground text-sm text-center py-8">Нет данных</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <DailyVisitsChart pageViews={pageViews} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <RegistrationsChart userRoles={userRoles} />
+                <EmployerActivityChart profileViews={profileViews} />
+              </div>
             </TabsContent>
 
             <TabsContent value="events" className="space-y-4 mt-4">
