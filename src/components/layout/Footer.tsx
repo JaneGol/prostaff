@@ -15,7 +15,7 @@ const footerLinks = {
     { href: "/faq", label: "FAQ" },
   ],
   forClubs: [
-    { href: "/auth?mode=signup&role=company", label: "Регистрация клуба" },
+    { href: "/auth?mode=signup&role=employer", label: "Регистрация клуба" },
     { href: "/specialists", label: "Поиск специалистов" },
     { href: "/pricing", label: "Тарифы" },
     { href: "/contact", label: "Связаться с нами" },

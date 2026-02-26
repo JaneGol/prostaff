@@ -6,8 +6,8 @@ export default function Contact() {
   return (
     <Layout>
       <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-8 md:py-12">
-        <div className="container max-w-4xl text-center">
-          <Mail className="h-12 w-12 mx-auto mb-4 text-accent" />
+        <div className="container max-w-6xl text-center">
+          <Mail className="h-10 w-10 mx-auto mb-3 text-accent" />
           <h1 className="font-display text-3xl md:text-4xl font-bold uppercase tracking-tight">
             Связаться с нами
           </h1>
@@ -15,8 +15,8 @@ export default function Contact() {
         </div>
       </section>
 
-      <section className="py-16 md:py-20 bg-background">
-        <div className="container max-w-3xl">
+      <section className="py-6 md:py-8 bg-background">
+        <div className="container max-w-6xl">
           <div className="grid sm:grid-cols-3 gap-6">
             <Card className="text-center">
               <CardContent className="p-6">

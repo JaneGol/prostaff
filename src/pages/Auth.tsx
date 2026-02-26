@@ -21,7 +21,10 @@ export default function Auth() {
   const { toast } = useToast();
   
   const [isSignUp, setIsSignUp] = useState(searchParams.get("mode") === "signup");
-  const [userType, setUserType] = useState<"specialist" | "employer">("specialist");
+  const roleParam = searchParams.get("role");
+  const [userType, setUserType] = useState<"specialist" | "employer">(
+    roleParam === "employer" || roleParam === "company" ? "employer" : "specialist"
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Form fields
