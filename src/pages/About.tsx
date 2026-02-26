@@ -262,20 +262,20 @@ export default function About() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:hello@prostaff.ru"
+                href="mailto:e89030922661@gmail.com"
                 className="inline-flex items-center justify-center gap-2 bg-white text-primary px-6 py-3 rounded-full font-semibold hover:bg-white/90 transition-colors"
               >
                 <Mail className="h-5 w-5" />
-                hello@prostaff.ru
+                e89030922661@gmail.com
               </a>
               <a
-                href="https://t.me/prostaff"
+                href="https://t.me/Gen_spb"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-white/10 text-white px-6 py-3 rounded-full font-semibold hover:bg-white/20 transition-colors"
               >
                 <Send className="h-5 w-5" />
-                Telegram
+                @Gen_spb
               </a>
             </div>
           </div>

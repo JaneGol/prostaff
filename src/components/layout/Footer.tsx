@@ -44,7 +44,7 @@ export function Footer() {
             </p>
             <div className="flex items-center gap-4">
               <a
-                href="https://t.me/prostaff"
+                href="https://t.me/Gen_spb"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 hover:bg-accent flex items-center justify-center transition-colors"
@@ -116,9 +116,13 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex flex-wrap items-center gap-6 text-sm text-white/70">
-              <a href="mailto:hello@prostaff.ru" className="flex items-center gap-2 hover:text-white transition-colors">
+              <a href="mailto:e89030922661@gmail.com" className="flex items-center gap-2 hover:text-white transition-colors">
                 <Mail className="h-4 w-4" />
-                hello@prostaff.ru
+                e89030922661@gmail.com
+              </a>
+              <a href="tel:+789030922661" className="flex items-center gap-2 hover:text-white transition-colors">
+                <Phone className="h-4 w-4" />
+                8 903 092-26-61
               </a>
               <span className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
@@ -133,7 +137,7 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="container py-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white/50">
-            <p>© 2024 ProStaff. Все права защищены.</p>
+            <p>© 2026 ProStaff. Все права защищены.</p>
             <div className="flex items-center gap-6">
               <Link to="/privacy" className="hover:text-white transition-colors">
                 Политика конфиденциальности
