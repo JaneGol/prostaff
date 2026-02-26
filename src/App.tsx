@@ -24,6 +24,10 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Pricing from "./pages/Pricing";
 import AdminHHSources from "./pages/AdminHHSources";
 import AdminJobModeration from "./pages/AdminJobModeration";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import FAQ from "./pages/FAQ";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +62,10 @@ const App = () => (
             <Route path="/admin/hh-sources" element={<AdminHHSources />} />
             <Route path="/admin/job-moderation" element={<AdminJobModeration />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/contact" element={<Contact />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
