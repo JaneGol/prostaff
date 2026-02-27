@@ -359,6 +359,51 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_roles: {
+        Row: {
+          created_at: string | null
+          group_id: string | null
+          id: string
+          normalized_role_id: string | null
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          group_id?: string | null
+          id?: string
+          normalized_role_id?: string | null
+          status?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          group_id?: string | null
+          id?: string
+          normalized_role_id?: string | null
+          status?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_roles_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "role_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_roles_normalized_role_id_fkey"
+            columns: ["normalized_role_id"]
+            isOneToOne: false
+            referencedRelation: "specialist_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       experiences: {
         Row: {
           achievements: Json | null
@@ -949,6 +994,7 @@ export type Database = {
           city: string | null
           country: string | null
           created_at: string | null
+          custom_role_id: string | null
           desired_city: string | null
           desired_contract_type: string | null
           desired_country: string | null
@@ -986,6 +1032,7 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string | null
+          custom_role_id?: string | null
           desired_city?: string | null
           desired_contract_type?: string | null
           desired_country?: string | null
@@ -1023,6 +1070,7 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string | null
+          custom_role_id?: string | null
           desired_city?: string | null
           desired_contract_type?: string | null
           desired_country?: string | null
@@ -1053,6 +1101,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "profiles_custom_role_id_fkey"
+            columns: ["custom_role_id"]
+            isOneToOne: false
+            referencedRelation: "custom_roles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "profiles_role_id_fkey"
             columns: ["role_id"]
             isOneToOne: false
@@ -1081,6 +1136,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      role_groups: {
+        Row: {
+          created_at: string | null
+          id: string
+          key: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          key: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
       }
       role_relations: {
         Row: {
@@ -1145,26 +1224,48 @@ export type Database = {
       specialist_roles: {
         Row: {
           created_at: string | null
+          description: string | null
+          group_id: string | null
           id: string
+          is_active: boolean
+          is_custom_allowed: boolean
           name: string
           name_en: string | null
+          sort_order: number
           specialization_id: string | null
         }
         Insert: {
           created_at?: string | null
+          description?: string | null
+          group_id?: string | null
           id?: string
+          is_active?: boolean
+          is_custom_allowed?: boolean
           name: string
           name_en?: string | null
+          sort_order?: number
           specialization_id?: string | null
         }
         Update: {
           created_at?: string | null
+          description?: string | null
+          group_id?: string | null
           id?: string
+          is_active?: boolean
+          is_custom_allowed?: boolean
           name?: string
           name_en?: string | null
+          sort_order?: number
           specialization_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "specialist_roles_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "role_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "specialist_roles_specialization_id_fkey"
             columns: ["specialization_id"]
