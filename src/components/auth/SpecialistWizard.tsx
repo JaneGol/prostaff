@@ -7,6 +7,7 @@ import { StepLevelSelect } from "./steps/StepLevelSelect";
 import { StepCredentials } from "./steps/StepCredentials";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export interface WizardData {
   groupId: string | null;
@@ -29,6 +30,7 @@ const STEPS = ["Направление", "Роль", "Спорт", "Уровен
 
 export function SpecialistWizard({ onComplete, isSubmitting }: Props) {
   const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
   const [data, setData] = useState<WizardData>({
     groupId: null,
     roleId: null,
@@ -55,11 +57,17 @@ export function SpecialistWizard({ onComplete, isSubmitting }: Props) {
   };
 
   const handleNext = () => {
-    if (step < STEPS.length - 1) setStep(step + 1);
+    if (step < STEPS.length - 1) {
+      setDirection(1);
+      setStep(step + 1);
+    }
   };
 
   const handleBack = () => {
-    if (step > 0) setStep(step - 1);
+    if (step > 0) {
+      setDirection(-1);
+      setStep(step - 1);
+    }
   };
 
   const handleSubmit = () => {
@@ -80,46 +88,57 @@ export function SpecialistWizard({ onComplete, isSubmitting }: Props) {
       </div>
 
       {/* Step Content */}
-      <div className="min-h-[280px]">
-        {step === 0 && (
-          <StepGroupSelect
-            selectedGroupId={data.groupId}
-            onSelect={(groupId) => update({ groupId, roleId: null, customRoleTitle: "" })}
-          />
-        )}
-        {step === 1 && (
-          <StepRoleSelect
-            groupId={data.groupId!}
-            selectedRoleId={data.roleId}
-            customRoleTitle={data.customRoleTitle}
-            onSelectRole={(roleId) => update({ roleId, customRoleTitle: "" })}
-            onCustomRole={(title) => update({ customRoleTitle: title, roleId: null })}
-          />
-        )}
-        {step === 2 && (
-          <StepSportSelect
-            selectedSportIds={data.sportIds}
-            onToggle={(id) =>
-              update({
-                sportIds: data.sportIds.includes(id)
-                  ? data.sportIds.filter((s) => s !== id)
-                  : [...data.sportIds, id],
-              })
-            }
-          />
-        )}
-        {step === 3 && (
-          <StepLevelSelect
-            selected={data.level}
-            onSelect={(level) => update({ level })}
-          />
-        )}
-        {step === 4 && (
-          <StepCredentials
-            data={data}
-            onChange={update}
-          />
-        )}
+      <div className="min-h-[280px] overflow-hidden relative">
+        <AnimatePresence mode="wait" initial={false} custom={direction}>
+          <motion.div
+            key={step}
+            custom={direction}
+            initial={{ opacity: 0, x: direction * 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction * -60 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+          >
+            {step === 0 && (
+              <StepGroupSelect
+                selectedGroupId={data.groupId}
+                onSelect={(groupId) => update({ groupId, roleId: null, customRoleTitle: "" })}
+              />
+            )}
+            {step === 1 && (
+              <StepRoleSelect
+                groupId={data.groupId!}
+                selectedRoleId={data.roleId}
+                customRoleTitle={data.customRoleTitle}
+                onSelectRole={(roleId) => update({ roleId, customRoleTitle: "" })}
+                onCustomRole={(title) => update({ customRoleTitle: title, roleId: null })}
+              />
+            )}
+            {step === 2 && (
+              <StepSportSelect
+                selectedSportIds={data.sportIds}
+                onToggle={(id) =>
+                  update({
+                    sportIds: data.sportIds.includes(id)
+                      ? data.sportIds.filter((s) => s !== id)
+                      : [...data.sportIds, id],
+                  })
+                }
+              />
+            )}
+            {step === 3 && (
+              <StepLevelSelect
+                selected={data.level}
+                onSelect={(level) => update({ level })}
+              />
+            )}
+            {step === 4 && (
+              <StepCredentials
+                data={data}
+                onChange={update}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Navigation */}
