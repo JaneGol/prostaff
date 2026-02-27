@@ -1,6 +1,6 @@
 import { Layout } from "@/components/layout/Layout";
 import { HeroSection } from "@/components/home/HeroSection";
-import { FeaturesSection } from "@/components/home/FeaturesSection";
+import { MockSpecialistsSection } from "@/components/home/MockSpecialistsSection";
 import { RolesSection } from "@/components/home/RolesSection";
 import { CTASection } from "@/components/home/CTASection";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,7 +27,7 @@ const Index = () => {
   return (
     <Layout>
       <HeroSection />
-      <FeaturesSection />
+      <MockSpecialistsSection />
       <RolesSection />
       <CTASection />
     </Layout>

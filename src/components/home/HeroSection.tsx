@@ -16,27 +16,26 @@ export function HeroSection() {
       />
 
       <div className="container max-w-6xl relative">
-        <div className="py-16 md:py-24 lg:py-32">
+        <div className="py-12 md:py-20 lg:py-24">
           <div className="max-w-3xl mx-auto text-center">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-display text-white mb-6"
+              className="font-display text-white mb-5"
             >
-              Профессиональное пространство
+              Платформа для
               <br />
-              <span className="text-white/90">для специалистов в спорте</span>
+              <span className="text-white/90">профессионалов спорта</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto"
+              className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto"
             >
-              ProStaff объединяет тренеров, аналитиков, врачей и других профессионалов спорта. 
-              Заявите о себе, будьте открыты к предложениям и находите новые карьерные возможности — в любом виде спорта.
+              Профили с пресетами навыков для тренеров, аналитиков, тренеров по физподготовке, врачей и других специалистов.
             </motion.p>
 
             {/* CTA buttons */}
@@ -46,22 +45,17 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
-              <Link to="/auth?mode=signup&role=specialist" className="w-full sm:w-auto" onClick={() => trackEvent("cta_click", "hero", "Создать профиль специалиста")}>
-                <Button size="lg" className="w-full sm:min-w-[280px] flex-col h-auto py-3 rounded-xl">
-                  <span className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Создать профиль специалиста
-                  </span>
-                  <span className="text-xs font-normal opacity-80">Бесплатно · Профиль виден организациям</span>
+              <Link to="/auth?mode=signup&role=specialist" className="w-full sm:w-auto" onClick={() => trackEvent("cta_click", "hero", "Создать профиль")}>
+                <Button size="lg" className="w-full sm:min-w-[240px] h-auto py-3 rounded-xl gap-2">
+                  <Users className="h-5 w-5" />
+                  Создать профиль
+                  <span className="text-xs font-normal opacity-70 ml-1">· Бесплатно</span>
                 </Button>
               </Link>
               <Link to="/specialists" className="w-full sm:w-auto" onClick={() => trackEvent("cta_click", "hero", "Найти специалистов")}>
-                <Button size="lg" variant="outline" className="w-full sm:min-w-[280px] flex-col h-auto py-3 rounded-xl border-white text-white hover:bg-white/10">
-                  <span className="flex items-center gap-2">
-                    <Search className="h-5 w-5" />
-                    Найти специалистов
-                  </span>
-                  <span className="text-xs font-normal opacity-70">По ролям, опыту и видам спорта</span>
+                <Button size="lg" variant="outline" className="w-full sm:min-w-[240px] h-auto py-3 rounded-xl border-white text-white hover:bg-white/10 gap-2">
+                  <Search className="h-5 w-5" />
+                  Найти специалистов
                 </Button>
               </Link>
             </motion.div>
