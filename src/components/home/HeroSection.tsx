@@ -24,9 +24,9 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="font-display text-white mb-6"
             >
-              Место, где специалисты спортивной индустрии
+              Единое пространство для специалистов
               <br />
-              <span className="text-white/90">становятся видимыми</span>
+              <span className="text-white/90">спортивной индустрии</span>
             </motion.h1>
 
             <motion.p
