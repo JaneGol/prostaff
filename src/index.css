@@ -123,7 +123,7 @@
   /* Typography System - Cera Pro Alternative (Outfit) */
   h1 {
     @apply font-display;
-    font-size: clamp(52px, 5vw, 60px);
+    font-size: clamp(32px, 5vw, 56px);
     font-weight: 500;
     line-height: 1.15;
     letter-spacing: -0.005em;

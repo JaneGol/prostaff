@@ -226,7 +226,7 @@ export function Header() {
         <div
           className={cn(
             "lg:hidden overflow-hidden transition-all duration-300 border-t border-border",
-            isMenuOpen ? "max-h-[500px]" : "max-h-0"
+            isMenuOpen ? "max-h-[80vh] overflow-y-auto" : "max-h-0"
           )}
         >
           <div className="container py-4 space-y-4">

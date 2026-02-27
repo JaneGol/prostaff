@@ -115,17 +115,17 @@ export function Footer() {
         {/* Contact info */}
         <div className="mt-12 pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div className="flex flex-wrap items-center gap-6 text-sm text-white/70">
-              <a href="mailto:e89030922661@gmail.com" className="flex items-center gap-2 hover:text-white transition-colors">
-                <Mail className="h-4 w-4" />
+            <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 sm:gap-6 text-sm text-white/70">
+              <a href="mailto:e89030922661@gmail.com" className="flex items-center gap-2 hover:text-white transition-colors min-w-0 break-all">
+                <Mail className="h-4 w-4 shrink-0" />
                 e89030922661@gmail.com
               </a>
               <a href="tel:+789030922661" className="flex items-center gap-2 hover:text-white transition-colors">
-                <Phone className="h-4 w-4" />
+                <Phone className="h-4 w-4 shrink-0" />
                 8 903 092-26-61
               </a>
               <span className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-4 w-4 shrink-0" />
                 Россия, Беларусь, Казахстан
               </span>
             </div>
