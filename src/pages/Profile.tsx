@@ -297,8 +297,11 @@ export default function Profile() {
   const location = [profile.city, profile.country].filter(Boolean).join(", ");
   const statusInfo = profile.search_status ? statusLabels[profile.search_status] : null;
 
-  const topSkills = skills.filter(s => s.is_top);
-  const otherSkills = skills.filter(s => !s.is_top);
+  const toolCategories = new Set(["tools", "Инструменты", "Видео", "GPS", "Аналитика", "Данные"]);
+  const isToolSkill = (s: Skill) => s.category && toolCategories.has(s.category);
+  const topSkills = skills.filter(s => s.is_top && !isToolSkill(s));
+  const toolSkills = skills.filter(s => isToolSkill(s));
+  const otherSkills = skills.filter(s => !s.is_top && !isToolSkill(s));
 
   return (
     <Layout>
@@ -447,27 +450,42 @@ export default function Profile() {
                 {topSkills.length > 0 && (
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
-                      <Star className="h-3.5 w-3.5 text-yellow-500" />Ключевые навыки
+                      <Star className="h-3.5 w-3.5 text-amber-500" />Ключевые навыки
                     </h4>
-                    <div className="flex flex-wrap gap-2.5">
+                    <div className="flex flex-wrap gap-2">
                       {topSkills.map(skill => (
-                        <Badge key={skill.id} variant="default" className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium">
-                          <Star className="h-3.5 w-3.5 fill-current" />
+                        <Badge key={skill.id} variant="default" className="flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium">
+                          <Star className="h-3 w-3 fill-current" />
                           {skill.name}
-                          <span className="opacity-70">• {proficiencyLabels[skill.proficiency]}</span>
                         </Badge>
                       ))}
                     </div>
                   </div>
                 )}
                 {otherSkills.length > 0 && (
-                  <div className="flex flex-wrap gap-2.5">
-                    {otherSkills.map(skill => (
-                      <Badge key={skill.id} variant="secondary" className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium">
-                        {skill.name}
-                        <span className="opacity-50">• {proficiencyLabels[skill.proficiency]}</span>
-                      </Badge>
-                    ))}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Дополнительные</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {otherSkills.map(skill => (
+                        <Badge key={skill.id} variant="secondary" className="px-3.5 py-1.5 text-sm font-medium">
+                          {skill.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {toolSkills.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                      <Wrench className="h-3.5 w-3.5" />Инструменты
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {toolSkills.map(skill => (
+                        <Badge key={skill.id} variant="outline" className="px-3.5 py-1.5 text-sm font-medium">
+                          {skill.name}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 )}
               </CardContent>
