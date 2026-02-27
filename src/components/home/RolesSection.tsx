@@ -1,81 +1,125 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
+import { useRoleGroups } from "@/hooks/useRoleGroups";
 
-const roles = [
-  { name: "Видеоаналитик" },
-  { name: "Аналитик данных" },
-  { name: "Тренер" },
-  { name: "Физиотерапевт" },
-  { name: "Спортивный врач" },
-  { name: "S&C тренер" },
-  { name: "Скаут" },
-  { name: "Менеджер команды" },
-];
+const VISIBLE_COUNT = 3;
 
 export function RolesSection() {
+  const { groups, roles, loading } = useRoleGroups();
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  if (loading) return null;
+
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  };
+
   return (
-    <section className="py-16 md:py-24 bg-secondary">
+    <section className="py-12 md:py-16 bg-secondary">
       <div className="container max-w-6xl">
-        {/* Section header */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
-          <div className="max-w-xl">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="font-display text-3xl md:text-4xl font-bold text-foreground uppercase tracking-tight mb-4"
-            >
-              20+ профессиональных ролей в спортивной индустрии
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="text-muted-foreground text-lg"
-            >
-              От аналитиков и тренеров до медицинского персонала и менеджеров. 
-              Развивайтесь в своём виде спорта или находите новые возможности в других дисциплинах.
-            </motion.p>
-          </div>
+        {/* Header */}
+        <div className="flex items-end justify-between gap-4 mb-8">
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="font-display text-2xl md:text-3xl font-bold text-foreground uppercase tracking-tight"
+          >
+            Специализации
+          </motion.h2>
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.2 }}
           >
             <Link to="/specialists">
-              <Button variant="outline">
+              <Button variant="outline" size="sm">
                 Все специалисты
-                <ArrowRight className="h-4 w-4 ml-2" />
+                <ArrowRight className="h-4 w-4 ml-1.5" />
               </Button>
             </Link>
           </motion.div>
         </div>
 
-        {/* Roles grid — 8 items, 4 columns */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
-          {roles.map((role, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <Link
-                to={`/specialists?role=${encodeURIComponent(role.name)}`}
-                className="block p-4 h-full min-h-[88px] bg-white rounded-lg border border-border hover:border-accent hover:shadow-card transition-all duration-200 group flex flex-col justify-center"
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+          className="text-muted-foreground mb-8 max-w-xl"
+        >
+          Тренеры, аналитики, врачи, специалисты по физподготовке и другие направления.
+        </motion.p>
+
+        {/* Groups */}
+        <div className="space-y-5">
+          {groups.map((group, gi) => {
+            const groupRoles = roles.filter((r) => r.group_id === group.id);
+            if (groupRoles.length === 0) return null;
+
+            const isExpanded = expandedGroups.has(group.id);
+            const visibleRoles = isExpanded ? groupRoles : groupRoles.slice(0, VISIBLE_COUNT);
+            const hiddenCount = groupRoles.length - VISIBLE_COUNT;
+
+            return (
+              <motion.div
+                key={group.id}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: gi * 0.05 }}
               >
-                <div className="font-medium text-foreground group-hover:text-accent transition-colors">
-                  {role.name}
+                <h3 className="text-sm font-semibold text-foreground/70 uppercase tracking-wide mb-2.5">
+                  {group.title}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {visibleRoles.map((role) => (
+                    <Link
+                      key={role.id}
+                      to={`/specialists?role=${encodeURIComponent(role.name)}`}
+                    >
+                      <Badge
+                        variant="outline"
+                        className="px-3 py-1.5 text-sm font-normal cursor-pointer hover:bg-accent hover:text-white hover:border-accent transition-colors"
+                      >
+                        {role.name}
+                      </Badge>
+                    </Link>
+                  ))}
+                  {!isExpanded && hiddenCount > 0 && (
+                    <button onClick={() => toggleGroup(group.id)}>
+                      <Badge
+                        variant="secondary"
+                        className="px-3 py-1.5 text-sm font-normal cursor-pointer hover:bg-muted-foreground/20 transition-colors"
+                      >
+                        ещё {hiddenCount}
+                      </Badge>
+                    </button>
+                  )}
+                  {isExpanded && hiddenCount > 0 && (
+                    <button onClick={() => toggleGroup(group.id)}>
+                      <Badge
+                        variant="secondary"
+                        className="px-3 py-1.5 text-sm font-normal cursor-pointer hover:bg-muted-foreground/20 transition-colors"
+                      >
+                        свернуть
+                      </Badge>
+                    </button>
+                  )}
                 </div>
-              </Link>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
