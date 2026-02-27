@@ -114,12 +114,13 @@ export function SpecialistCard({
   const primarySport = sports[0]?.sports?.name || null;
 
   return (
-    <Link to={`/profile/${id}`} className="block">
+    <Link to={`/profile/${id}`} className="block h-full">
       <div
         className={`
           bg-card rounded-xl border border-border
           transition-all duration-200 cursor-pointer
           hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:border-slate-300
+          flex flex-col h-full
           ${isCompact ? "p-5 w-full" : "p-5 md:p-6 w-full"}
         `}
       >
@@ -193,7 +194,7 @@ export function SpecialistCard({
         )}
 
         {/* Level 5: Meta row */}
-        <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground mt-auto">
           {experience?.latest_company && (
             <>
               <span className="flex items-center gap-1">

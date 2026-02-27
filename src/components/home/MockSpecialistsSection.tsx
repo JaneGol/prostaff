@@ -87,6 +87,7 @@ export function MockSpecialistsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
+              className="h-full"
             >
               <SpecialistCard
                 id={spec.id}
