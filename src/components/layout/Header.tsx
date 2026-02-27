@@ -73,14 +73,6 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* Top bar */}
-      {!user && (
-        <div className="bg-primary-darker text-white py-2 text-center text-sm">
-          <span className="font-medium">
-            🏆 Найди работу мечты в спорте — присоединяйся к платформе!
-          </span>
-        </div>
-      )}
 
       {/* Main navigation */}
       <nav className="bg-white border-b border-border">
