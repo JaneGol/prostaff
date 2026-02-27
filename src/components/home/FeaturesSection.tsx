@@ -1,43 +1,21 @@
 import { motion } from "framer-motion";
-import { 
-  Users, 
-  Search, 
-  Briefcase, 
-  GraduationCap, 
-  Globe, 
-  Shield 
-} from "lucide-react";
+import { Users, Search, Globe } from "lucide-react";
 
 const features = [
   {
     icon: Users,
-    title: "База специалистов",
-    description: "Структурированные профили аналитиков, тренеров, врачей и других профессионалов спорта",
+    title: "Профили специалистов",
+    description: "Структурированные профили с опытом, навыками, специализациями и карьерными целями.",
   },
   {
     icon: Search,
-    title: "Умный поиск",
-    description: "Фильтры по ролям, навыкам, опыту, локации и готовности к переезду",
-  },
-  {
-    icon: Briefcase,
-    title: "Вакансии",
-    description: "Актуальные предложения от клубов, федераций и спортивных организаций",
-  },
-  {
-    icon: GraduationCap,
-    title: "Карьерный контент",
-    description: "Гайды, интервью с профессионалами, советы по развитию в спортивной индустрии",
+    title: "Поиск и открытость к предложениям",
+    description: "Организации находят специалистов по ролям, опыту и видам спорта. Специалисты сами определяют свою готовность к предложениям.",
   },
   {
     icon: Globe,
-    title: "3 страны",
-    description: "Охватываем рынки России, Беларуси и Казахстана с возможностью расширения",
-  },
-  {
-    icon: Shield,
-    title: "Проверенные профили",
-    description: "Верификация опыта работы и рекомендации от коллег по индустрии",
+    title: "Сообщество спортивной индустрии",
+    description: "Специалисты из разных дисциплин и направлений — в одном месте, без привязки к конкретному виду спорта.",
   },
 ];
 
@@ -47,37 +25,29 @@ export function FeaturesSection() {
       <div className="container max-w-6xl">
         {/* Section header */}
         <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
-          <motion.span
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="inline-block px-4 py-1.5 mb-4 text-sm font-medium text-accent bg-accent-light rounded-pill"
-          >
-            Возможности платформы
-          </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground uppercase tracking-tight mb-4"
+            className="font-display text-3xl md:text-4xl font-bold text-foreground uppercase tracking-tight mb-4"
           >
-            Всё для карьеры в спорте
+            Платформа для специалистов спортивной индустрии
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.1 }}
             className="text-muted-foreground text-lg"
           >
-            Нишевая платформа, созданная специально для спортивной индустрии. 
-            Не просто доска вакансий — полноценная экосистема развития карьеры.
+            Сегодня многие профессионалы в спорте остаются незаметными за пределами своего круга. 
+            ProStaff — это единое пространство, где специалисты могут представить свой опыт, навыки и цели, 
+            а клубы и организации — находить людей под свои задачи.
           </motion.p>
         </div>
 
         {/* Features grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {features.map((feature, index) => (
             <motion.div
               key={index}

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, Search, ArrowRight } from "lucide-react";
+import { Users, Search } from "lucide-react";
 import { trackEvent } from "@/hooks/useAnalytics";
 
 export function HeroSection() {
@@ -17,30 +17,26 @@ export function HeroSection() {
 
       <div className="container max-w-6xl relative">
         <div className="py-16 md:py-24 lg:py-32">
-          {/* Main content */}
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Main heading */}
-
+          <div className="max-w-3xl mx-auto text-center">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               className="font-display text-white mb-6"
             >
-              Карьерные возможности
+              Место, где специалисты спортивной индустрии
               <br />
-              <span className="text-white/90">в спорте</span>
+              <span className="text-white/90">становятся видимыми</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto"
+              className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto"
             >
-              Единая база спортивных специалистов для клубов и федераций 
-              России, Беларуси и Казахстана. Аналитики, тренеры, врачи, менеджеры — 
-              все профессионалы в одном месте.
+              ProStaff объединяет тренеров, аналитиков, врачей и других профессионалов спорта. 
+              Заявите о себе, будьте открыты к предложениям и находите новые карьерные возможности — в любом виде спорта.
             </motion.p>
 
             {/* CTA buttons */}
@@ -48,52 +44,26 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
+              className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
-              <Link to="/auth?mode=signup&role=specialist" onClick={() => trackEvent("cta_click", "hero", "Создать профиль", "/auth?mode=signup&role=specialist")}>
-                <Button size="lg" className="w-full sm:w-auto">
-                  <Users className="h-5 w-5 mr-2" />
-                  Создать профиль
+              <Link to="/auth?mode=signup&role=specialist" onClick={() => trackEvent("cta_click", "hero", "Создать профиль специалиста")}>
+                <Button size="lg" className="w-full sm:w-auto flex-col h-auto py-3">
+                  <span className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Создать профиль специалиста
+                  </span>
+                  <span className="text-xs font-normal opacity-80">Бесплатно · Профиль виден организациям</span>
                 </Button>
               </Link>
-              <Link to="/specialists" onClick={() => trackEvent("cta_click", "hero", "Найти специалиста", "/specialists")}>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white/10">
-                  <Search className="h-5 w-5 mr-2" />
-                  Найти специалиста
+              <Link to="/specialists" onClick={() => trackEvent("cta_click", "hero", "Найти специалистов")}>
+                <Button size="lg" variant="outline" className="w-full sm:w-auto flex-col h-auto py-3 border-white text-white hover:bg-white/10">
+                  <span className="flex items-center gap-2">
+                    <Search className="h-5 w-5" />
+                    Найти специалистов
+                  </span>
+                  <span className="text-xs font-normal opacity-70">По ролям, опыту и видам спорта</span>
                 </Button>
               </Link>
-            </motion.div>
-
-            {/* Divider */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="w-20 h-1 bg-accent mx-auto mb-12"
-            />
-
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
-            >
-              {[
-                { value: "500+", label: "Специалистов" },
-                { value: "50+", label: "Клубов" },
-                { value: "20+", label: "Ролей" },
-                { value: "3", label: "Страны" },
-              ].map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="font-display text-3xl md:text-4xl font-bold text-white mb-1">
-                    {stat.value}
-                  </div>
-                  <div className="text-white/60 text-sm uppercase tracking-wide">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
             </motion.div>
           </div>
         </div>
