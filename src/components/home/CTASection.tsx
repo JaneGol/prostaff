@@ -16,7 +16,7 @@ export function CTASection() {
             viewport={{ once: true }}
             className="relative overflow-hidden rounded-2xl bg-hero-gradient-soft p-6 md:p-8"
           >
-            <div className="relative z-10">
+            <div className="relative z-10 flex flex-col h-full">
               <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-white" />
               </div>
@@ -26,11 +26,13 @@ export function CTASection() {
               <p className="text-white/80 mb-5 text-sm">
                 Создайте профиль с пресетами навыков и будьте видимы для клубов индустрии.
               </p>
-              <Link to="/auth?mode=signup&role=specialist" onClick={() => trackEvent("cta_click", "cta_section", "Создать профиль")}>
-                <Button size="default" className="w-full sm:w-auto">
-                  Создать профиль
-                </Button>
-              </Link>
+              <div className="mt-auto">
+                <Link to="/auth?mode=signup&role=specialist" onClick={() => trackEvent("cta_click", "cta_section", "Создать профиль")}>
+                  <Button size="default" className="w-full sm:w-auto">
+                    Создать профиль
+                  </Button>
+                </Link>
+              </div>
             </div>
             <div className="absolute -right-16 -bottom-16 w-48 h-48 rounded-full bg-white/5"></div>
           </motion.div>
@@ -42,7 +44,7 @@ export function CTASection() {
             viewport={{ once: true }}
             className="relative overflow-hidden rounded-2xl bg-primary-darker p-6 md:p-8"
           >
-            <div className="relative z-10">
+            <div className="relative z-10 flex flex-col h-full">
               <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4">
                 <Building2 className="h-6 w-6 text-white" />
               </div>
@@ -52,11 +54,13 @@ export function CTASection() {
               <p className="text-white/80 mb-5 text-sm">
                 Находите специалистов по навыкам, опыту и видам спорта.
               </p>
-              <Link to="/auth?mode=signup&role=company" onClick={() => trackEvent("cta_click", "cta_section", "Зарегистрировать организацию")}>
-                <Button size="default" className="w-full sm:w-auto">
-                  Зарегистрировать организацию
-                </Button>
-              </Link>
+              <div className="mt-auto">
+                <Link to="/auth?mode=signup&role=company" onClick={() => trackEvent("cta_click", "cta_section", "Зарегистрировать организацию")}>
+                  <Button size="default" className="w-full sm:w-auto">
+                    Зарегистрировать организацию
+                  </Button>
+                </Link>
+              </div>
             </div>
             <div className="absolute -right-16 -bottom-16 w-48 h-48 rounded-full bg-white/5"></div>
           </motion.div>
