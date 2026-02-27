@@ -16,7 +16,7 @@ export function HeroSection() {
       />
 
       <div className="container max-w-6xl relative">
-        <div className="py-12 md:py-24 lg:py-32">
+        <div className="py-12 md:py-20 lg:py-28 pb-16 md:pb-28 lg:pb-36">
           <div className="max-w-3xl mx-auto text-center">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
