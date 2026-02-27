@@ -289,7 +289,9 @@ export default function Specialists() {
       const result = await res.json();
 
       const profilesList = (result.profiles || []) as ProfileCard[];
-      const mergedProfiles = [...profilesList, ...MOCK_PROFILES];
+      // Filter out empty profiles (no role assigned)
+      const validProfiles = profilesList.filter(p => p.specialist_roles?.name);
+      const mergedProfiles = [...validProfiles, ...MOCK_PROFILES];
       setProfiles(mergedProfiles);
 
       const serverSports = result.profileSports || {};
