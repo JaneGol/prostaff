@@ -62,7 +62,7 @@ export function RolesSection() {
         </motion.p>
 
         {/* Groups */}
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {groups.map((group, gi) => {
             const groupRoles = roles.filter((r) => r.group_id === group.id);
             if (groupRoles.length === 0) return null;
@@ -78,11 +78,12 @@ export function RolesSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: gi * 0.05 }}
+                className="rounded-xl bg-background p-4 shadow-sm"
               >
-                <h3 className="text-sm font-semibold text-foreground/70 uppercase tracking-wide mb-2.5">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                   {group.title}
                 </h3>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {visibleRoles.map((role) => (
                     <Link
                       key={role.id}
@@ -90,7 +91,7 @@ export function RolesSection() {
                     >
                       <Badge
                         variant="outline"
-                        className="px-3 py-1.5 text-sm font-normal cursor-pointer hover:bg-accent hover:text-white hover:border-accent transition-colors"
+                        className="px-2.5 py-1 text-xs font-normal cursor-pointer hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
                       >
                         {role.name}
                       </Badge>
@@ -100,9 +101,9 @@ export function RolesSection() {
                     <button onClick={() => toggleGroup(group.id)}>
                       <Badge
                         variant="secondary"
-                        className="px-3 py-1.5 text-sm font-normal cursor-pointer hover:bg-muted-foreground/20 transition-colors"
+                        className="px-2.5 py-1 text-xs font-normal cursor-pointer hover:bg-muted-foreground/20 transition-colors"
                       >
-                        ещё {hiddenCount}
+                        +{hiddenCount}
                       </Badge>
                     </button>
                   )}
@@ -110,7 +111,7 @@ export function RolesSection() {
                     <button onClick={() => toggleGroup(group.id)}>
                       <Badge
                         variant="secondary"
-                        className="px-3 py-1.5 text-sm font-normal cursor-pointer hover:bg-muted-foreground/20 transition-colors"
+                        className="px-2.5 py-1 text-xs font-normal cursor-pointer hover:bg-muted-foreground/20 transition-colors"
                       >
                         свернуть
                       </Badge>
