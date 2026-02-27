@@ -49,6 +49,7 @@ interface Skill {
   name: string;
   proficiency: number;
   is_top: boolean;
+  category?: string;
 }
 
 interface EducationItem {
@@ -189,17 +190,44 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
         html += `</div>`;
       }
 
-      // Skills
+      // Skills — grouped by category
       if (skills.length > 0) {
+        const toolCategories = ["tools", "Инструменты", "Видео", "GPS", "Программирование", "Визуализация"];
+        const keyHard = topSkills.filter(s => !toolCategories.includes(s.category || ""));
+        const keyTools = topSkills.filter(s => toolCategories.includes(s.category || ""));
+        const addHard = otherSkills.filter(s => !toolCategories.includes(s.category || ""));
+        const addTools = otherSkills.filter(s => toolCategories.includes(s.category || ""));
+
         html += `<div class="section"><div class="section-title">Навыки</div>`;
-        if (topSkills.length > 0) {
-          html += `<div style="margin-bottom:6px"><strong style="font-size:10pt;color:#4355C5">Ключевые навыки</strong></div>`;
-          topSkills.forEach(s => { html += `<div class="skill-line"><span class="skill-dot top-dot"></span><strong>${s.name}</strong> <span style="color:#777">— ${profLabels[s.proficiency]}</span></div>`; });
+
+        // Key skills (non-tool)
+        if (keyHard.length > 0) {
+          html += `<div style="margin-bottom:6px"><strong style="font-size:10pt;color:#4355C5">⭐ Ключевые навыки</strong></div>`;
+          html += `<div class="skills-wrap">`;
+          keyHard.forEach(s => { html += `<span class="skill-tag skill-top">${s.name}</span>`; });
+          html += `</div>`;
         }
-        if (otherSkills.length > 0) {
-          html += `<div style="margin-top:8px;margin-bottom:6px"><strong style="font-size:10pt;color:#555">Дополнительные</strong></div>`;
-          otherSkills.forEach(s => { html += `<div class="skill-line"><span class="skill-dot"></span>${s.name} <span style="color:#777">— ${profLabels[s.proficiency]}</span></div>`; });
+
+        // Additional skills (non-tool)
+        if (addHard.length > 0) {
+          html += `<div style="margin-top:8px;margin-bottom:6px"><strong style="font-size:10pt;color:#555">Дополнительные навыки</strong></div>`;
+          html += `<div class="skills-wrap">`;
+          addHard.forEach(s => { html += `<span class="skill-tag">${s.name}</span>`; });
+          html += `</div>`;
         }
+
+        // Tools (key + additional combined)
+        const allTools = [...keyTools, ...addTools];
+        if (allTools.length > 0) {
+          html += `<div style="margin-top:8px;margin-bottom:6px"><strong style="font-size:10pt;color:#4355C5">🛠 Инструменты</strong></div>`;
+          html += `<div class="skills-wrap">`;
+          allTools.forEach(s => {
+            const cls = s.is_top ? "skill-tag skill-top" : "skill-tag";
+            html += `<span class="${cls}">${s.name}</span>`;
+          });
+          html += `</div>`;
+        }
+
         html += `</div>`;
       }
 
