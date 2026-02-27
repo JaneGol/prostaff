@@ -1,44 +1,68 @@
 import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Briefcase, User } from "lucide-react";
+import { SpecialistCard } from "@/components/specialists/SpecialistCard";
 
 const mockSpecialists = [
   {
-    initials: "АМ",
-    name: "Алексей М.",
-    role: "Видеоаналитик",
-    level: "Senior",
-    skills: ["Hudl", "Sportscode", "анализ соперника", "прессинг-модели"],
-    experience: "5 лет",
-    sports: ["Футбол"],
-    status: "Открыт к предложениям",
-    statusColor: "bg-green-500",
-    location: "Москва, Россия",
+    id: "home-mock-1",
+    roleName: "Видеоаналитик",
+    secondaryRoleName: "Аналитик данных",
+    level: "senior",
+    city: "Москва",
+    country: "Россия",
+    searchStatus: "open_to_offers",
+    isRelocatable: true,
+    isRemoteAvailable: false,
+    skills: [
+      { name: "Hudl" },
+      { name: "Sportscode" },
+      { name: "анализ соперника" },
+      { name: "прессинг-модели" },
+    ],
+    sports: [{ sport_id: "s1", years: 5, sports: { name: "Футбол", icon: "circle-dot" } }],
+    aboutSnippet: "Помогаю командам принимать решения на основе данных",
+    experience: { count: 2, latest_position: "Видеоаналитик", latest_company: "ФК Динамо", total_years: 5 },
   },
   {
-    initials: "ДК",
-    name: "Дмитрий К.",
-    role: "Тренер по физической подготовке",
-    level: "Senior",
-    skills: ["периодизация", "плиометрика", "GPS-мониторинг", "нагрузочный контроль"],
-    experience: "8 лет",
-    sports: ["Хоккей", "Футбол"],
-    status: "Открыт к предложениям",
-    statusColor: "bg-green-500",
-    location: "Санкт-Петербург, Россия",
+    id: "home-mock-2",
+    roleName: "Тренер по физической подготовке",
+    secondaryRoleName: null,
+    level: "senior",
+    city: "Санкт-Петербург",
+    country: "Россия",
+    searchStatus: "actively_looking",
+    isRelocatable: false,
+    isRemoteAvailable: false,
+    skills: [
+      { name: "периодизация" },
+      { name: "плиометрика" },
+      { name: "GPS-мониторинг" },
+      { name: "нагрузочный контроль" },
+    ],
+    sports: [
+      { sport_id: "s1", years: 8, sports: { name: "Хоккей", icon: "snowflake" } },
+      { sport_id: "s2", years: 3, sports: { name: "Футбол", icon: "circle-dot" } },
+    ],
+    aboutSnippet: "Периодизация силовых программ для профессиональных команд",
+    experience: { count: 3, latest_position: "S&C Coach", latest_company: "СШОР 2", total_years: 8 },
   },
   {
-    initials: "МС",
-    name: "Мария С.",
-    role: "Физиотерапевт",
-    level: "Middle",
-    skills: ["спортивная реабилитация", "return-to-play", "мануальная терапия"],
-    experience: "6 лет",
-    sports: ["Баскетбол"],
-    status: "Рассматриваю варианты",
-    statusColor: "bg-yellow-500",
-    location: "Минск, Беларусь",
+    id: "home-mock-3",
+    roleName: "Физиотерапевт",
+    secondaryRoleName: null,
+    level: "middle",
+    city: "Минск",
+    country: "Беларусь",
+    searchStatus: "not_looking_but_open",
+    isRelocatable: false,
+    isRemoteAvailable: false,
+    skills: [
+      { name: "спортивная реабилитация" },
+      { name: "return-to-play" },
+      { name: "мануальная терапия" },
+    ],
+    sports: [{ sport_id: "s3", years: 6, sports: { name: "Баскетбол", icon: "target" } }],
+    aboutSnippet: "Спортивная реабилитация и return-to-play протоколы",
+    experience: { count: 2, latest_position: "Физиотерапевт", latest_company: null, total_years: 6 },
   },
 ];
 
@@ -58,55 +82,28 @@ export function MockSpecialistsSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
           {mockSpecialists.map((spec, index) => (
             <motion.div
-              key={index}
+              key={spec.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="hover:shadow-lg transition-shadow h-full border-border">
-                <CardContent className="p-5">
-                  {/* Header: avatar + name + status */}
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-semibold text-primary">{spec.initials}</span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-foreground text-[15px] min-h-[2.5rem] leading-snug">{spec.role}</h3>
-                        <Badge variant="outline" className="text-xs px-2 py-0.5 flex-shrink-0">
-                          {spec.level}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                        <span className={`h-1.5 w-1.5 rounded-full inline-block ${spec.statusColor}`} />
-                        {spec.status}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Skills tags */}
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {spec.skills.map((skill) => (
-                      <Badge key={skill} variant="secondary" className="text-xs px-2 py-0.5 font-normal">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {/* Bottom: experience + location */}
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Briefcase className="h-3 w-3" />
-                      {spec.experience} · {spec.sports.join(", ")}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {spec.location}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+              <SpecialistCard
+                id={spec.id}
+                roleName={spec.roleName}
+                level={spec.level}
+                city={spec.city}
+                country={spec.country}
+                searchStatus={spec.searchStatus}
+                isRelocatable={spec.isRelocatable}
+                isRemoteAvailable={spec.isRemoteAvailable}
+                skills={spec.skills}
+                sports={spec.sports}
+                aboutSnippet={spec.aboutSnippet}
+                experience={spec.experience}
+                secondaryRoleName={spec.secondaryRoleName}
+                variant="homepage"
+              />
             </motion.div>
           ))}
         </div>
