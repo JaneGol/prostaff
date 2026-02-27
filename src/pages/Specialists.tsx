@@ -76,52 +76,125 @@ const levelLabels: Record<string, string> = {
   head: "Head",
 };
 
-// Mock data for demo
+// Mock data for demo — 12 profiles from ProStaff spec
 const MOCK_PROFILES: ProfileCard[] = [
-  { id: "mock-1", first_name: "", last_name: "", avatar_url: null, city: "Москва", country: "Россия", level: "senior", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "b79fbfc7-3c12-44aa-8606-fcba449c9373", name: "Аналитик данных" }, secondary_role_id: null, about_useful: "Помогаю командам принимать решения на основе данных" },
-  { id: "mock-2", first_name: "", last_name: "", avatar_url: null, city: "Санкт-Петербург", country: "Россия", level: "middle", search_status: "open_to_offers", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "c19b18bc-4521-45b4-8ed7-54aa647cb17f", name: "Видеоаналитик" }, secondary_role_id: null, about_useful: "Разбор матчей и подготовка тактических отчётов" },
-  { id: "mock-3", first_name: "", last_name: "", avatar_url: null, city: "Алматы", country: "Казахстан", level: "junior", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "362ad39d-e65d-4f79-ab97-0710ff4b40e7", name: "Скаут" }, secondary_role_id: null, about_useful: null },
-  { id: "mock-4", first_name: "", last_name: "", avatar_url: null, city: "Минск", country: "Беларусь", level: "head", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "e74c6476-9b5f-4ccd-a3b8-03faa2988d46", name: "Главный тренер" }, secondary_role_id: null, about_useful: "20+ лет в профессиональном футболе" },
-  { id: "mock-5", first_name: "", last_name: "", avatar_url: null, city: "Казань", country: "Россия", level: "middle", search_status: "actively_looking", is_relocatable: false, is_remote_available: true, show_name: false, specialist_roles: { id: "a9620db1-3cf0-4d57-a6bf-28c2961c43e1", name: "S&C специалист" }, secondary_role_id: null, about_useful: null },
-  { id: "mock-6", first_name: "", last_name: "", avatar_url: null, city: "Краснодар", country: "Россия", level: "senior", search_status: "not_looking", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "98271286-d569-4074-8d96-16dcf258fdcf", name: "Спортивный врач" }, secondary_role_id: null, about_useful: "Спортивная медицина и реабилитация" },
-  { id: "mock-7", first_name: "", last_name: "", avatar_url: null, city: "Астана", country: "Казахстан", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "c7c42a56-6bd1-4080-949a-f7f80e5c5651", name: "Тренер вратарей" }, secondary_role_id: null, about_useful: null },
-  { id: "mock-8", first_name: "", last_name: "", avatar_url: null, city: "Екатеринбург", country: "Россия", level: "junior", search_status: "open_to_offers", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "2056f7c5-6c00-491f-a298-bec303ff15cf", name: "Нутрициолог" }, secondary_role_id: null, about_useful: null },
-  { id: "mock-9", first_name: "", last_name: "", avatar_url: null, city: "Сочи", country: "Россия", level: "senior", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "0bd7deb6-adca-4ff7-b83f-ca8ad11758ad", name: "Реабилитолог" }, secondary_role_id: null, about_useful: "Возвращение спортсменов после травм" },
-  { id: "mock-10", first_name: "", last_name: "", avatar_url: null, city: "Гомель", country: "Беларусь", level: "middle", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "96069546-82b6-4337-9079-a5473e238b3f", name: "Аналитик GPS/отслеживания" }, secondary_role_id: null, about_useful: null },
+  { id: "mock-1", first_name: "", last_name: "", avatar_url: null, city: "Ростов-на-Дону", country: null, level: "middle", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "7ad1271f-af77-49b3-9f85-97517d2813ac", name: "Видеоаналитик" }, secondary_role_id: null, about_useful: "Анализ соперников и подготовка видеоотчётов для тренерского штаба" },
+  { id: "mock-2", first_name: "", last_name: "", avatar_url: null, city: "Москва", country: null, level: "senior", search_status: "actively_looking", is_relocatable: true, is_remote_available: false, show_name: false, specialist_roles: { id: "d0983c7c-024e-44ec-86f3-d95a61b82147", name: "Аналитик данных" }, secondary_role_id: null, about_useful: "Помогаю командам принимать решения на основе данных" },
+  { id: "mock-3", first_name: "", last_name: "", avatar_url: null, city: "Калининград", country: null, level: "senior", search_status: "not_looking_but_open", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "8521eba5-924a-4257-8d7a-a0f2641b0d29", name: "Главный тренер" }, secondary_role_id: null, about_useful: "Главный тренер с опытом работы в ФНЛ и молодёжных составах" },
+  { id: "mock-4", first_name: "", last_name: "", avatar_url: null, city: "Казань", country: null, level: "senior", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "cf311cce-e815-412c-b45e-a2b3f7e32682", name: "Тренер по физической подготовке (команда)" }, secondary_role_id: null, about_useful: "Периодизация силовых программ для профессиональных команд" },
+  { id: "mock-5", first_name: "", last_name: "", avatar_url: null, city: "Минск", country: null, level: "middle", search_status: "not_looking_but_open", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "5fa9c98f-326f-421d-8d97-7b2e425e6f67", name: "Физиотерапевт" }, secondary_role_id: null, about_useful: "Спортивная реабилитация и return-to-play протоколы" },
+  { id: "mock-6", first_name: "", last_name: "", avatar_url: null, city: "Екатеринбург", country: null, level: "middle", search_status: "actively_looking", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "c46ce72b-92e4-4dd5-9a50-97a852b5a018", name: "Тренер вратарей" }, secondary_role_id: null, about_useful: "Подготовка вратарей от молодёжки до основного состава" },
+  { id: "mock-7", first_name: "", last_name: "", avatar_url: null, city: "Москва", country: null, level: "senior", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "e0966a6f-48df-43f2-b0bb-738cb9b51b84", name: "Спортивный врач" }, secondary_role_id: null, about_useful: "Медицинское сопровождение профессиональных команд" },
+  { id: "mock-8", first_name: "", last_name: "", avatar_url: null, city: "Казань", country: null, level: "middle", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "c09a18dd-3e92-4e7d-a411-216c5c15ab85", name: "Скаут-аналитик" }, secondary_role_id: null, about_useful: "Скаутинг и оценка игроков для трансферных решений" },
+  { id: "mock-9", first_name: "", last_name: "", avatar_url: null, city: "Краснодар", country: null, level: "middle", search_status: "not_looking_but_open", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "273fb6a9-a5d2-4192-8ecf-24c649709b8f", name: "Тренер молодёжных команд" }, secondary_role_id: null, about_useful: "Развитие молодых игроков в академиях профессиональных клубов" },
+  { id: "mock-10", first_name: "", last_name: "", avatar_url: null, city: "Новосибирск", country: null, level: "middle", search_status: "actively_looking", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "46f431e4-afea-4e42-87bd-37fa81b226e3", name: "Нутрициолог" }, secondary_role_id: null, about_useful: "Спортивное питание и нутриционная поддержка команд" },
+  { id: "mock-11", first_name: "", last_name: "", avatar_url: null, city: "Казань", country: null, level: "junior", search_status: "actively_looking", is_relocatable: true, is_remote_available: true, show_name: false, specialist_roles: { id: "02b6d18f-f8a1-4f3b-814a-b86ae0b924da", name: "Аналитик GPS / Performance" }, secondary_role_id: null, about_useful: "Сбор и анализ GPS-данных для контроля нагрузки" },
+  { id: "mock-12", first_name: "", last_name: "", avatar_url: null, city: "Санкт-Петербург", country: null, level: "senior", search_status: "open_to_offers", is_relocatable: false, is_remote_available: false, show_name: false, specialist_roles: { id: "3dc1ef67-39cd-4664-9a56-c48266c59171", name: "Менеджер команды" }, secondary_role_id: null, about_useful: "Организация логистики и административных процессов команды" },
 ];
 
 const MOCK_SKILLS: Record<string, ProfileSkillRow[]> = {
   "mock-1": [
-    { profile_id: "mock-1", skill_id: "s1", is_top: true, custom_name: "Python", is_custom: true },
-    { profile_id: "mock-1", skill_id: "s2", is_top: true, custom_name: "Tableau", is_custom: true },
+    { profile_id: "mock-1", skill_id: "s1", is_top: true, custom_name: "Sportscode", is_custom: true },
+    { profile_id: "mock-1", skill_id: "s2", is_top: true, custom_name: "Hudl", is_custom: true },
+    { profile_id: "mock-1", skill_id: "s3", is_top: true, custom_name: "анализ соперника", is_custom: true },
+    { profile_id: "mock-1", skill_id: "s4", is_top: true, custom_name: "постматчевый разбор", is_custom: true },
   ],
   "mock-2": [
-    { profile_id: "mock-2", skill_id: "s1", is_top: true, custom_name: "Hudl", is_custom: true },
-    { profile_id: "mock-2", skill_id: "s2", is_top: true, custom_name: "Sportscode", is_custom: true },
+    { profile_id: "mock-2", skill_id: "s1", is_top: true, custom_name: "Python", is_custom: true },
+    { profile_id: "mock-2", skill_id: "s2", is_top: true, custom_name: "Tableau", is_custom: true },
+    { profile_id: "mock-2", skill_id: "s3", is_top: true, custom_name: "SQL", is_custom: true },
+    { profile_id: "mock-2", skill_id: "s4", is_top: true, custom_name: "xG-модели", is_custom: true },
   ],
   "mock-3": [
-    { profile_id: "mock-3", skill_id: "s1", is_top: true, custom_name: "Wyscout", is_custom: true },
-    { profile_id: "mock-3", skill_id: "s2", is_top: true, custom_name: "InStat", is_custom: true },
+    { profile_id: "mock-3", skill_id: "s1", is_top: true, custom_name: "тактическое планирование", is_custom: true },
+    { profile_id: "mock-3", skill_id: "s2", is_top: true, custom_name: "работа со штабом", is_custom: true },
+    { profile_id: "mock-3", skill_id: "s3", is_top: true, custom_name: "предсезонная подготовка", is_custom: true },
+    { profile_id: "mock-3", skill_id: "s4", is_top: true, custom_name: "стандарты", is_custom: true },
+  ],
+  "mock-4": [
+    { profile_id: "mock-4", skill_id: "s1", is_top: true, custom_name: "периодизация", is_custom: true },
+    { profile_id: "mock-4", skill_id: "s2", is_top: true, custom_name: "плиометрика", is_custom: true },
+    { profile_id: "mock-4", skill_id: "s3", is_top: true, custom_name: "GPS-мониторинг", is_custom: true },
+    { profile_id: "mock-4", skill_id: "s4", is_top: true, custom_name: "Catapult", is_custom: true },
   ],
   "mock-5": [
-    { profile_id: "mock-5", skill_id: "s1", is_top: true, custom_name: "Catapult", is_custom: true },
-    { profile_id: "mock-5", skill_id: "s2", is_top: true, custom_name: "Polar", is_custom: true },
+    { profile_id: "mock-5", skill_id: "s1", is_top: true, custom_name: "спортивная реабилитация", is_custom: true },
+    { profile_id: "mock-5", skill_id: "s2", is_top: true, custom_name: "return-to-play", is_custom: true },
+    { profile_id: "mock-5", skill_id: "s3", is_top: true, custom_name: "мануальная терапия", is_custom: true },
+    { profile_id: "mock-5", skill_id: "s4", is_top: true, custom_name: "тейпирование", is_custom: true },
+  ],
+  "mock-6": [
+    { profile_id: "mock-6", skill_id: "s1", is_top: true, custom_name: "техника вратаря", is_custom: true },
+    { profile_id: "mock-6", skill_id: "s2", is_top: true, custom_name: "работа с ногами", is_custom: true },
+    { profile_id: "mock-6", skill_id: "s3", is_top: true, custom_name: "выбор позиции", is_custom: true },
+    { profile_id: "mock-6", skill_id: "s4", is_top: true, custom_name: "игра на выходах", is_custom: true },
+  ],
+  "mock-7": [
+    { profile_id: "mock-7", skill_id: "s1", is_top: true, custom_name: "спортивная медицина", is_custom: true },
+    { profile_id: "mock-7", skill_id: "s2", is_top: true, custom_name: "допуск к соревнованиям", is_custom: true },
+    { profile_id: "mock-7", skill_id: "s3", is_top: true, custom_name: "травматология", is_custom: true },
+    { profile_id: "mock-7", skill_id: "s4", is_top: true, custom_name: "фармакология", is_custom: true },
+  ],
+  "mock-8": [
+    { profile_id: "mock-8", skill_id: "s1", is_top: true, custom_name: "Wyscout", is_custom: true },
+    { profile_id: "mock-8", skill_id: "s2", is_top: true, custom_name: "InStat", is_custom: true },
+    { profile_id: "mock-8", skill_id: "s3", is_top: true, custom_name: "скаутинг", is_custom: true },
+    { profile_id: "mock-8", skill_id: "s4", is_top: true, custom_name: "трансферный анализ", is_custom: true },
+  ],
+  "mock-9": [
+    { profile_id: "mock-9", skill_id: "s1", is_top: true, custom_name: "работа с молодёжью", is_custom: true },
+    { profile_id: "mock-9", skill_id: "s2", is_top: true, custom_name: "индивидуальное развитие", is_custom: true },
+    { profile_id: "mock-9", skill_id: "s3", is_top: true, custom_name: "техника", is_custom: true },
+    { profile_id: "mock-9", skill_id: "s4", is_top: true, custom_name: "тактика U-17", is_custom: true },
   ],
   "mock-10": [
-    { profile_id: "mock-10", skill_id: "s1", is_top: true, custom_name: "Catapult", is_custom: true },
-    { profile_id: "mock-10", skill_id: "s2", is_top: true, custom_name: "Python", is_custom: true },
+    { profile_id: "mock-10", skill_id: "s1", is_top: true, custom_name: "спортивное питание", is_custom: true },
+    { profile_id: "mock-10", skill_id: "s2", is_top: true, custom_name: "составление рационов", is_custom: true },
+    { profile_id: "mock-10", skill_id: "s3", is_top: true, custom_name: "восстановление", is_custom: true },
+    { profile_id: "mock-10", skill_id: "s4", is_top: true, custom_name: "гидратация", is_custom: true },
+  ],
+  "mock-11": [
+    { profile_id: "mock-11", skill_id: "s1", is_top: true, custom_name: "Catapult", is_custom: true },
+    { profile_id: "mock-11", skill_id: "s2", is_top: true, custom_name: "Polar", is_custom: true },
+    { profile_id: "mock-11", skill_id: "s3", is_top: true, custom_name: "GPS-анализ", is_custom: true },
+    { profile_id: "mock-11", skill_id: "s4", is_top: true, custom_name: "Excel", is_custom: true },
+  ],
+  "mock-12": [
+    { profile_id: "mock-12", skill_id: "s1", is_top: true, custom_name: "логистика", is_custom: true },
+    { profile_id: "mock-12", skill_id: "s2", is_top: true, custom_name: "документооборот", is_custom: true },
+    { profile_id: "mock-12", skill_id: "s3", is_top: true, custom_name: "организация сборов", is_custom: true },
+    { profile_id: "mock-12", skill_id: "s4", is_top: true, custom_name: "бюджетирование", is_custom: true },
   ],
 };
 
 const MOCK_SPORTS: Record<string, ProfileSportExp[]> = {
-  "mock-1": [{ sport_id: "s1", years: 5, sports: { name: "Футбол", icon: "circle-dot" } }],
-  "mock-2": [{ sport_id: "s1", years: 3, sports: { name: "Футбол", icon: "circle-dot" } }, { sport_id: "s2", years: 1, sports: { name: "Хоккей", icon: "snowflake" } }],
-  "mock-3": [{ sport_id: "s1", years: 2, sports: { name: "Футбол", icon: "circle-dot" } }],
-  "mock-4": [{ sport_id: "s1", years: 15, sports: { name: "Футбол", icon: "circle-dot" } }],
-  "mock-5": [{ sport_id: "s1", years: 4, sports: { name: "Футбол", icon: "circle-dot" } }, { sport_id: "s3", years: 2, sports: { name: "Баскетбол", icon: "target" } }],
-  "mock-7": [{ sport_id: "s1", years: 8, sports: { name: "Футбол", icon: "circle-dot" } }],
-  "mock-9": [{ sport_id: "s1", years: 7, sports: { name: "Футбол", icon: "circle-dot" } }, { sport_id: "s4", years: 3, sports: { name: "Волейбол", icon: "activity" } }],
-  "mock-10": [{ sport_id: "s1", years: 3, sports: { name: "Футбол", icon: "circle-dot" } }, { sport_id: "s2", years: 2, sports: { name: "Хоккей", icon: "snowflake" } }],
+  "mock-1": [{ sport_id: "s1", years: 3, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-2": [{ sport_id: "s1", years: 6, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-3": [{ sport_id: "s1", years: 12, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-4": [{ sport_id: "s2", years: 8, sports: { name: "Хоккей", icon: "snowflake" } }],
+  "mock-5": [{ sport_id: "s3", years: 4, sports: { name: "Баскетбол", icon: "target" } }],
+  "mock-6": [{ sport_id: "s1", years: 5, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-7": [{ sport_id: "s1", years: 10, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-8": [{ sport_id: "s1", years: 3, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-9": [{ sport_id: "s1", years: 6, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-10": [{ sport_id: "s4", years: 4, sports: { name: "Волейбол", icon: "activity" } }],
+  "mock-11": [{ sport_id: "s1", years: 1, sports: { name: "Футбол", icon: "circle-dot" } }],
+  "mock-12": [{ sport_id: "s1", years: 7, sports: { name: "Футбол", icon: "circle-dot" } }],
+};
+
+const MOCK_EXPERIENCE: Record<string, ExperienceSummary> = {
+  "mock-1": { count: 1, latest_position: "Видеоаналитик", latest_company: "ФК Ростов", total_years: 3 },
+  "mock-2": { count: 2, latest_position: "Аналитик данных", latest_company: "ФК Динамо", total_years: 6 },
+  "mock-3": { count: 3, latest_position: "Главный тренер", latest_company: "ФК Балтика", total_years: 12 },
+  "mock-4": { count: 2, latest_position: "S&C Coach", latest_company: "ХК СКА", total_years: 8 },
+  "mock-5": { count: 1, latest_position: "Физиотерапевт", latest_company: null, total_years: 4 },
+  "mock-6": { count: 2, latest_position: "Тренер вратарей", latest_company: "ФК Урал", total_years: 5 },
+  "mock-7": { count: 2, latest_position: "Спортивный врач", latest_company: "ПФК ЦСКА", total_years: 10 },
+  "mock-8": { count: 1, latest_position: "Скаут-аналитик", latest_company: "ФК Рубин", total_years: 3 },
+  "mock-9": { count: 2, latest_position: "Тренер молодёжки", latest_company: "Академия Краснодар", total_years: 6 },
+  "mock-10": { count: 1, latest_position: "Нутрициолог", latest_company: null, total_years: 4 },
+  "mock-11": { count: 0, latest_position: "GPS-аналитик", latest_company: null, total_years: 1 },
+  "mock-12": { count: 2, latest_position: "Менеджер команды", latest_company: "ФК Зенит", total_years: 7 },
 };
 
 const STATUS_ORDER: Record<string, number> = { actively_looking: 0, open_to_offers: 1, not_looking_but_open: 2, not_looking: 3 };
@@ -224,7 +297,7 @@ export default function Specialists() {
       const serverExperience = result.profileExperience || {};
       setProfileSports({ ...MOCK_SPORTS, ...serverSports });
       setProfileSkills({ ...MOCK_SKILLS, ...serverSkills });
-      setProfileExperience(serverExperience);
+      setProfileExperience({ ...MOCK_EXPERIENCE, ...serverExperience });
     } catch (err) {
       console.error("Error fetching profiles:", err);
     } finally {
