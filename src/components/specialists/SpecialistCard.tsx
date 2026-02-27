@@ -140,7 +140,7 @@ export function SpecialistCard({
           <div className="flex-1 min-w-0">
             {/* Role + Level badge */}
             <div className="flex items-center justify-between gap-2">
-              <h3 className="font-semibold text-base text-foreground leading-snug truncate">
+              <h3 className="font-semibold text-base text-foreground leading-snug line-clamp-2">
                 {roleDisplay || "Без специализации"}
               </h3>
               {level && lvl && (
