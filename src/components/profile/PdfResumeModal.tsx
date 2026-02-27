@@ -181,7 +181,7 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
       if (profile.bio || profile.about_useful || profile.about_goals) {
         html += `<div class="section"><div class="section-title">О себе</div>`;
         if (profile.bio) html += `<p style="margin-bottom:6px">${profile.bio}</p>`;
-        if (profile.about_useful) html += `<p style="font-size:10pt;color:#555"><strong>Полезен команде:</strong> ${profile.about_useful}</p>`;
+        if (profile.about_useful) html += `<p style="font-size:10pt;color:#4355C5"><strong>Полезен команде:</strong> ${profile.about_useful}</p>`;
         if (profile.about_goals) html += `<p style="font-size:10pt;color:#555"><strong>Цели:</strong> ${profile.about_goals}</p>`;
         html += `</div>`;
       }
