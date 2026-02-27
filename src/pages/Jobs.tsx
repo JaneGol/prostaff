@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { trackEvent } from "@/hooks/useAnalytics";
 import { Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,17 @@ export default function Jobs() {
   const [selectedContract, setSelectedContract] = useState("");
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  // Track search queries (debounced)
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    if (!searchQuery.trim()) return;
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      trackEvent("search_query", "jobs", searchQuery.trim(), undefined, { page: "jobs" });
+    }, 1500);
+    return () => clearTimeout(searchTimer.current);
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchData();

@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { trackEvent } from "@/hooks/useAnalytics";
 import { useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -151,6 +152,17 @@ export default function Specialists() {
   const [selectedSport, setSelectedSport] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  // Track search queries (debounced)
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    if (!searchQuery.trim()) return;
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      trackEvent("search_query", "specialists", searchQuery.trim(), undefined, { page: "specialists" });
+    }, 1500);
+    return () => clearTimeout(searchTimer.current);
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchData();
