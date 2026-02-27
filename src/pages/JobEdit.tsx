@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, X, Trash2, Plus, Search } from "lucide-react";
-import { useSpecializations } from "@/hooks/useSpecializations";
+import { useRoleGroups } from "@/hooks/useRoleGroups";
 import { getRecommendedSkills } from "@/lib/recommendedSkills";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -58,7 +58,7 @@ export default function JobEdit() {
   const { user, userRole, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const isNew = !id || id === "new";
-  const { getGroupForRoleId } = useSpecializations();
+  const { getGroupKeyForRoleId } = useRoleGroups();
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -331,7 +331,7 @@ export default function JobEdit() {
   }
 
   // Get recommended skills based on selected role's group
-  const groupKey = getGroupForRoleId(roleId || null);
+  const groupKey = getGroupKeyForRoleId(roleId || null);
   const recommendedSections = getRecommendedSkills(groupKey === "other" && !roleId ? null : groupKey);
 
   // Group remaining DB skills by category (excluding already recommended names)

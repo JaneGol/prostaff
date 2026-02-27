@@ -12,8 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getSportIcon } from "@/lib/sportIcons";
 import { useAuth } from "@/hooks/useAuth";
 import { useFavoriteJobs } from "@/hooks/useFavoriteJobs";
-import { GROUPS } from "@/lib/specialistSections";
-import { useSpecializations } from "@/hooks/useSpecializations";
+import { useRoleGroups } from "@/hooks/useRoleGroups";
 import { JobCardItem, type JobCardData, levelLabels, contractLabels } from "@/components/jobs/JobCardItem";
 import {
   Search,
@@ -35,7 +34,7 @@ const PRIORITY_CITIES = ["Москва", "Санкт-Петербург", "Ка�
 export default function Jobs() {
   const { userRole } = useAuth();
   const { isFavorite, toggleFavorite } = useFavoriteJobs();
-  const { specializations, getGroupForRoleId, getSpecsForGroup, getRoleIdsForSpec, getRoleIdsForGroup } = useSpecializations();
+  const { groups, roles: availableRoles, getGroupKeyForRoleId, getRolesForGroup } = useRoleGroups();
   const [jobs, setJobs] = useState<JobCardData[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,21 +105,21 @@ export default function Jobs() {
     return [...priority, ...rest];
   }, [jobs]);
 
-  // Specializations available for current tab
-  const availableSpecs = useMemo(() => {
-    return getSpecsForGroup(activeTab === "all" ? null : activeTab);
-  }, [activeTab, specializations]);
+  // Roles available for current tab
+  const rolesForTab = useMemo(() => {
+    return getRolesForGroup(activeTab === "all" ? null : activeTab);
+  }, [activeTab, availableRoles]);
 
   // Tab counts
   const tabCounts = useMemo(() => {
     const counts: Record<string, number> = { all: jobs.length };
-    GROUPS.forEach((g) => { counts[g.key] = 0; });
+    groups.forEach((g) => { counts[g.key] = 0; });
     jobs.forEach((job) => {
-      const group = getGroupForRoleId(job.specialist_roles?.id || null);
+      const group = getGroupKeyForRoleId(job.specialist_roles?.id || null);
       counts[group] = (counts[group] || 0) + 1;
     });
     return counts;
-  }, [jobs, getGroupForRoleId]);
+  }, [jobs, groups, getGroupKeyForRoleId]);
 
   // Filter jobs
   const filteredJobs = useMemo(() => {
@@ -128,13 +127,12 @@ export default function Jobs() {
       const roleId = job.specialist_roles?.id || null;
       // Tab filter
       if (activeTab !== "all") {
-        const jobGroup = getGroupForRoleId(roleId);
+        const jobGroup = getGroupKeyForRoleId(roleId);
         if (jobGroup !== activeTab) return false;
       }
-      // Specialization filter
+      // Role filter
       if (selectedSpec && selectedSpec !== "all") {
-        const specRoleIds = getRoleIdsForSpec(selectedSpec);
-        if (!roleId || !specRoleIds.includes(roleId)) return false;
+        if (!roleId || roleId !== selectedSpec) return false;
       }
       // City filter
       if (selectedCity && selectedCity !== "all" && job.city !== selectedCity) return false;
@@ -156,7 +154,7 @@ export default function Jobs() {
       }
       return true;
     });
-  }, [jobs, activeTab, selectedSpec, selectedCity, selectedLevel, selectedContract, searchQuery, remoteOnly, getGroupForRoleId, getRoleIdsForSpec]);
+  }, [jobs, activeTab, selectedSpec, selectedCity, selectedLevel, selectedContract, searchQuery, remoteOnly, getGroupKeyForRoleId]);
 
   const hasActiveFilters = !!(selectedSpec || selectedCity || selectedSport || selectedContract || selectedLevel || searchQuery || remoteOnly);
 
@@ -173,7 +171,7 @@ export default function Jobs() {
   // Tabs data
   const tabs = [
     { key: "all", title: "Все" },
-    ...GROUPS.map((g) => ({ key: g.key, title: g.shortTitle })),
+    ...groups.map((g) => ({ key: g.key, title: g.title })),
   ];
 
   const FilterSidebar = () => (
@@ -195,16 +193,16 @@ export default function Jobs() {
       {/* Specialization */}
       <div>
         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
-          Специализация
+          Роль
         </label>
         <Select value={selectedSpec} onValueChange={setSelectedSpec}>
           <SelectTrigger className="h-9 text-sm">
-            <SelectValue placeholder="Все специализации" />
+            <SelectValue placeholder="Все роли" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Все специализации</SelectItem>
-            {availableSpecs.map((spec) => (
-              <SelectItem key={spec.id} value={spec.id}>{spec.name}</SelectItem>
+            <SelectItem value="all">Все роли</SelectItem>
+            {rolesForTab.map((role) => (
+              <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>

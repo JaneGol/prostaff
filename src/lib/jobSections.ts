@@ -1,4 +1,5 @@
 /**
- * Job sections - reuses unified group config.
+ * Job sections — groups are now loaded from DB via useRoleGroups.
+ * This file kept for backward compatibility.
  */
-export { GROUPS as JOB_GROUPS } from "./specialistSections";
+export type { RoleGroupConfig as JobGroupConfig } from "./specialistSections";

@@ -9,8 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportIcon } from "@/lib/sportIcons";
-import { GROUPS } from "@/lib/specialistSections";
-import { useSpecializations } from "@/hooks/useSpecializations";
+import { useRoleGroups } from "@/hooks/useRoleGroups";
 import { SpecialistCard } from "@/components/specialists/SpecialistCard";
 import {
   Search,
@@ -134,7 +133,7 @@ const PRIORITY_CITIES = ["Москва", "Санкт-Петербург", "Ка�
 
 export default function Specialists() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { specializations, getGroupForRoleId, getSpecsForGroup, getRoleIdsForSpec } = useSpecializations();
+  const { groups, roles: availableRoles, getGroupKeyForRoleId, getRolesForGroup } = useRoleGroups();
 
   const [profiles, setProfiles] = useState<ProfileCard[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
@@ -171,7 +170,7 @@ export default function Specialists() {
   // Sync section param to tab
   useEffect(() => {
     const section = searchParams.get("section");
-    if (section && GROUPS.some((g) => g.key === section)) {
+    if (section && groups.some((g) => g.key === section)) {
       setActiveTab(section);
     }
   }, [searchParams]);
@@ -254,21 +253,21 @@ export default function Specialists() {
     return [...priority, ...rest];
   }, [profiles]);
 
-  // Specializations available for current tab
-  const availableSpecs = useMemo(() => {
-    return getSpecsForGroup(activeTab === "all" ? null : activeTab);
-  }, [activeTab, specializations]);
+  // Roles available for current tab
+  const rolesForTab = useMemo(() => {
+    return getRolesForGroup(activeTab === "all" ? null : activeTab);
+  }, [activeTab, availableRoles]);
 
   // Tab counts
   const tabCounts = useMemo(() => {
     const counts: Record<string, number> = { all: profiles.length };
-    GROUPS.forEach((g) => { counts[g.key] = 0; });
+    groups.forEach((g) => { counts[g.key] = 0; });
     profiles.forEach((p) => {
-      const group = getGroupForRoleId(p.specialist_roles?.id || null);
+      const group = getGroupKeyForRoleId(p.specialist_roles?.id || null);
       counts[group] = (counts[group] || 0) + 1;
     });
     return counts;
-  }, [profiles, getGroupForRoleId]);
+  }, [profiles, groups, getGroupKeyForRoleId]);
 
   // Filter profiles
   const filteredProfiles = useMemo(() => {
@@ -277,17 +276,16 @@ export default function Specialists() {
     // Tab filter
     if (activeTab !== "all") {
       result = result.filter((p) => {
-        const group = getGroupForRoleId(p.specialist_roles?.id || null);
+        const group = getGroupKeyForRoleId(p.specialist_roles?.id || null);
         return group === activeTab;
       });
     }
 
-    // Specialization filter
+    // Role filter
     if (selectedSpec && selectedSpec !== "all") {
-      const specRoleIds = getRoleIdsForSpec(selectedSpec);
       result = result.filter((p) => {
         const roleId = p.specialist_roles?.id;
-        return roleId && specRoleIds.includes(roleId);
+        return roleId === selectedSpec;
       });
     }
 
@@ -330,7 +328,7 @@ export default function Specialists() {
     });
 
     return result;
-  }, [profiles, activeTab, selectedSpec, selectedCity, selectedLevel, selectedSport, searchQuery, displaySports, getGroupForRoleId, getRoleIdsForSpec]);
+  }, [profiles, activeTab, selectedSpec, selectedCity, selectedLevel, selectedSport, searchQuery, displaySports, getGroupKeyForRoleId]);
 
   const hasActiveFilters = !!(selectedSpec || selectedCity || selectedLevel || selectedSport || searchQuery);
 
@@ -344,7 +342,7 @@ export default function Specialists() {
 
   const tabs = [
     { key: "all", title: "Все" },
-    ...GROUPS.map((g) => ({ key: g.key, title: g.shortTitle })),
+    ...groups.map((g) => ({ key: g.key, title: g.title })),
   ];
 
   const FilterSidebar = () => (
@@ -366,16 +364,16 @@ export default function Specialists() {
       {/* Specialization */}
       <div>
         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
-          Специализация
+          Роль
         </label>
         <Select value={selectedSpec} onValueChange={setSelectedSpec}>
           <SelectTrigger className="h-9 text-sm">
-            <SelectValue placeholder="Все специализации" />
+            <SelectValue placeholder="Все роли" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Все специализации</SelectItem>
-            {availableSpecs.map((spec) => (
-              <SelectItem key={spec.id} value={spec.id}>{spec.name}</SelectItem>
+            <SelectItem value="all">Все роли</SelectItem>
+            {rolesForTab.map((role) => (
+              <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -570,7 +568,7 @@ export default function Specialists() {
                   {filteredProfiles.map((p) => {
                     const pSkills = (displaySkills[p.id] || []).map((s) => ({ name: getSkillName(s) }));
                     const pSports = displaySports[p.id] || [];
-                    const secSpecName = p.secondary_specialization_id ? specializations.find(s => s.id === p.secondary_specialization_id)?.name || null : null;
+                    const secRoleName = p.secondary_role_id ? availableRoles.find(r => r.id === p.secondary_role_id)?.name || null : null;
                     return (
                       <SpecialistCard
                         key={p.id}
@@ -587,7 +585,7 @@ export default function Specialists() {
                         avatarUrl={p.avatar_url}
                         aboutSnippet={p.about_useful}
                         experience={profileExperience[p.id] || null}
-                        secondarySpecName={secSpecName}
+                        secondarySpecName={secRoleName}
                       />
                     );
                   })}
