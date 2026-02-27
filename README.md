@@ -1,73 +1,85 @@
-# Welcome to your Lovable project
+# ProStaff — Талант-пул спортивных специалистов
 
-## Project info
+Нишевая платформа для поиска и найма специалистов в сфере спорта (аналитики, тренеры, врачи, менеджеры и др.) на рынках РФ / Беларусь / Казахстан.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🚀 Возможности
 
-## How can I edit this code?
+- **Банк специалистов** — структурированные профили с опытом, навыками, портфолио
+- **Вакансии** — каталог позиций от клубов и спортивных организаций
+- **Поиск и фильтры** — по роли, специализации, навыкам, локации, уровню
+- **Личный кабинет** — для специалистов и работодателей
+- **Контент** — статьи, гайды, интервью для карьерного роста
+- **Мобильная адаптивность** — mobile-first дизайн
 
-There are several ways of editing your application.
+## 🛠 Технологии
 
-**Use Lovable**
+| Слой | Стек |
+|------|------|
+| Frontend | React 18, TypeScript, Vite |
+| UI | Tailwind CSS, shadcn/ui, Framer Motion |
+| Backend | Lovable Cloud (Supabase) — PostgreSQL, Auth, Edge Functions, Storage |
+| Деплой | Lovable Cloud |
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## 📦 Установка и запуск
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+```bash
+# 1. Клонировать репозиторий
 git clone <YOUR_GIT_URL>
+cd prostaff
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Установить зависимости
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
+# 3. Создать файл .env на основе примера
+cp .env.example .env
+# Заполнить переменные (см. .env.example)
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 4. Запустить dev-сервер
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Приложение будет доступно по адресу `http://localhost:8080`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🔑 Переменные окружения
 
-**Use GitHub Codespaces**
+| Переменная | Описание |
+|------------|----------|
+| `VITE_SUPABASE_PROJECT_ID` | ID проекта Supabase |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Публичный (anon) ключ Supabase |
+| `VITE_SUPABASE_URL` | URL проекта Supabase |
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+> Все переменные — **публичные** (anon key). Приватные ключи хранятся только в Cloud Secrets и используются в Edge Functions.
 
-## What technologies are used for this project?
+## 📁 Структура проекта
 
-This project is built with:
+```
+src/
+├── components/       # UI-компоненты
+│   ├── admin/        # Админ-панель
+│   ├── home/         # Главная страница
+│   ├── jobs/         # Вакансии
+│   ├── layout/       # Header, Footer, Layout
+│   ├── profile/      # Редакторы профиля
+│   ├── shared/       # Общие компоненты
+│   ├── specialists/  # Карточки специалистов
+│   └── ui/           # shadcn/ui компоненты
+├── hooks/            # React-хуки (auth, analytics и др.)
+├── integrations/     # Supabase клиент и типы (авто-генерация)
+├── lib/              # Утилиты, константы, справочники
+├── pages/            # Страницы приложения
+└── assets/           # Статические ресурсы
+supabase/
+├── functions/        # Edge Functions (API)
+└── migrations/       # SQL-миграции БД
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🔒 Безопасность
 
-## How can I deploy this project?
+- Row Level Security (RLS) включена на всех таблицах с пользовательскими данными
+- Аутентификация через email с подтверждением
+- Приватные API-ключи хранятся в Cloud Secrets, не в коде
+- CORS настроен на Edge Functions
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## 📄 Лицензия
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Проприетарный проект. Все права защищены.
