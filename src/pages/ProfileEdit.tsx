@@ -541,6 +541,13 @@ export default function ProfileEdit() {
   };
 
   const primaryRoleName = roles.find(r => r.id === roleId)?.name;
+  const secondaryGroupKey = useMemo(() => {
+    if (!secondaryRoleId) return undefined;
+    const secRole = roles.find(r => r.id === secondaryRoleId);
+    if (!secRole?.group_id) return undefined;
+    const secGroup = groups.find(g => g.id === secRole.group_id);
+    return secGroup?.key || undefined;
+  }, [secondaryRoleId, roles, groups]);
   const rolesForGroup = selectedGroupKey
     ? roles.filter(r => {
         const group = groups.find(g => g.key === selectedGroupKey);
@@ -966,6 +973,7 @@ export default function ProfileEdit() {
                   onChange={setSelectedSkills}
                   primaryRoleName={primaryRoleName}
                   groupKey={selectedGroupKey}
+                  secondaryGroupKey={secondaryGroupKey}
                 />
               </div>
 
