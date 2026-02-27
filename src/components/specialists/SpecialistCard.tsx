@@ -131,7 +131,7 @@ export function SpecialistCard({
             {isCustomImage ? (
               <img src={avatarUrl!} alt="" className="w-full h-full object-cover" loading="lazy" />
             ) : resolvedBank ? (
-              <img src={resolvedBank.src} alt={resolvedBank.label} className={`object-cover ${isSilhouetteAvatar(resolvedBank) ? "w-full h-full opacity-60" : "w-full h-full"}`} />
+              <img src={resolvedBank.src} alt={resolvedBank.label} className={`object-cover ${isSilhouetteAvatar(resolvedBank) ? "w-full h-full scale-[1.35] opacity-70" : "w-full h-full"}`} />
             ) : (
               <span className="text-sm font-semibold text-indigo-600 tracking-wide">{initials}</span>
             )}
