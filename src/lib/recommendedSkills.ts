@@ -1,260 +1,237 @@
 /**
- * Recommended skills per specialist group.
- * Each group has sub-sections with skill names.
- * "soft" is a universal group shown to everyone.
+ * Recommended skills v2.0 — 3-category architecture.
+ * Categories: Hard Skills (basic/advanced/expert), Tools, Soft Skills.
+ * Skills are short (1-3 words, ≤25 chars cyrillic).
  */
 
+export interface HardSkillLevels {
+  basic: string[];
+  advanced: string[];
+  expert: string[];
+}
+
+export interface SkillGroup {
+  groupKey: string;
+  hardSkills: HardSkillLevels;
+  tools: string[];
+}
+
+export interface RecommendedSkillsResult {
+  hardSkills: HardSkillLevels;
+  tools: string[];
+  softSkills: string[];
+}
+
+// ── Legacy compat ──
 export interface SkillSubGroup {
   title: string;
   skills: string[];
 }
 
-export interface GroupSkills {
-  groupKey: string;
-  sections: SkillSubGroup[];
-}
-
-const COACHING: GroupSkills = {
+// ─── COACHING ───
+const COACHING: SkillGroup = {
   groupKey: "coaching",
-  sections: [
-    {
-      title: "Основные навыки",
-      skills: [
-        "Планирование тренировочного процесса (микро/мезо/макро)",
-        "Подготовка к матчу и управление тренировочной нагрузкой",
-        "Анализ тренировок и матчей (видео/отчёты)",
-        "Индивидуальная работа с игроками (развитие, обратная связь)",
-        "Постановка задач штабу и контроль исполнения",
-      ],
-    },
-    {
-      title: "Работа с данными и технологиями",
-      skills: [
-        "Чтение отчетов GPS/нагрузки (понимание ключевых показателей)",
-        "Работа с видео-плейлистами и клипами (разбор с командой)",
-        "Использование дашбордов для планирования и контроля",
-        "Формулирование запросов к аналитику",
-      ],
-    },
-    {
-      title: "Поддержка решений",
-      skills: [
-        "Принятие решений на основе данных и контекста",
-        "Коммуникация с S&C, медициной, аналитикой (единая картина)",
-        "Работа в соревновательный период: быстрые корректировки",
-      ],
-    },
+  hardSkills: {
+    basic: [
+      "Планирование тренировок", "Анализ матча", "Игровая модель",
+      "Стандарты", "Предматчевая подготовка", "Работа с молодёжью",
+      "Разработка PlayBook", "Подготовка данных",
+    ],
+    advanced: [
+      "Тактическая периодизация", "Управление штабом", "Ротация состава",
+      "Разбор соперника", "Индивидуальные планы", "Стратегия сезона",
+      "Психология молодёжи", "Презентация тактики",
+    ],
+    expert: [
+      "Философия игры", "Трансферная стратегия", "Управление кризисом",
+      "Медиакоммуникация", "Построение штаба", "Развитие академии",
+    ],
+  },
+  tools: [
+    "Hudl", "Sportscode", "Wyscout", "InStat", "Tactics Board",
+    "GPS-отчёты", "PowerPoint", "Keynote", "Google Slides",
+    "Яндекс Документы", "Видеоредакторы",
   ],
 };
 
-const PERFORMANCE: GroupSkills = {
+// ─── PERFORMANCE ───
+const PERFORMANCE: SkillGroup = {
   groupKey: "performance",
-  sections: [
-    {
-      title: "Основные навыки",
-      skills: [
-        "Планирование физподготовки (сезон/предсезон/в сезоне)",
-        "Развитие силы, скорости, выносливости (по роли/позиции)",
-        "Контроль объёма/интенсивности тренировок",
-        "Проведение тестов (скорость, прыжок, силовые, аэробные)",
-        "Обучение технике упражнений и профилактика травм",
-      ],
-    },
-    {
-      title: "Работа с данными",
-      skills: [
-        "Интерпретация внешней нагрузки (GPS)",
-        "Интерпретация внутренней нагрузки (RPE, HR/HRV)",
-        "Wellness-мониторинг: сбор, анализ, реакция",
-        "Контроль утомления и восстановления, корректировка планов",
-        "Отчётность по микроциклу: что изменили и почему",
-      ],
-    },
-    {
-      title: "Продвинутые навыки",
-      skills: [
-        "Индивидуализация нагрузок (по профилю игрока)",
-        "Возвращение к нагрузкам после травм (в связке с мед. штабом)",
-        "Модели готовности (простые правила + флаги)",
-        "Встраивание силовой работы в общую модель игры/нагрузок",
-      ],
-    },
+  hardSkills: {
+    basic: [
+      "Силовая подготовка", "Скоростная работа", "ОФП",
+      "Тестирование", "Разминка/заминка", "Стретчинг", "Плиометрика",
+    ],
+    advanced: [
+      "Периодизация", "Контроль нагрузки", "Программирование",
+      "Профилактика травм", "Восстановление", "Планирование циклов",
+    ],
+    expert: [
+      "Индивидуализация нагрузок", "Return-to-train", "Модели готовности",
+      "Интеграция с медициной", "Биомеханика",
+    ],
+  },
+  tools: [
+    "Catapult", "Polar", "STATSports", "Gymaware", "VALD", "Nordbord",
+    "ForceDecks", "Excel", "Google Sheets", "Яндекс Таблицы",
+    "TeamBuildr", "Smartabase", "Басайт", "Google Forms",
   ],
 };
 
-const ANALYTICS: GroupSkills = {
+// ─── ANALYTICS ───
+const ANALYTICS: SkillGroup = {
   groupKey: "analytics",
-  sections: [
-    {
-      title: "Основные навыки",
-      skills: [
-        "Сбор и валидация спортивных данных (контроль качества)",
-        "Анализ тренировочных и игровых показателей",
-        "Построение отчетов и дашбордов под тренерский штаб",
-        "Формирование ключевых метрик (KPI) и логики расчётов",
-        "Анализ динамики показателей (тренды, сравнения, периодизация)",
-        "Работа с субъективными данными (wellness/опросы)",
-      ],
-    },
-    {
-      title: "Работа с технологиями",
-      skills: [
-        "SQL: выборки, JOIN, агрегации",
-        "Работа с базами данных и таблицами (структура, связи, справочники)",
-        "Excel / Google Sheets: сводные, сложные формулы, массивы",
-        "Power BI / Tableau: модель данных, меры, интерактивные отчеты",
-        "Python: обработка данных (pandas), автоматизация отчетов",
-        "Интеграция данных из разных источников (GPS, wellness, видео)",
-        "Автоматизация сборов/обновлений (регламент, расписание, контроль ошибок)",
-      ],
-    },
-    {
-      title: "Поддержка принятия решений",
-      skills: [
-        "Подготовка аналитики до/после матча и по микроциклам",
-        "Перевод данных в понятные выводы и рекомендации для штаба",
-        "Выявление отклонений, рисков и красных флагов по нагрузке/состоянию",
-        "Поддержка решений в соревновательный период",
-        "Коммуникация с тренерами: ответы на вопрос «что делать завтра»",
-      ],
-    },
+  hardSkills: {
+    basic: [
+      "Разметка видео", "Нарезка клипов", "Тегирование",
+      "Сбор статистики", "Сбор данных", "Валидация данных",
+      "GPS-мониторинг", "Базовая статистика", "Визуализация",
+      "Отчётность", "Скаутинг соперника", "Профиль игрока",
+    ],
+    advanced: [
+      "Разбор соперника", "Прессинг-модели", "Pre-match pack",
+      "Презентация штабу", "Анализ стандартов", "Статмоделирование",
+      "xG/xA-модели", "Дашборды", "KPI-фреймворки",
+      "ACWR-модели", "Контроль утомления", "Оценка потенциала",
+      "Шортлисты", "Half-time анализ", "Live-кодинг", "Storytelling",
+    ],
+    expert: [
+      "Игровая модель", "Автоматизация", "Предиктивные модели",
+      "Machine learning", "Data pipeline", "Интеграция систем",
+      "Модели готовности", "Скаутинг-стратегия", "Рыночная аналитика",
+      "Real-time insights",
+    ],
+  },
+  tools: [
+    "Hudl Sportscode", "Wyscout", "InStat", "Catapult", "Second Spectrum",
+    "StatsBomb", "Opta", "Nacsport", "LongoMatch", "Dartfish",
+    "Python", "R", "SQL", "Tableau", "Power BI", "Excel",
+    "Google Sheets", "Яндекс Таблицы", "Smartabase", "SciSports", "SkillCorner",
   ],
 };
 
-const VIDEO_ANALYTICS: GroupSkills = {
-  groupKey: "video_analytics",
-  sections: [
-    {
-      title: "Основные навыки",
-      skills: [
-        "Разметка видео: теги/ивенты, структура кодинга",
-        "Сбор и нарезка клипов по задачам тренера",
-        "Подготовка плейлистов (игрок/линия/команда/ситуации)",
-        "Постматчевый разбор: ключевые эпизоды и выводы",
-        "Презентации для штаба/команды (коротко и по делу)",
-      ],
-    },
-    {
-      title: "Инструменты и процессы",
-      skills: [
-        "Hudl Sportscode: кодинг-шаблоны, категории, панель кодинга",
-        "Hudl / Wyscout: поиск эпизодов, шэринг, библиотека",
-        "Live workflow: тегирование/клипы во время матча",
-        "Стандартизация: naming, структура проектов, хранение и доступ",
-        "Синхронизация видео + данные",
-      ],
-    },
-    {
-      title: "Продвинутые навыки",
-      skills: [
-        "Построение матрицы анализа под стиль команды",
-        "Скаутинг соперника: шаблоны, привычки, сильные/слабые стороны",
-        "Анализ стандартов (угловые/штрафные): структура и эффективность",
-        "Индивидуальные плейлисты по игрокам (позиционные профили)",
-        "Быстрая подготовка pre-match pack + in-game notes",
-        "Storytelling через видео: тезис → клип → вывод → действие",
-      ],
-    },
-  ],
-};
-
-const MEDICAL: GroupSkills = {
+// ─── MEDICAL ───
+const MEDICAL: SkillGroup = {
   groupKey: "medical",
-  sections: [
-    {
-      title: "Основные навыки",
-      skills: [
-        "Контроль состояния спортсменов и ежедневный мониторинг",
-        "Организация восстановления (процедуры/режим/контроль)",
-        "Оценка утомления и готовности (по протоколам штаба)",
-        "Сопровождение return-to-train / return-to-play",
-      ],
-    },
-    {
-      title: "Работа с данными",
-      skills: [
-        "Анализ субъективных данных (самочувствие/сон/стресс)",
-        "Ведение восстановительных/медицинских записей (структурировано)",
-        "Согласование данных между медициной, S&C и тренерами",
-        "Отчётность по статусам и ограничениям",
-      ],
-    },
-    {
-      title: "Продвинутые навыки",
-      skills: [
-        "Протоколы принятия решений по допуску к нагрузке",
-        "Риски и ограничения: коммуникация без конфликтов",
-        "Настройка процессов в AMS/системах мониторинга",
-      ],
-    },
+  hardSkills: {
+    basic: [
+      "Осмотр спортсменов", "Допуск к нагрузке", "Первая помощь",
+      "Фармакология", "Диагностика", "Мануальная терапия",
+      "Тейпирование", "Криотерапия", "Электротерапия",
+      "Оценка травм", "ЛФК", "Мобилизация", "Спортивный массаж",
+      "Составление рационов", "Гидратация", "Контроль веса",
+      "Ментальная подготовка", "Мотивация", "Управление стрессом",
+    ],
+    advanced: [
+      "Медицинский протокол", "Антидопинг", "Травматология",
+      "Return-to-play", "Реабилитация ACL", "Return-to-train",
+      "Прогрессия нагрузок", "Миофасциальный релиз",
+      "Триггерные точки", "Периодизация питания",
+      "Восстановительное питание", "Работа с командой",
+      "Визуализация", "Предматчевый массаж",
+    ],
+    expert: [
+      "Управление мед. штабом", "Медицинская стратегия",
+      "Программа реабилитации", "Профилактика травм",
+      "Интеграция с S&C", "Индивидуальные протоколы",
+      "Состав тела", "Кризисная интервенция", "Комплексная реабилитация",
+    ],
+  },
+  tools: [
+    "Smartabase", "Kitman Labs", "AMS", "Wellness-опросники",
+    "RPE-шкалы", "Nordbord", "ForceDecks", "Excel", "Google Forms",
   ],
 };
 
-const OTHER: GroupSkills = {
+// ─── OTHER ───
+const OTHER: SkillGroup = {
   groupKey: "other",
-  sections: [
-    {
-      title: "Основные навыки",
-      skills: [
-        "Проектирование цифровых решений для спорта (процессы → продукт)",
-        "Сбор требований у тренеров/штаба и перевод в понятные задачи",
-        "Построение MVP и улучшение по обратной связи",
-        "Управление внедрением: обучение, поддержка, принятие пользователями",
-      ],
-    },
-    {
-      title: "Технологии",
-      skills: [
-        "Прототипирование (Figma или аналоги)",
-        "Визуализация данных и сценарии использования",
-        "Настройка логики доступа/ролей (privacy, видимость, права)",
-      ],
-    },
-    {
-      title: "Коммуникация",
-      skills: [
-        "Работа с разными стейкхолдерами (тренеры/медицина/аналитика/разработка)",
-        "Приоритизация: что важно сейчас, что позже",
-        "Документация процессов (короткая и полезная)",
-      ],
-    },
+  hardSkills: {
+    basic: [
+      "Логистика", "Документооборот", "Организация сборов",
+      "Визы", "Экипировка", "Устный перевод", "Письменный перевод",
+      "Спортивная терминология", "Скаутинг", "Трансферный рынок",
+    ],
+    advanced: [
+      "Бюджетирование", "Работа с федерациями", "Организация выездов",
+      "Синхронный перевод", "Работа с прессой", "Управление штабом",
+      "Построение академии", "Стратегия клуба",
+    ],
+    expert: [
+      "Управление проектами", "Кризис-менеджмент", "Контрактная работа",
+      "Международные трансферы", "Развитие бренда", "Медицинская терминология",
+    ],
+  },
+  tools: [
+    "Excel", "Google Sheets", "Яндекс Таблицы", "Google Docs",
+    "1С", "Битрикс24", "Trello", "Notion",
   ],
 };
 
-export const SOFT_SKILLS: SkillSubGroup = {
-  title: "Soft skills",
-  skills: [
-    "Объяснение сложного простым языком (для штаба/спортсменов)",
-    "Работа в условиях давления и жёстких дедлайнов",
-    "Быстрое принятие решений при неполных данных",
-    "Командная коммуникация внутри штаба",
-    "Ответственность за результат и соблюдение регламентов",
-    "Адаптация и готовность менять план по ситуации",
-  ],
-};
+// ─── SOFT SKILLS (universal) ───
+export const SOFT_SKILLS: string[] = [
+  "Работа в штабе",
+  "Решения под давлением",
+  "Межштабная коммуникация",
+  "Адаптация плана",
+  "Обратная связь",
+  "Управление конфликтами",
+  "Конфиденциальность",
+  "Работа в сезоне",
+  "Презентация данных",
+  "Мультиспортивность",
+];
 
-const ALL_GROUPS: GroupSkills[] = [COACHING, PERFORMANCE, ANALYTICS, VIDEO_ANALYTICS, MEDICAL, OTHER];
+const ALL_GROUPS: SkillGroup[] = [COACHING, PERFORMANCE, ANALYTICS, MEDICAL, OTHER];
 
-/** Get recommended skill sections for a given group key */
-export function getRecommendedSkills(groupKey: string | null): SkillSubGroup[] {
-  // For analytics group, also include video analytics sections
-  if (groupKey === "analytics") {
-    const analytics = ALL_GROUPS.find(g => g.groupKey === "analytics");
-    const video = ALL_GROUPS.find(g => g.groupKey === "video_analytics");
-    const sections: SkillSubGroup[] = [];
-    if (analytics) sections.push(...analytics.sections);
-    if (video) {
-      // Add video analytics sections with prefixed titles
-      video.sections.forEach(s => {
-        sections.push({ title: `Видеоаналитика: ${s.title}`, skills: s.skills });
-      });
+/**
+ * Get recommended skills for one or two groups.
+ * If secondaryGroupKey differs from primary — merges & deduplicates.
+ */
+export function getRecommendedSkills(
+  primaryGroupKey: string | null,
+  secondaryGroupKey?: string | null,
+): RecommendedSkillsResult {
+  const primary = ALL_GROUPS.find(g => g.groupKey === primaryGroupKey);
+
+  const hardSkills: HardSkillLevels = {
+    basic: [...(primary?.hardSkills.basic || [])],
+    advanced: [...(primary?.hardSkills.advanced || [])],
+    expert: [...(primary?.hardSkills.expert || [])],
+  };
+  const toolsSet = new Set<string>(primary?.tools || []);
+
+  // Merge secondary group if different
+  if (secondaryGroupKey && secondaryGroupKey !== primaryGroupKey) {
+    const secondary = ALL_GROUPS.find(g => g.groupKey === secondaryGroupKey);
+    if (secondary) {
+      const addUnique = (target: string[], source: string[]) => {
+        const set = new Set(target);
+        source.forEach(s => { if (!set.has(s)) target.push(s); });
+      };
+      addUnique(hardSkills.basic, secondary.hardSkills.basic);
+      addUnique(hardSkills.advanced, secondary.hardSkills.advanced);
+      addUnique(hardSkills.expert, secondary.hardSkills.expert);
+      secondary.tools.forEach(t => toolsSet.add(t));
     }
-    sections.push(SOFT_SKILLS);
-    return sections;
   }
 
-  const group = ALL_GROUPS.find(g => g.groupKey === groupKey);
-  const sections = group ? [...group.sections] : [];
-  sections.push(SOFT_SKILLS);
+  return {
+    hardSkills,
+    tools: Array.from(toolsSet),
+    softSkills: SOFT_SKILLS,
+  };
+}
+
+// ── Legacy compatibility wrapper ──
+// Some components may still use the old SkillSubGroup[] format
+export function getRecommendedSkillsLegacy(groupKey: string | null): SkillSubGroup[] {
+  const result = getRecommendedSkills(groupKey);
+  const sections: SkillSubGroup[] = [];
+  if (result.hardSkills.basic.length) sections.push({ title: "Базовые", skills: result.hardSkills.basic });
+  if (result.hardSkills.advanced.length) sections.push({ title: "Продвинутые", skills: result.hardSkills.advanced });
+  if (result.hardSkills.expert.length) sections.push({ title: "Экспертные", skills: result.hardSkills.expert });
+  if (result.tools.length) sections.push({ title: "Инструменты", skills: result.tools });
+  sections.push({ title: "Soft Skills", skills: result.softSkills });
   return sections;
 }

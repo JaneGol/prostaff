@@ -14,7 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, X, Trash2, Plus, Search } from "lucide-react";
 import { useRoleGroups } from "@/hooks/useRoleGroups";
-import { getRecommendedSkills } from "@/lib/recommendedSkills";
+import { getRecommendedSkillsLegacy as getRecommendedSkills } from "@/lib/recommendedSkills"; // v2
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 

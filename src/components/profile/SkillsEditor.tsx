@@ -4,10 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Search, Star, Plus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, Star, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getRecommendedSkills, type SkillSubGroup } from "@/lib/recommendedSkills";
+import { getRecommendedSkills, type RecommendedSkillsResult } from "@/lib/recommendedSkills";
 
 interface Skill {
   id: string;
@@ -30,87 +30,61 @@ interface SkillsEditorProps {
   onChange: (skills: SkillSelection[]) => void;
   maxSkills?: number;
   maxTopSkills?: number;
+  maxCustomSkills?: number;
   primaryRoleName?: string;
   groupKey?: string;
+  secondaryGroupKey?: string;
 }
 
-const proficiencyLabels: Record<number, string> = {
-  1: "Базовый",
-  2: "Уверенный",
-  3: "Эксперт",
-};
+const MAX_KEY = 8;
+const MAX_ADDITIONAL = 5;
+const MAX_CUSTOM = 3;
 
-const LABEL = "text-[13px] font-medium text-muted-foreground";
 const HINT = "text-[12px] text-muted-foreground/60";
 
 export function SkillsEditor({
-  allSkills, selectedSkills, onChange, maxSkills = 20, maxTopSkills = 5, primaryRoleName, groupKey,
+  allSkills, selectedSkills, onChange,
+  maxSkills = MAX_KEY + MAX_ADDITIONAL + MAX_CUSTOM,
+  maxTopSkills = MAX_KEY,
+  maxCustomSkills = MAX_CUSTOM,
+  primaryRoleName, groupKey, secondaryGroupKey,
 }: SkillsEditorProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [customName, setCustomName] = useState("");
-  const [customGroup, setCustomGroup] = useState("");
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
-  // Build recommended sections based on specialist group
-  const recommendedSections = useMemo(() => getRecommendedSkills(groupKey || null), [groupKey]);
+  // Build recommended skills based on group(s)
+  const recommended = useMemo(
+    () => getRecommendedSkills(groupKey || null, secondaryGroupKey),
+    [groupKey, secondaryGroupKey],
+  );
 
-  // Helper: find the DB skill matching a recommended skill name, or treat as custom
-  const findSkillByName = (name: string): Skill | undefined => {
-    return allSkills.find(s => s.name.toLowerCase() === name.toLowerCase());
-  };
+  const topCount = selectedSkills.filter(s => s.is_top).length;
+  const customCount = selectedSkills.filter(s => s.is_custom).length;
+  const additionalCount = selectedSkills.filter(s => !s.is_top && !s.is_custom).length;
 
-  // Check if a skill name is selected (either by DB id or custom name)
+  // Helper: find DB skill by name
+  const findSkillByName = (name: string): Skill | undefined =>
+    allSkills.find(s => s.name.toLowerCase() === name.toLowerCase());
+
   const isSkillSelected = (name: string): boolean => {
     const dbSkill = findSkillByName(name);
     if (dbSkill) return selectedSkills.some(s => s.skill_id === dbSkill.id);
     return selectedSkills.some(s => s.custom_name?.toLowerCase() === name.toLowerCase());
   };
 
-  const topCount = selectedSkills.filter(s => s.is_top).length;
+  const canAddMore = selectedSkills.length < maxSkills;
 
-  // Toggle a recommended skill
   const toggleRecommendedSkill = (name: string) => {
     const dbSkill = findSkillByName(name);
-
     if (dbSkill) {
       const exists = selectedSkills.some(s => s.skill_id === dbSkill.id);
-      if (exists) {
-        onChange(selectedSkills.filter(s => s.skill_id !== dbSkill.id));
-      } else if (selectedSkills.length < maxSkills) {
-        onChange([...selectedSkills, { skill_id: dbSkill.id, proficiency: 2, is_top: false, is_custom: false }]);
-      }
+      if (exists) onChange(selectedSkills.filter(s => s.skill_id !== dbSkill.id));
+      else if (canAddMore) onChange([...selectedSkills, { skill_id: dbSkill.id, proficiency: 2, is_top: false, is_custom: false }]);
     } else {
-      // Custom-style: match by custom_name
       const exists = selectedSkills.some(s => s.custom_name?.toLowerCase() === name.toLowerCase());
-      if (exists) {
-        onChange(selectedSkills.filter(s => s.custom_name?.toLowerCase() !== name.toLowerCase()));
-      } else if (selectedSkills.length < maxSkills) {
-        onChange([...selectedSkills, {
-          skill_id: null, proficiency: 2, is_top: false, is_custom: true,
-          custom_name: name, custom_group: "Рекомендованные",
-        }]);
-      }
+      if (exists) onChange(selectedSkills.filter(s => s.custom_name?.toLowerCase() !== name.toLowerCase()));
+      else if (canAddMore) onChange([...selectedSkills, { skill_id: null, proficiency: 2, is_top: false, is_custom: false, custom_name: name, custom_group: "Рекомендованные" }]);
     }
-  };
-
-  // Search across recommended + DB skills
-  const filteredSkills = useMemo(() => {
-    if (!searchQuery.trim()) return null;
-    const q = searchQuery.toLowerCase();
-    // Collect all recommended names
-    const recNames = recommendedSections.flatMap(s => s.skills);
-    const matchedRec = recNames.filter(n => n.toLowerCase().includes(q));
-    // Also match DB skills not in recommended
-    const recSet = new Set(recNames.map(n => n.toLowerCase()));
-    const matchedDb = allSkills.filter(s => s.name.toLowerCase().includes(q) && !recSet.has(s.name.toLowerCase()));
-    return { recommended: matchedRec, db: matchedDb };
-  }, [searchQuery, recommendedSections, allSkills]);
-
-  const updateProficiency = (skillId: string | null, customName: string | undefined, proficiency: number) => {
-    onChange(selectedSkills.map(s => {
-      if (s.skill_id === skillId && s.custom_name === customName) return { ...s, proficiency };
-      return s;
-    }));
   };
 
   const toggleTop = (skillId: string | null, customName: string | undefined) => {
@@ -124,45 +98,72 @@ export function SkillsEditor({
   };
 
   const addCustomSkill = () => {
-    if (!customName.trim() || selectedSkills.length >= maxSkills) return;
+    if (!customName.trim() || customCount >= maxCustomSkills || !canAddMore) return;
     onChange([...selectedSkills, {
       skill_id: null, proficiency: 2, is_top: false, is_custom: true,
-      custom_name: customName.trim(), custom_group: customGroup.trim() || "Прочее",
+      custom_name: customName.trim(), custom_group: "Свои навыки",
     }]);
     setCustomName("");
-    setCustomGroup("");
   };
 
-  const removeSkill = (index: number) => {
-    onChange(selectedSkills.filter((_, i) => i !== index));
+  const removeSkill = (index: number) => onChange(selectedSkills.filter((_, i) => i !== index));
+
+  // Collect all skill names for search
+  const allRecNames = useMemo(() => {
+    const { hardSkills, tools, softSkills } = recommended;
+    return [...hardSkills.basic, ...hardSkills.advanced, ...hardSkills.expert, ...tools, ...softSkills];
+  }, [recommended]);
+
+  const filteredSkills = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    const q = searchQuery.toLowerCase();
+    const matchedRec = allRecNames.filter(n => n.toLowerCase().includes(q));
+    const recSet = new Set(allRecNames.map(n => n.toLowerCase()));
+    const matchedDb = allSkills.filter(s => s.name.toLowerCase().includes(q) && !recSet.has(s.name.toLowerCase()));
+    return { recommended: matchedRec, db: matchedDb };
+  }, [searchQuery, allRecNames, allSkills]);
+
+  // Render a flat list of checkboxes with star toggle
+  const renderSkillList = (skills: string[]) => (
+    <div className="space-y-1 py-2">
+      {skills.map(name => {
+        const selected = isSkillSelected(name);
+        return (
+          <label key={name} className="flex items-center gap-2.5 cursor-pointer text-[13px] py-0.5">
+            <Checkbox checked={selected} onCheckedChange={() => toggleRecommendedSkill(name)} />
+            <span className="flex-1 text-foreground">{name}</span>
+            {selected && (
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); toggleTop(findSkillByName(name)?.id || null, findSkillByName(name) ? undefined : name); }}
+                className={cn("flex-shrink-0", getStarClass(name))}
+              >
+                <Star className="h-3.5 w-3.5" fill={isTop(name) ? "currentColor" : "none"} />
+              </button>
+            )}
+          </label>
+        );
+      })}
+    </div>
+  );
+
+  const isTop = (name: string): boolean => {
+    const dbSkill = findSkillByName(name);
+    if (dbSkill) return selectedSkills.some(s => s.skill_id === dbSkill.id && s.is_top);
+    return selectedSkills.some(s => s.custom_name?.toLowerCase() === name.toLowerCase() && s.is_top);
   };
 
-  const toggleSection = (title: string) => {
-    setOpenSections(prev => ({ ...prev, [title]: !prev[title] }));
-  };
-
-  const countSelectedInSection = (section: SkillSubGroup): number => {
-    return section.skills.filter(name => isSkillSelected(name)).length;
-  };
+  const getStarClass = (name: string): string =>
+    isTop(name) ? "text-yellow-500" : "text-muted-foreground/30 hover:text-yellow-400";
 
   return (
     <div className="bg-card rounded-xl p-5 md:p-6 shadow-card space-y-4">
       <h2 className="text-[16px] font-semibold text-foreground">Навыки</h2>
 
-      <div className="flex items-center justify-between text-[13px]">
-        <span className="text-muted-foreground">
-          Выбрано: <strong className="text-foreground">{selectedSkills.length}</strong>/{maxSkills}
-        </span>
-        <span className="text-muted-foreground">
-          Ключевых: <strong className="text-foreground">{topCount}</strong>/{maxTopSkills}
-        </span>
-      </div>
-
-      {primaryRoleName && (
-        <p className={`${HINT} bg-secondary/60 rounded-lg p-3`}>
-          Рекомендуем выбрать навыки, релевантные роли «{primaryRoleName}»
-        </p>
-      )}
+      <p className={`${HINT} bg-secondary/60 rounded-lg p-3`}>
+        Выберите до {maxTopSkills} ключевых (⭐) и до {MAX_ADDITIONAL} дополнительных навыков.
+        {primaryRoleName && <> Рекомендации для роли «{primaryRoleName}».</>}
+      </p>
 
       {/* Search */}
       <div className="relative">
@@ -171,8 +172,8 @@ export function SkillsEditor({
       </div>
 
       {/* Search results */}
-      {filteredSkills && (
-        <div className="space-y-2 p-3 rounded-lg bg-secondary/40">
+      {filteredSkills ? (
+        <div className="space-y-1 p-3 rounded-lg bg-secondary/40 max-h-[300px] overflow-y-auto">
           {filteredSkills.recommended.length === 0 && filteredSkills.db.length === 0 ? (
             <p className={HINT}>Ничего не найдено</p>
           ) : (
@@ -190,7 +191,7 @@ export function SkillsEditor({
                     onCheckedChange={() => {
                       const exists = selectedSkills.some(s => s.skill_id === skill.id);
                       if (exists) onChange(selectedSkills.filter(s => s.skill_id !== skill.id));
-                      else if (selectedSkills.length < maxSkills) onChange([...selectedSkills, { skill_id: skill.id, proficiency: 2, is_top: false, is_custom: false }]);
+                      else if (canAddMore) onChange([...selectedSkills, { skill_id: skill.id, proficiency: 2, is_top: false, is_custom: false }]);
                     }}
                   />
                   <span className="text-foreground">{skill.name}</span>
@@ -200,49 +201,65 @@ export function SkillsEditor({
             </>
           )}
         </div>
+      ) : (
+        /* Tabs: Hard Skills / Tools / Soft Skills */
+        <Tabs defaultValue="hard" className="w-full">
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="hard" className="text-[12px]">Hard Skills</TabsTrigger>
+            <TabsTrigger value="tools" className="text-[12px]">Инструменты</TabsTrigger>
+            <TabsTrigger value="soft" className="text-[12px]">Soft Skills</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="hard" className="space-y-3">
+            {recommended.hardSkills.basic.length > 0 && (
+              <div>
+                <h4 className="text-[12px] font-medium text-muted-foreground uppercase tracking-wide mt-2">Базовые</h4>
+                {renderSkillList(recommended.hardSkills.basic)}
+              </div>
+            )}
+            {recommended.hardSkills.advanced.length > 0 && (
+              <div>
+                <h4 className="text-[12px] font-medium text-muted-foreground uppercase tracking-wide">Продвинутые</h4>
+                {renderSkillList(recommended.hardSkills.advanced)}
+              </div>
+            )}
+            {recommended.hardSkills.expert.length > 0 && (
+              <div>
+                <h4 className="text-[12px] font-medium text-muted-foreground uppercase tracking-wide">Экспертные</h4>
+                {renderSkillList(recommended.hardSkills.expert)}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="tools">
+            {renderSkillList(recommended.tools)}
+          </TabsContent>
+
+          <TabsContent value="soft">
+            {renderSkillList(recommended.softSkills)}
+          </TabsContent>
+        </Tabs>
       )}
 
-      {/* Recommended sections */}
-      {!filteredSkills && recommendedSections.map(section => (
-        <Collapsible key={section.title} open={openSections[section.title] ?? false} onOpenChange={() => toggleSection(section.title)}>
-          <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-[13px] font-medium text-muted-foreground hover:text-foreground py-1">
-            <ChevronDown className={cn("h-4 w-4 transition-transform", openSections[section.title] && "rotate-180")} />
-            {section.title}
-            <span className="text-[11px] text-muted-foreground/60">
-              ({countSelectedInSection(section)}/{section.skills.length})
-            </span>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="space-y-1 pt-2 pb-3 pl-6">
-              {section.skills.map(name => (
-                <label key={name} className="flex items-center gap-2.5 cursor-pointer text-[13px] py-0.5">
-                  <Checkbox checked={isSkillSelected(name)} onCheckedChange={() => toggleRecommendedSkill(name)} />
-                  <span className="text-foreground">{name}</span>
-                </label>
-              ))}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      ))}
-
-      {/* Custom skill */}
+      {/* Custom skills */}
       <div className="border-t border-border/50 pt-4 space-y-3">
-        <Label className={LABEL}>Добавить свой навык</Label>
+        <Label className="text-[13px] font-medium text-muted-foreground">Добавить свой навык ({customCount}/{maxCustomSkills})</Label>
         <div className="flex gap-2">
-          <Input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="Название навыка" className="flex-1 text-[14px]" />
-          <Input value={customGroup} onChange={(e) => setCustomGroup(e.target.value)} placeholder="Группа" className="w-[140px] text-[14px]" />
-          <Button variant="outline" size="sm" onClick={addCustomSkill} disabled={!customName.trim()}>
+          <Input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="Название навыка" className="flex-1 text-[14px]"
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSkill(); }}}
+          />
+          <Button variant="outline" size="sm" onClick={addCustomSkill} disabled={!customName.trim() || customCount >= maxCustomSkills}>
             <Plus className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Selected skills with levels */}
+      {/* Selected skills summary */}
       {selectedSkills.length > 0 && (
         <div className="border-t border-border/50 pt-4 space-y-2">
-          <Label className={LABEL}>Уровни и ключевые навыки</Label>
+          <Label className="text-[13px] font-medium text-muted-foreground">Выбранные навыки</Label>
           <p className={HINT}>
-            Отметьте ⭐ для 5 ключевых навыков — они будут показаны в карточке
+            Нажмите ⭐ чтобы отметить как ключевой (макс {maxTopSkills})
           </p>
           {selectedSkills.map((sel, index) => {
             const skill = sel.skill_id ? allSkills.find(s => s.id === sel.skill_id) : null;
@@ -257,30 +274,20 @@ export function SkillsEditor({
                   <Star className="h-4 w-4" fill={sel.is_top ? "currentColor" : "none"} />
                 </button>
                 <span className="flex-1 truncate text-foreground">{name}</span>
-                {sel.is_custom && <Badge variant="outline" className="text-[10px]">custom</Badge>}
-                <div className="flex gap-1">
-                  {[1, 2, 3].map(lvl => (
-                    <button
-                      key={lvl}
-                      type="button"
-                      onClick={() => updateProficiency(sel.skill_id, sel.custom_name, lvl)}
-                      className={cn(
-                        "px-2 py-0.5 rounded text-[11px] border",
-                        sel.proficiency === lvl
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "border-border/60 hover:bg-secondary text-muted-foreground"
-                      )}
-                    >
-                      {proficiencyLabels[lvl]}
-                    </button>
-                  ))}
-                </div>
+                {sel.is_custom && <Badge variant="outline" className="text-[10px]">свой</Badge>}
                 <button type="button" onClick={() => removeSkill(index)} className="text-muted-foreground/40 hover:text-destructive text-[11px]">✕</button>
               </div>
             );
           })}
         </div>
       )}
+
+      {/* Counters */}
+      <div className="flex flex-wrap gap-3 text-[12px] text-muted-foreground pt-2 border-t border-border/30">
+        <span>Ключевых: <strong className="text-foreground">{topCount}</strong>/{maxTopSkills}</span>
+        <span>Доп.: <strong className="text-foreground">{additionalCount}</strong>/{MAX_ADDITIONAL}</span>
+        <span>Своих: <strong className="text-foreground">{customCount}</strong>/{maxCustomSkills}</span>
+      </div>
     </div>
   );
 }
