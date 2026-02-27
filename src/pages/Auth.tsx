@@ -11,6 +11,7 @@ import { trackEvent } from "@/hooks/useAnalytics";
 import { z } from "zod";
 import { User, Building2, Mail, Lock, Loader2 } from "lucide-react";
 import { SpecialistWizard, type WizardData } from "@/components/auth/SpecialistWizard";
+import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
 
 const emailSchema = z.string().email("Введите корректный email");
@@ -240,6 +241,11 @@ export default function Auth() {
                         placeholder="••••••••" className={`pl-10 ${errors.password ? "border-destructive" : ""}`} />
                     </div>
                     {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                    {!isSignUp && (
+                      <div className="text-right">
+                        <ForgotPasswordDialog />
+                      </div>
+                    )}
                   </div>
 
                   <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
