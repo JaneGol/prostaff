@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { AvatarBankPicker } from "@/components/shared/AvatarBankPicker";
 import { isBankAvatar, decodeBankAvatar } from "@/lib/defaultAvatars";
-import { GROUPS } from "@/lib/specialistSections";
+import { useRoleGroups } from "@/hooks/useRoleGroups";
 import { ProfileProgress } from "@/components/shared/ProfileProgress";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { SportsEditor, SportExperience, SportOpenTo } from "@/components/profile/SportsEditor";
@@ -35,13 +35,9 @@ const FIELD_TEXT = "text-[14px]";
 interface SpecialistRole {
   id: string;
   name: string;
-  specialization_id: string | null;
-}
-
-interface SpecializationOption {
-  id: string;
-  name: string;
-  group_key: string;
+  group_id: string | null;
+  description: string | null;
+  is_custom_allowed: boolean;
 }
 
 interface Skill {
@@ -81,6 +77,7 @@ export default function ProfileEdit() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { groups, roles: dbRoles, loading: groupsLoading } = useRoleGroups();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -131,7 +128,6 @@ export default function ProfileEdit() {
 
   // Reference data
   const [roles, setRoles] = useState<SpecialistRole[]>([]);
-  const [specializations, setSpecializations] = useState<SpecializationOption[]>([]);
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [allowedSecondaryRoles, setAllowedSecondaryRoles] = useState<string[]>([]);
   const [allSports, setAllSports] = useState<SportOption[]>([]);
@@ -158,16 +154,14 @@ export default function ProfileEdit() {
 
   const fetchData = async () => {
     try {
-      const [rolesRes, skillsRes, specsRes, sportsRes] = await Promise.all([
-        supabase.from("specialist_roles").select("id, name, specialization_id").order("name"),
+      const [rolesRes, skillsRes, sportsRes] = await Promise.all([
+        supabase.from("specialist_roles").select("id, name, group_id, description, is_custom_allowed").eq("is_active", true).order("sort_order"),
         supabase.from("skills").select("id, name, category").order("name"),
-        supabase.from("specializations").select("id, name, group_key").order("sort_order"),
         supabase.from("sports").select("id, name, icon").eq("is_active", true).order("sort_order"),
       ]);
 
-      if (rolesRes.data) setRoles(rolesRes.data);
+      if (rolesRes.data) setRoles(rolesRes.data as SpecialistRole[]);
       if (skillsRes.data) setAllSkills(skillsRes.data);
-      if (specsRes.data) setSpecializations(specsRes.data);
       if (sportsRes.data) setAllSports(sportsRes.data);
 
       const { data: profile } = await supabase
@@ -180,15 +174,14 @@ export default function ProfileEdit() {
         setProfileId(profile.id);
         setFirstName(profile.first_name);
         setLastName(profile.last_name);
-        setSpecializationId((profile as any).specialization_id || "");
-        if ((profile as any).specialization_id && specsRes.data) {
-          const spec = specsRes.data.find((s: any) => s.id === (profile as any).specialization_id);
-          if (spec) setSelectedGroupKey(spec.group_key);
+        // Set group key from role's group_id
+        if (profile.role_id && rolesRes.data) {
+          const role = (rolesRes.data as SpecialistRole[]).find(r => r.id === profile.role_id);
+          if (role?.group_id) {
+            // We'll set group key after groups load via useRoleGroups
+            setRoleId(profile.role_id);
+          }
         }
-        setRoleId(profile.role_id || "");
-        setSecondaryRoleId((profile as any).secondary_role_id || "");
-        setSecondarySpecializationId((profile as any).secondary_specialization_id || "");
-        setLevel(profile.level || "middle");
         setBio(profile.bio || "");
         setAboutUseful((profile as any).about_useful || "");
         setAboutStyle((profile as any).about_style || "");
@@ -286,7 +279,6 @@ export default function ProfileEdit() {
     try {
       const profileData = {
         user_id: user!.id, first_name: firstName.trim(), last_name: lastName.trim(),
-        specialization_id: specializationId || null, secondary_specialization_id: secondarySpecializationId || null,
         role_id: roleId || null, secondary_role_id: secondaryRoleId || null, level: level as any,
         bio: bio.trim() || null, about_useful: aboutUseful.trim() || null, about_style: aboutStyle.trim() || null,
         about_goals: aboutGoals.trim() || null, city: city.trim() || null, country: country.trim() || null,
@@ -411,7 +403,6 @@ export default function ProfileEdit() {
       if (section === "basic" || section === "photo") {
         const updateData = {
           first_name: firstName.trim(), last_name: lastName.trim(),
-          specialization_id: specializationId || null, secondary_specialization_id: secondarySpecializationId || null,
           role_id: roleId || null, secondary_role_id: secondaryRoleId || null,
           level: level as any, avatar_url: avatarUrl || null,
         } as any;
@@ -551,15 +542,18 @@ export default function ProfileEdit() {
     sectionRefs.current[sectionId]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const primarySpecName = specializations.find(s => s.id === specializationId)?.name;
-  const specsForGroup = selectedGroupKey
-    ? specializations.filter(s => s.group_key === selectedGroupKey)
-    : specializations;
-  const additionalSpecOptions = specsForGroup.filter(s => s.id !== specializationId);
+  const primaryRoleName = roles.find(r => r.id === roleId)?.name;
+  const rolesForGroup = selectedGroupKey
+    ? roles.filter(r => {
+        const group = groups.find(g => g.key === selectedGroupKey);
+        return group && r.group_id === group.id;
+      })
+    : roles;
+  const additionalRoleOptions = rolesForGroup.filter(r => r.id !== roleId && !r.is_custom_allowed);
 
   const profileFields = useMemo(() => [
     { key: "avatar", label: "Фото профиля", completed: !!avatarUrl, weight: 5 },
-    { key: "role", label: "Специализация + уровень", completed: !!specializationId && !!level, weight: 15 },
+    { key: "role", label: "Роль + уровень", completed: !!roleId && !!level, weight: 15 },
     { key: "about", label: "О себе", completed: !!bio && bio.length > 20, weight: 10 },
     { key: "location", label: "Город и формат работы", completed: !!city && !!country, weight: 10 },
     { key: "skills", label: "Навыки (минимум 5)", completed: selectedSkills.length >= 5, weight: 15 },
@@ -663,9 +657,9 @@ export default function ProfileEdit() {
                         </div>
                       </div>
                       {/* Role subtitle under name */}
-                      {primarySpecName && (
+                      {primaryRoleName && (
                         <p className="text-[14px] text-muted-foreground">
-                          {primarySpecName}
+                          {primaryRoleName}
                           {level && <> · {levels.find(l => l.value === level)?.label}</>}
                         </p>
                       )}
@@ -684,10 +678,10 @@ export default function ProfileEdit() {
                   <div>
                     <p className={`${SUB_TITLE} mb-2.5`}>Направление</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-                      {GROUPS.map(g => {
-                        const icons: Record<string, React.ReactNode> = {
-                          coaching: <Users className="h-4 w-4" />,
-                          performance: <Activity className="h-4 w-4" />,
+                      {groups.map(g => {
+                        const iconMap: Record<string, React.ReactNode> = {
+                          coaches: <Users className="h-4 w-4" />,
+                          fitness: <Activity className="h-4 w-4" />,
                           analytics: <BarChart3 className="h-4 w-4" />,
                           medical: <HeartPulse className="h-4 w-4" />,
                           other: <Briefcase className="h-4 w-4" />,
@@ -699,9 +693,9 @@ export default function ProfileEdit() {
                             type="button"
                             onClick={() => {
                               setSelectedGroupKey(g.key);
-                              const currentSpec = specializations.find(s => s.id === specializationId);
-                              if (currentSpec && currentSpec.group_key !== g.key) {
-                                setSpecializationId("");
+                              // Reset role if it doesn't belong to new group
+                              const currentRole = roles.find(r => r.id === roleId);
+                              if (currentRole && currentRole.group_id !== g.id) {
                                 setRoleId("");
                                 setSecondaryRoleId("");
                               }
@@ -712,8 +706,8 @@ export default function ProfileEdit() {
                                 : "border-transparent bg-secondary/60 text-muted-foreground hover:bg-secondary"
                             }`}
                           >
-                            {icons[g.key] || <Briefcase className="h-4 w-4" />}
-                            <span className="text-[11px] font-medium leading-tight">{g.shortTitle}</span>
+                            {iconMap[g.key] || <Briefcase className="h-4 w-4" />}
+                            <span className="text-[11px] font-medium leading-tight">{g.title}</span>
                           </button>
                         );
                       })}
@@ -724,17 +718,19 @@ export default function ProfileEdit() {
                   <div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div className="space-y-1">
-                        <Label className={LABEL}>Специализация</Label>
-                        <Select value={specializationId} onValueChange={(val) => {
-                          setSpecializationId(val);
-                          if (secondarySpecializationId === val) setSecondarySpecializationId("");
-                          // Auto-set role_id to match the specialization
-                          const matchingRole = roles.find((r) => r.specialization_id === val);
-                          if (matchingRole) setRoleId(matchingRole.id);
+                        <Label className={LABEL}>Роль</Label>
+                        <Select value={roleId} onValueChange={(val) => {
+                          setRoleId(val);
+                          if (secondaryRoleId === val) setSecondaryRoleId("");
                         }} disabled={!selectedGroupKey}>
-                          <SelectTrigger className={FIELD_TEXT}><SelectValue placeholder={selectedGroupKey ? "Выберите специализацию" : "Сначала выберите направление"} /></SelectTrigger>
+                          <SelectTrigger className={FIELD_TEXT}><SelectValue placeholder={selectedGroupKey ? "Выберите роль" : "Сначала выберите направление"} /></SelectTrigger>
                           <SelectContent>
-                            {specsForGroup.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                            {rolesForGroup.map(r => (
+                              <SelectItem key={r.id} value={r.id}>
+                                {r.name}
+                                {r.description && <span className="text-muted-foreground text-[11px] ml-1">— {r.description}</span>}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <p className={HINT}>Определяет категорию, в которой вас найдут клубы</p>
@@ -798,12 +794,12 @@ export default function ProfileEdit() {
                     {/* Additional Specialization */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div className="space-y-1">
-                        <Label className={LABEL}>Доп. специализация</Label>
-                        <Select value={secondarySpecializationId} onValueChange={setSecondarySpecializationId} disabled={!specializationId}>
+                        <Label className={LABEL}>Доп. роль</Label>
+                        <Select value={secondaryRoleId} onValueChange={setSecondaryRoleId} disabled={!roleId}>
                           <SelectTrigger className={FIELD_TEXT}><SelectValue placeholder="Опционально" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="none">Нет</SelectItem>
-                            {additionalSpecOptions.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                            {additionalRoleOptions.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
                         <p className={HINT}>Помогает клубам находить вас шире</p>
@@ -854,7 +850,7 @@ export default function ProfileEdit() {
                   bio={bio} aboutUseful={aboutUseful} aboutStyle={aboutStyle} aboutGoals={aboutGoals}
                   onBioChange={setBio} onAboutUsefulChange={setAboutUseful}
                   onAboutStyleChange={setAboutStyle} onAboutGoalsChange={setAboutGoals}
-                  roleName={primarySpecName}
+                  roleName={primaryRoleName}
                   onSave={() => handleSectionSave("about")}
                   isSaving={savingSection === "about"}
                 />
@@ -970,7 +966,7 @@ export default function ProfileEdit() {
                   allSkills={allSkills}
                   selectedSkills={selectedSkills}
                   onChange={setSelectedSkills}
-                  primaryRoleName={primarySpecName}
+                  primaryRoleName={primaryRoleName}
                   groupKey={selectedGroupKey}
                 />
               </div>
@@ -1074,11 +1070,11 @@ export default function ProfileEdit() {
                       <div className="flex items-start justify-between gap-1">
                         <div className="min-w-0">
                           <p className="text-[13px] font-semibold text-foreground line-clamp-1">
-                            {primarySpecName || "Без специализации"}
+                            {primaryRoleName || "Без роли"}
                           </p>
-                          {/* Secondary spec + experience on second line */}
+                          {/* Secondary role + experience on second line */}
                           {(() => {
-                            const secondaryName = secondarySpecializationId ? specializations.find(s => s.id === secondarySpecializationId)?.name : null;
+                            const secondaryName = secondaryRoleId ? roles.find(r => r.id === secondaryRoleId)?.name : null;
                             const latestExp = experiences.length > 0 && experiences[0]?.position ? experiences[0] : null;
                             const parts: string[] = [];
                             if (secondaryName) parts.push(`+ ${secondaryName}`);
