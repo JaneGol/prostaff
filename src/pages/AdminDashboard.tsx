@@ -12,8 +12,10 @@ import {
   Users, Briefcase, Eye, MousePointer, TrendingUp,
   Monitor, Smartphone, Tablet, Globe, Clock, BarChart3,
   FileText, Send, Building2, ArrowUpRight, ArrowDownRight,
-  Activity, UserPlus, Target, Lock, Unlock, ExternalLink
+  Activity, UserPlus, Target, Lock, Unlock, ExternalLink,
+  Search, Heart, RotateCcw, CheckCircle2
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import ArticleEditor from "@/components/admin/ArticleEditor";
 import {
   DailyVisitsChart,
@@ -51,6 +53,8 @@ export default function AdminDashboard() {
   const [profilesWithRoles, setProfilesWithRoles] = useState<any[]>([]);
   const [profileViews, setProfileViews] = useState<any[]>([]);
   const [clubAccess, setClubAccess] = useState<any[]>([]);
+  const [profilesFull, setProfilesFull] = useState<any[]>([]);
+  const [favoriteJobsCount, setFavoriteJobsCount] = useState(0);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -69,7 +73,7 @@ export default function AdminDashboard() {
     const dateFilter = getDateFilter(dateRange);
 
     // Parallel fetches
-    const [pvRes, evRes, prRes, coRes, joRes, apRes, urRes, prRolesRes, pvViewsRes, caRes] = await Promise.all([
+    const [pvRes, evRes, prRes, coRes, joRes, apRes, urRes, prRolesRes, pvViewsRes, caRes, pfRes, fjRes] = await Promise.all([
       dateFilter
         ? supabase.from("page_views").select("*").gte("created_at", dateFilter).order("created_at", { ascending: false }).limit(1000)
         : supabase.from("page_views").select("*").order("created_at", { ascending: false }).limit(1000),
@@ -86,6 +90,8 @@ export default function AdminDashboard() {
         ? supabase.from("profile_views").select("*").gte("viewed_at", dateFilter).order("viewed_at", { ascending: false }).limit(500)
         : supabase.from("profile_views").select("*").order("viewed_at", { ascending: false }).limit(500),
       supabase.from("club_access").select("*").order("updated_at", { ascending: false }),
+      supabase.from("profiles").select("id, role_id, bio, city, country, level, avatar_url, about_useful, about_style, about_goals").limit(1000),
+      supabase.from("favorite_jobs").select("id", { count: "exact", head: true }),
     ]);
 
     setPageViews(pvRes.data || []);
@@ -98,6 +104,8 @@ export default function AdminDashboard() {
     setProfilesWithRoles(prRolesRes.data || []);
     setProfileViews(pvViewsRes.data || []);
     setClubAccess(caRes.data || []);
+    setProfilesFull(pfRes.data || []);
+    setFavoriteJobsCount(fjRes.count || 0);
     setLoadingData(false);
   };
 
@@ -219,6 +227,60 @@ export default function AdminDashboard() {
     };
   }, [pageViews, events, userRoles, profilesWithRoles]);
 
+  // === ГОДОВЫЕ KPI ===
+  const kpis = useMemo(() => {
+    // 1. % заполненных профилей (считаем ключевые поля)
+    const filledProfiles = profilesFull.filter(p => {
+      let score = 0;
+      if (p.role_id) score++;
+      if (p.bio) score++;
+      if (p.city) score++;
+      if (p.level) score++;
+      if (p.avatar_url) score++;
+      if (p.about_useful) score++;
+      return score >= 3; // минимум 3 из 6 полей
+    });
+    const profileCompleteness = profilesFull.length > 0
+      ? Math.round((filledProfiles.length / profilesFull.length) * 100)
+      : 0;
+
+    // 2. Поисковые запросы
+    const searchEvents = events.filter(e => e.event_type === "search_query");
+    const searchQueries = searchEvents.length;
+    const uniqueSearchTerms = new Set(searchEvents.map(e => e.event_label?.toLowerCase())).size;
+
+    // 3. Сохранения / контакты
+    const contactEvents = events.filter(e =>
+      e.event_type === "contact_click" || e.event_type === "contact_unlock"
+    );
+    const totalSavesAndContacts = favoriteJobsCount + contactEvents.length;
+
+    // 4. Повторные визиты компаний
+    const employerVisitMap: Record<string, number> = {};
+    profileViews.forEach(pv => {
+      employerVisitMap[pv.viewer_user_id] = (employerVisitMap[pv.viewer_user_id] || 0) + 1;
+    });
+    const returningEmployers = Object.values(employerVisitMap).filter(v => v >= 2).length;
+    const totalEmployers = Object.keys(employerVisitMap).length;
+    const returningRate = totalEmployers > 0
+      ? Math.round((returningEmployers / totalEmployers) * 100)
+      : 0;
+
+    return {
+      profileCompleteness,
+      filledCount: filledProfiles.length,
+      totalProfiles: profilesFull.length,
+      searchQueries,
+      uniqueSearchTerms,
+      totalSavesAndContacts,
+      favoritesCount: favoriteJobsCount,
+      contactsCount: contactEvents.length,
+      returningEmployers,
+      totalEmployers,
+      returningRate,
+    };
+  }, [profilesFull, events, profileViews, favoriteJobsCount]);
+
   const pageNameMap: Record<string, string> = {
     "/": "Главная",
     "/specialists": "Банк специалистов",
@@ -292,6 +354,69 @@ export default function AdminDashboard() {
             <SummaryCard icon={<Building2 />} label="Компании" value={companiesCount} accent />
             <SummaryCard icon={<Briefcase />} label="Вакансии" value={jobsCount} accent />
           </div>
+
+          {/* === ГОДОВЫЕ KPI === */}
+          <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                Ключевые KPI на год
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* 1. % заполненных профилей */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    Заполненность профилей
+                  </div>
+                  <div className="text-3xl font-bold">{kpis.profileCompleteness}%</div>
+                  <Progress value={kpis.profileCompleteness} className="h-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {kpis.filledCount} из {kpis.totalProfiles} — ≥3 ключевых поля
+                  </p>
+                </div>
+
+                {/* 2. Поисковые запросы */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Search className="h-4 w-4 text-primary" />
+                    Поисковые запросы
+                  </div>
+                  <div className="text-3xl font-bold">{kpis.searchQueries}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {kpis.uniqueSearchTerms} уникальных запросов
+                  </p>
+                </div>
+
+                {/* 3. Сохранения / контакты */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Heart className="h-4 w-4 text-accent" />
+                    Сохранения / Контакты
+                  </div>
+                  <div className="text-3xl font-bold">{kpis.totalSavesAndContacts}</div>
+                  <p className="text-xs text-muted-foreground">
+                    ❤️ {kpis.favoritesCount} избранных · 📞 {kpis.contactsCount} контактов
+                  </p>
+                </div>
+
+                {/* 4. Повторные визиты компаний */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <RotateCcw className="h-4 w-4 text-primary" />
+                    Повторные визиты компаний
+                  </div>
+                  <div className="text-3xl font-bold">{kpis.returningRate}%</div>
+                  <Progress value={kpis.returningRate} className="h-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {kpis.returningEmployers} из {kpis.totalEmployers} компаний вернулись (≥2 визита)
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Quick metrics row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
