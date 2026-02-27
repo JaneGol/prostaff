@@ -88,11 +88,9 @@ export default function ProfileEdit() {
   // Basic info
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [specializationId, setSpecializationId] = useState("");
   const [selectedGroupKey, setSelectedGroupKey] = useState("");
   const [roleId, setRoleId] = useState("");
   const [secondaryRoleId, setSecondaryRoleId] = useState("");
-  const [secondarySpecializationId, setSecondarySpecializationId] = useState("");
   const [level, setLevel] = useState("middle");
   const [avatarUrl, setAvatarUrl] = useState("");
 
@@ -561,7 +559,7 @@ export default function ProfileEdit() {
     { key: "education", label: "Образование / сертификаты", completed: education.length > 0 || certificates.length > 0, weight: 10 },
     { key: "sports", label: "Виды спорта (опыт)", completed: sportsExperience.length > 0, weight: 10 },
     { key: "contacts", label: "Контакты", completed: !!email || !!telegram, weight: 5 },
-  ], [avatarUrl, specializationId, level, bio, city, country, selectedSkills, experiences, education, certificates, sportsExperience, email, telegram]);
+  ], [avatarUrl, roleId, level, bio, city, country, selectedSkills, experiences, education, certificates, sportsExperience, email, telegram]);
 
   if (authLoading || loading) {
     return (

@@ -32,8 +32,6 @@ interface ProfileCard {
   show_name: boolean;
   specialist_roles: { id: string; name: string } | null;
   secondary_role_id: string | null;
-  specialization_id?: string | null;
-  secondary_specialization_id?: string | null;
   about_useful: string | null;
 }
 
@@ -585,7 +583,7 @@ export default function Specialists() {
                         avatarUrl={p.avatar_url}
                         aboutSnippet={p.about_useful}
                         experience={profileExperience[p.id] || null}
-                        secondarySpecName={secRoleName}
+                        secondaryRoleName={secRoleName}
                       />
                     );
                   })}
