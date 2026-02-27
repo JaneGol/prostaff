@@ -44,7 +44,7 @@ interface SpecialistCardProps {
   avatarUrl?: string | null;
   aboutSnippet?: string | null;
   experience?: ExperienceSummary | null;
-  secondarySpecName?: string | null;
+  secondaryRoleName?: string | null;
 }
 
 export function SpecialistCard({
@@ -61,7 +61,7 @@ export function SpecialistCard({
   avatarUrl,
   aboutSnippet,
   experience,
-  secondarySpecName,
+  secondaryRoleName,
 }: SpecialistCardProps) {
   const isActive = searchStatus === "actively_looking";
   const isOpen = searchStatus === "open_to_offers";
@@ -120,14 +120,14 @@ export function SpecialistCard({
               </div>
 
               {/* Experience & bio row */}
-              {(roleName || secondarySpecName || experience?.latest_company || aboutSnippet) && (
+              {(roleName || secondaryRoleName || experience?.latest_company || aboutSnippet) && (
                 <div className="mt-1.5">
-                  {(roleName || secondarySpecName || experience?.latest_company) && (
+                  {(roleName || secondaryRoleName || experience?.latest_company) && (
                     <p className="text-[13px] text-muted-foreground flex items-center gap-1.5 line-clamp-1">
                       <Briefcase className="h-3 w-3 flex-shrink-0" />
                       <span className="font-medium text-foreground/80">{roleName || "—"}</span>
-                      {secondarySpecName && (
-                        <span className="text-muted-foreground">+ {secondarySpecName}</span>
+                      {secondaryRoleName && (
+                        <span className="text-muted-foreground">+ {secondaryRoleName}</span>
                       )}
                       {experience?.latest_company && (
                         <span className="text-muted-foreground">· {experience.latest_company}</span>
