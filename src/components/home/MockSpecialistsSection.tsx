@@ -73,7 +73,7 @@ export function MockSpecialistsSection() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-semibold text-foreground text-[15px] line-clamp-1">{spec.role}</h3>
+                        <h3 className="font-semibold text-foreground text-[15px] line-clamp-2 leading-snug">{spec.role}</h3>
                         <Badge variant="outline" className="text-xs px-2 py-0.5 flex-shrink-0">
                           {spec.level}
                         </Badge>
