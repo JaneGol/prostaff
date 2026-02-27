@@ -94,6 +94,9 @@ const levelLabels: Record<string, string> = {
   intern: "Стажёр", junior: "Junior", middle: "Middle", senior: "Senior", head: "Head"
 };
 const profLabels: Record<number, string> = { 1: "Базовый", 2: "Уверенный", 3: "Эксперт" };
+const sportLevelLabels: Record<string, string> = {
+  beginner: "Начинающий", intermediate: "Средний", advanced: "Продвинутый", professional: "Профессионал"
+};
 const employmentLabels: Record<string, string> = {
   full_time: "Полная", part_time: "Частичная", contract: "Контракт",
   internship: "Стажировка", freelance: "Фриланс"
@@ -240,7 +243,8 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
       if (sportsExp.length > 0) {
         html += `<div class="section"><div class="section-title">Виды спорта</div>`;
         sportsExp.forEach(s => {
-          html += `<div class="sport-row">⚽ ${s.sport?.name || "—"} — ${s.years} ${s.years === 1 ? "год" : s.years < 5 ? "года" : "лет"}${s.level ? ` (${s.level})` : ""}</div>`;
+          const lvl = s.level ? (sportLevelLabels[s.level] || s.level) : "";
+          html += `<div class="sport-row">⚽ ${s.sport?.name || "—"} — ${s.years} ${s.years === 1 ? "год" : s.years < 5 ? "года" : "лет"}${lvl ? ` (${lvl})` : ""}</div>`;
         });
         html += `</div>`;
       }
