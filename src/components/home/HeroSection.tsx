@@ -46,8 +46,8 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
-              <Link to="/auth?mode=signup&role=specialist" className="w-full sm:w-64" onClick={() => trackEvent("cta_click", "hero", "Создать профиль специалиста")}>
-                <Button size="lg" className="w-full flex-col h-auto py-3 rounded-xl">
+              <Link to="/auth?mode=signup&role=specialist" className="w-full sm:w-auto" onClick={() => trackEvent("cta_click", "hero", "Создать профиль специалиста")}>
+                <Button size="lg" className="w-full sm:min-w-[280px] flex-col h-auto py-3 rounded-xl">
                   <span className="flex items-center gap-2">
                     <Users className="h-5 w-5" />
                     Создать профиль специалиста
@@ -55,8 +55,8 @@ export function HeroSection() {
                   <span className="text-xs font-normal opacity-80">Бесплатно · Профиль виден организациям</span>
                 </Button>
               </Link>
-              <Link to="/specialists" className="w-full sm:w-64" onClick={() => trackEvent("cta_click", "hero", "Найти специалистов")}>
-                <Button size="lg" variant="outline" className="w-full flex-col h-auto py-3 rounded-xl border-white text-white hover:bg-white/10">
+              <Link to="/specialists" className="w-full sm:w-auto" onClick={() => trackEvent("cta_click", "hero", "Найти специалистов")}>
+                <Button size="lg" variant="outline" className="w-full sm:min-w-[280px] flex-col h-auto py-3 rounded-xl border-white text-white hover:bg-white/10">
                   <span className="flex items-center gap-2">
                     <Search className="h-5 w-5" />
                     Найти специалистов
