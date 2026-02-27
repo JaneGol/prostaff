@@ -98,7 +98,7 @@ export function RolesSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: gi * 0.05 }}
-                  className={`rounded-xl bg-background p-4 shadow-sm border-l-[3px] ${config.borderColor}`}
+                  className="rounded-xl bg-background p-4 shadow-sm border border-border"
                 >
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
                     <IconComponent className="h-4 w-4 text-primary/70" />
