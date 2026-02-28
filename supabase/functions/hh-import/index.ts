@@ -25,6 +25,37 @@ interface HHVacancy {
   archived?: boolean;
 }
 
+// Keywords that MUST appear in the vacancy title for it to be considered relevant.
+// This prevents importing irrelevant results like "sales manager" or "waiter".
+const RELEVANT_TITLE_KEYWORDS = [
+  "тренер", "coach", "инструктор", "преподаватель",
+  "аналитик", "analyst", "скаут", "scout",
+  "врач", "доктор", "физиотерап", "реабилитолог", "массажист", "нутрициолог",
+  "физиолог", "биомехан", "кинезиолог",
+  "менеджер команд", "спортивн", "директор по спорт",
+  "s&c", "strength", "conditioning",
+  "фитнес", "fitness",
+  "селекцион", "методист",
+];
+
+function isTitleRelevant(title: string, searchQuery: string): boolean {
+  const lowerTitle = title.toLowerCase();
+  const lowerQuery = searchQuery.toLowerCase();
+
+  // Check if the search query itself appears in the title (best match)
+  // Extract core words from query (e.g. "тренер по регби" → check "тренер" and "регби")
+  const queryWords = lowerQuery.split(/\s+/).filter(w => w.length > 2 && w !== "по");
+  const queryMatchCount = queryWords.filter(w => lowerTitle.includes(w)).length;
+  
+  // If most query words are in the title, it's relevant
+  if (queryWords.length > 0 && queryMatchCount >= Math.ceil(queryWords.length * 0.5)) {
+    return true;
+  }
+
+  // Fallback: check against known relevant keywords
+  return RELEVANT_TITLE_KEYWORDS.some(keyword => lowerTitle.includes(keyword));
+}
+
 const experienceMap: Record<string, string> = {
   noExperience: "intern",
   between1And3: "junior",
@@ -87,7 +118,7 @@ Deno.serve(async (req) => {
         .single();
 
       const runId = run?.id;
-      let itemsFound = 0, itemsCreated = 0, itemsUpdated = 0, itemsClosed = 0;
+      let itemsFound = 0, itemsCreated = 0, itemsUpdated = 0, itemsClosed = 0, itemsSkipped = 0;
       let runStatus = "success";
       let errorMsg: string | null = null;
 
@@ -166,6 +197,15 @@ Deno.serve(async (req) => {
             const publishedAt = new Date(vacancy.published_at);
             if (publishedAt < cutoffDate) {
               console.log(`Skipping vacancy ${vacancy.id}: published too long ago (${vacancy.published_at})`);
+              continue;
+            }
+          }
+
+          // Relevance filter: skip vacancies whose title doesn't match sport-related keywords
+          if (source.type === "search" && source.search_query) {
+            if (!isTitleRelevant(vacancy.name, source.search_query)) {
+              console.log(`Skipping vacancy ${vacancy.id}: title not relevant ("${vacancy.name}" vs query "${source.search_query}")`);
+              itemsSkipped++;
               continue;
             }
           }
@@ -352,9 +392,14 @@ Deno.serve(async (req) => {
         source_name: source.name,
         status: runStatus,
         items_found: itemsFound,
+        source_id: source.id,
+        source_name: source.name,
+        status: runStatus,
+        items_found: itemsFound,
         items_created: itemsCreated,
         items_updated: itemsUpdated,
         items_closed: itemsClosed,
+        items_skipped: itemsSkipped,
         error: errorMsg,
       });
     }
