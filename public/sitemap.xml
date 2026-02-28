@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://prostaff.lovable.app/</loc>
+    <loc>https://prostaff-sport.ru/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://prostaff.lovable.app/specialists</loc>
+    <loc>https://prostaff-sport.ru/specialists</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://prostaff.lovable.app/jobs</loc>
+    <loc>https://prostaff-sport.ru/jobs</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://prostaff.lovable.app/content</loc>
+    <loc>https://prostaff-sport.ru/content</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://prostaff.lovable.app/about</loc>
+    <loc>https://prostaff-sport.ru/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://prostaff.lovable.app/faq</loc>
+    <loc>https://prostaff-sport.ru/faq</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://prostaff.lovable.app/contact</loc>
+    <loc>https://prostaff-sport.ru/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://prostaff.lovable.app/pricing</loc>
+    <loc>https://prostaff-sport.ru/pricing</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
