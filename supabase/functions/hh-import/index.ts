@@ -25,35 +25,52 @@ interface HHVacancy {
   archived?: boolean;
 }
 
-// Keywords that MUST appear in the vacancy title for it to be considered relevant.
-// This prevents importing irrelevant results like "sales manager" or "waiter".
-const RELEVANT_TITLE_KEYWORDS = [
-  "тренер", "coach", "инструктор", "преподаватель",
-  "аналитик", "analyst", "скаут", "scout",
-  "врач", "доктор", "физиотерап", "реабилитолог", "массажист", "нутрициолог",
-  "физиолог", "биомехан", "кинезиолог",
-  "менеджер команд", "спортивн", "директор по спорт",
-  "s&c", "strength", "conditioning",
-  "фитнес", "fitness",
-  "селекцион", "методист",
+// Blacklist: titles containing these words are NEVER relevant (non-sport contexts)
+const TITLE_BLACKLIST = [
+  "пожарн", "огнетуш", "огнезащит",
+  "охран труда", "промышленн безопасн",
+  "педиатр", "стоматолог", "гинеколог", "офтальмолог", "дерматолог",
+  "фармацевт", "провизор", "фельдшер",
+  "бухгалтер", "кассир", "официант", "повар", "продавец",
+  "менеджер по продаж", "торговый представитель",
+  "парфюмер", "косметолог",
+  "учитель", "воспитатель", "няня",
+  "водитель", "курьер", "грузчик",
+  "сварщик", "электрик", "слесарь", "монтажник",
+  "оператор call", "оператор колл",
+  "alice ai", "ai-тренер",
+  "атомн", "аэс", "ядерн",
+  "школ", "детский сад", "доу",
 ];
 
 function isTitleRelevant(title: string, searchQuery: string): boolean {
   const lowerTitle = title.toLowerCase();
-  const lowerQuery = searchQuery.toLowerCase();
 
-  // Check if the search query itself appears in the title (best match)
-  // Extract core words from query (e.g. "тренер по регби" → check "тренер" and "регби")
-  const queryWords = lowerQuery.split(/\s+/).filter(w => w.length > 2 && w !== "по");
-  const queryMatchCount = queryWords.filter(w => lowerTitle.includes(w)).length;
-  
-  // If most query words are in the title, it's relevant
-  if (queryWords.length > 0 && queryMatchCount >= Math.ceil(queryWords.length * 0.5)) {
-    return true;
+  // First: reject obviously irrelevant titles
+  if (TITLE_BLACKLIST.some(word => lowerTitle.includes(word))) {
+    return false;
   }
 
-  // Fallback: check against known relevant keywords
-  return RELEVANT_TITLE_KEYWORDS.some(keyword => lowerTitle.includes(keyword));
+  const lowerQuery = searchQuery.toLowerCase();
+
+  // Extract core words from query (e.g. "тренер по регби" → ["тренер", "регби"])
+  // Filter out short prepositions and common connectors
+  const stopWords = ["по", "для", "на", "из", "при", "или"];
+  const queryWords = lowerQuery.split(/\s+/).filter(w => w.length > 2 && !stopWords.includes(w));
+
+  if (queryWords.length === 0) return true;
+
+  // Require ALL query words to be present in the title (strict match)
+  // Use stem-like matching: check if the title contains the first 4+ chars of each word
+  const allMatch = queryWords.every(word => {
+    // For short words (3-4 chars), require exact substring match
+    if (word.length <= 4) return lowerTitle.includes(word);
+    // For longer words, match by stem (first 5 chars minimum) to handle Russian morphology
+    const stem = word.slice(0, Math.min(word.length, 6));
+    return lowerTitle.includes(stem);
+  });
+
+  return allMatch;
 }
 
 const experienceMap: Record<string, string> = {
