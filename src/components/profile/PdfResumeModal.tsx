@@ -142,11 +142,9 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
   .meta { font-size: 10pt; color: #777; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 12px; }
   .section { margin-top: 20px; }
   .section-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #4355C5; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px; }
-  .skills-wrap { display: block; overflow: hidden; margin-top: 10px; margin-bottom: 4px; }
-  .skill-pill { display: inline-block; vertical-align: middle; border-radius: 6px; margin: 0 6px 8px 0; padding: 10px 14px 6px 14px; font-size: 10pt; font-weight: 500; line-height: 1; white-space: nowrap; }
-  .skill-key { background-color: #4355C5; border: 1.5px solid #4355C5; color: #ffffff; }
-  .skill-add { background-color: #eceefb; border: 1.5px solid #c8cde8; color: #2a2a4a; }
-  .skill-tool { background-color: #ffffff; border: 1.5px solid #c8cde8; color: #2a2a4a; }
+  .skills-list { margin-top: 6px; font-size: 10pt; line-height: 1.8; color: #2a2a4a; }
+  .skills-list .star { color: #4355C5; font-size: 11pt; }
+  .skills-list .sep { color: #c8cde8; margin: 0 2px; }
   .exp-item { margin-bottom: 14px; }
   .exp-org { font-weight: 600; font-size: 11pt; }
   .exp-pos { color: #555; }
@@ -202,26 +200,25 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
 
         html += `<div class="section"><div class="section-title">Навыки</div>`;
 
-        // Key skills (non-tool) — with star
         if (keyHard.length > 0) {
-          html += `<div style="margin-bottom:8px"><strong style="font-size:10pt;color:#4355C5">⭐ Ключевые навыки</strong></div>`;
-          html += `<div class="skills-wrap">`;
-          keyHard.forEach(s => { html += `<span class="skill-pill skill-key">★ ${s.name}</span>`; });
+          html += `<div style="margin-bottom:4px"><strong style="font-size:10pt;color:#4355C5">Ключевые навыки</strong></div>`;
+          html += `<div class="skills-list">`;
+          html += keyHard.map(s => `<span class="star">★</span> ${s.name}`).join(`<span class="sep"> · </span>`);
           html += `</div>`;
         }
 
         if (addHard.length > 0) {
-          html += `<div style="margin-top:12px;margin-bottom:8px"><strong style="font-size:10pt;color:#555">Дополнительные навыки</strong></div>`;
-          html += `<div class="skills-wrap">`;
-          addHard.forEach(s => { html += `<span class="skill-pill skill-add">${s.name}</span>`; });
+          html += `<div style="margin-top:10px;margin-bottom:4px"><strong style="font-size:10pt;color:#555">Дополнительные навыки</strong></div>`;
+          html += `<div class="skills-list">`;
+          html += addHard.map(s => s.name).join(`<span class="sep"> · </span>`);
           html += `</div>`;
         }
 
         const allTools = [...keyTools, ...addTools];
         if (allTools.length > 0) {
-          html += `<div style="margin-top:12px;margin-bottom:8px"><strong style="font-size:10pt;color:#4355C5">🛠 Инструменты</strong></div>`;
-          html += `<div class="skills-wrap">`;
-          allTools.forEach(s => { html += `<span class="skill-pill skill-tool">${s.name}</span>`; });
+          html += `<div style="margin-top:10px;margin-bottom:4px"><strong style="font-size:10pt;color:#4355C5">Инструменты</strong></div>`;
+          html += `<div class="skills-list">`;
+          html += allTools.map(s => s.name).join(`<span class="sep"> · </span>`);
           html += `</div>`;
         }
 
