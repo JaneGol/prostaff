@@ -141,11 +141,11 @@ export function PdfResumeModal({ open, onClose, profile, experiences, skills, sp
   .role { font-size: 13pt; color: #555; margin-top: 4px; }
   .meta { font-size: 10pt; color: #777; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 12px; }
   .section { margin-top: 20px; }
-  .section-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #4355C5; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px; }
+  .section-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #4355C5; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px; }
   .skills-wrap { display: block; overflow: hidden; }
-  .skill-tag { display: inline-block; vertical-align: top; background-color: #4355C5; border: 2px solid #4355C5; border-radius: 8px; padding: 7px 16px; font-size: 10pt; font-weight: 600; color: #ffffff; line-height: 1.2; margin: 0 8px 8px 0; white-space: nowrap; }
-  .skill-secondary { background-color: #eceefb; border-color: #c8cde8; color: #2a2a4a; font-weight: 500; }
-  .skill-tool { background-color: transparent; border: 1.5px solid #c8cde8; color: #2a2a4a; font-weight: 500; border-radius: 8px; }
+  .skill-tag { display: inline-block; vertical-align: middle; background-color: #4355C5; border: 2px solid #4355C5; border-radius: 8px; padding: 4px 14px 5px 14px; font-size: 10pt; font-weight: 500; color: #ffffff; line-height: 1.45; margin: 0 8px 8px 0; white-space: nowrap; }
+  .skill-secondary { background-color: #eceefb; border-color: #c8cde8; color: #2a2a4a; }
+  .skill-tool { background-color: transparent; border: 1.5px solid #c8cde8; color: #2a2a4a; border-radius: 8px; }
   .exp-item { margin-bottom: 14px; }
   .exp-org { font-weight: 600; font-size: 11pt; }
   .exp-pos { color: #555; }
