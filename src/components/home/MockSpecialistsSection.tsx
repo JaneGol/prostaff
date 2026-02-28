@@ -14,7 +14,7 @@ const allMockSpecialists = [
     searchStatus: "actively_looking",
     isRelocatable: true,
     isRemoteAvailable: false,
-    avatarUrl: "bank:17",
+    avatarUrl: "bank:17", // мужчина
     skills: [
       { name: "Python" },
       { name: "Дашборды" },
@@ -77,6 +77,7 @@ const allMockSpecialists = [
     searchStatus: "not_looking_but_open",
     isRelocatable: false,
     isRemoteAvailable: false,
+    avatarUrl: "bank:17",
     skills: [
       { name: "Игровая модель" },
       { name: "Управление штабом" },
@@ -119,6 +120,7 @@ const allMockSpecialists = [
     searchStatus: "open_to_offers",
     isRelocatable: false,
     isRemoteAvailable: false,
+    avatarUrl: "bank:18",
     skills: [
       { name: "Медицинский протокол" },
       { name: "Травматология" },
@@ -198,30 +200,14 @@ const allMockSpecialists = [
 // Pick 3 from different categories, rotate on each mount
 const categories = ["analytics", "coaches", "medicine", "fitness", "other"];
 
-function pickThreeFromDifferentCategories() {
-  const byCategory: Record<string, typeof allMockSpecialists> = {};
-  allMockSpecialists.forEach((s) => {
-    if (!byCategory[s.category]) byCategory[s.category] = [];
-    byCategory[s.category].push(s);
-  });
-
-  const shuffledCats = [...categories].sort(() => Math.random() - 0.5);
-  const result: typeof allMockSpecialists = [];
-
-  for (const cat of shuffledCats) {
-    if (result.length >= 3) break;
-    const pool = byCategory[cat];
-    if (pool && pool.length > 0) {
-      const idx = Math.floor(Math.random() * pool.length);
-      result.push(pool[idx]);
-    }
-  }
-
-  return result;
+function pickHomepageThree() {
+  // Фиксированные 3 карточки: Главный тренер, Спортивный врач, Аналитик данных
+  const ids = ["home-mock-4", "home-mock-6", "home-mock-1"];
+  return ids.map((id) => allMockSpecialists.find((s) => s.id === id)!);
 }
 
 export function MockSpecialistsSection() {
-  const [selected, setSelected] = useState(() => pickThreeFromDifferentCategories());
+  const [selected] = useState(() => pickHomepageThree());
 
   return (
     <section className="py-12 md:py-16 bg-background">
