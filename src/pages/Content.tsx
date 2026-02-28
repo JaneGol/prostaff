@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,12 @@ const categoryColors: Record<string, string> = {
 function ArticleList() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+
+  usePageMeta({
+    title: "Контент и статьи",
+    description: "Полезные материалы о карьере в спорте: гайды, интервью с профессионалами, обзоры инструментов и тренды индустрии.",
+    ogTitle: "ProStaff — Статьи о карьере в спорте",
+  });
 
   useEffect(() => {
     supabase
@@ -123,6 +130,13 @@ function ArticleList() {
 function ArticlePage({ slug }: { slug: string }) {
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
+
+  usePageMeta({
+    title: article ? article.title : "Статья",
+    description: article?.excerpt || "Статья на ProStaff — платформе для специалистов спортивной индустрии.",
+    ogTitle: article ? article.title : "Статья — ProStaff",
+    ogImage: article?.cover_image_url || undefined,
+  });
 
   useEffect(() => {
     supabase

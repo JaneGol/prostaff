@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { trackEvent } from "@/hooks/useAnalytics";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,12 @@ export default function Jobs() {
   const { userRole } = useAuth();
   const { isFavorite, toggleFavorite } = useFavoriteJobs();
   const { groups, roles: availableRoles, getGroupKeyForRoleId, getRolesForGroup } = useRoleGroups();
+
+  usePageMeta({
+    title: "Вакансии в спорте",
+    description: "Актуальные вакансии в спортивной индустрии: тренеры, аналитики, врачи, менеджеры. Работа в клубах РФ, Беларуси и Казахстана.",
+    ogTitle: "ProStaff — Вакансии в спортивной индустрии",
+  });
   const [jobs, setJobs] = useState<JobCardData[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
   const [loading, setLoading] = useState(true);
