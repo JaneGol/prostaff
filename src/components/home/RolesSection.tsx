@@ -8,7 +8,7 @@ import { useRoleGroups } from "@/hooks/useRoleGroups";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const VISIBLE_COUNT = 3;
-const MAX_TAG_LENGTH = 30;
+const MAX_TAG_LENGTH = 60;
 
 const GROUP_CONFIG: Record<string, { icon: typeof Trophy; borderColor: string }> = {
   coaches:   { icon: Trophy,    borderColor: "border-l-blue-500" },

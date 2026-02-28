@@ -24,18 +24,28 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="font-display text-white mb-5"
             >
-              Платформа для
+              Банк специалистов
               <br />
-              <span className="text-white/90">профессионалов спорта</span>
+              <span className="text-white/90">спортивной индустрии</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto"
+              className="text-lg md:text-xl text-white/80 mb-4 max-w-2xl mx-auto"
             >
-              Профили с пресетами навыков для тренеров, аналитиков, тренеров по физподготовке, врачей и других специалистов.
+              Создайте профиль за 5 минут — и клубы смогут найти вас по навыкам, опыту и виду спорта.
+            </motion.p>
+
+            {/* Social proof */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.25 }}
+              className="text-sm text-white/50 mb-8"
+            >
+              50+ специалистов · 12 клубов · 31 специализация
             </motion.p>
 
             {/* CTA buttons */}
