@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { trackEvent } from "@/hooks/useAnalytics";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -205,6 +206,12 @@ const PRIORITY_CITIES = ["Москва", "Санкт-Петербург", "Ка�
 export default function Specialists() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { groups, roles: availableRoles, getGroupKeyForRoleId, getRolesForGroup } = useRoleGroups();
+
+  usePageMeta({
+    title: "Банк специалистов",
+    description: "Найдите спортивных специалистов: аналитиков, тренеров, врачей, физиотерапевтов. Фильтры по роли, навыкам, виду спорта и региону.",
+    ogTitle: "ProStaff — Банк специалистов спорта",
+  });
 
   const [profiles, setProfiles] = useState<ProfileCard[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);

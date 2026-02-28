@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -154,6 +155,21 @@ export default function Profile() {
   const [viewsRemaining, setViewsRemaining] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
   const [pdfOpen, setPdfOpen] = useState(false);
+
+  // Dynamic meta tags for specialist profile
+  const profileMetaTitle = profile
+    ? `${profile.show_name && profile.first_name ? `${profile.first_name} ${profile.last_name}` : profile.specialist_roles?.name || "Специалист"} — профиль`
+    : "Профиль специалиста";
+  const profileMetaDesc = profile
+    ? `${profile.specialist_roles?.name || "Специалист"}${sportsExp.length > 0 ? ` · ${sportsExp.map(s => s.sport?.name).filter(Boolean).join(", ")}` : ""}${profile.city ? ` · ${profile.city}` : ""}. Профиль на ProStaff.`
+    : "Профиль спортивного специалиста на платформе ProStaff.";
+
+  usePageMeta({
+    title: profileMetaTitle,
+    description: profileMetaDesc,
+    ogTitle: profileMetaTitle,
+    ogDescription: profileMetaDesc,
+  });
 
   const isOwner = user && profile && user.id === profile.user_id;
 
