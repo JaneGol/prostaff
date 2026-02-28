@@ -1,4 +1,5 @@
 import { Layout } from "@/components/layout/Layout";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { HelpCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -39,6 +40,11 @@ const faqItems = [
 ];
 
 export default function FAQ() {
+  usePageMeta({
+    title: "Частые вопросы",
+    description: "Ответы на частые вопросы о ProStaff: регистрация, поиск специалистов, размещение вакансий и тарифы.",
+  });
+
   return (
     <Layout>
       <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-8 md:py-12">

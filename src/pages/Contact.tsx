@@ -1,8 +1,14 @@
 import { Layout } from "@/components/layout/Layout";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Phone, Send } from "lucide-react";
 
 export default function Contact() {
+  usePageMeta({
+    title: "Контакты",
+    description: "Свяжитесь с командой ProStaff: email, телефон и Telegram. Мы рады помочь и услышать обратную связь.",
+  });
+
   return (
     <Layout>
       <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-8 md:py-12">

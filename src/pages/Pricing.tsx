@@ -1,4 +1,5 @@
 import { Layout } from "@/components/layout/Layout";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,11 @@ const plans = [
 
 export default function Pricing() {
   const { user, userRole } = useAuth();
+
+  usePageMeta({
+    title: "Тарифы для клубов",
+    description: "Тарифные планы ProStaff для работодателей: бесплатный доступ, расширенный поиск и премиум-подписка.",
+  });
   const { access } = useClubAccess();
   const navigate = useNavigate();
 

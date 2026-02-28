@@ -1,4 +1,5 @@
 import { Layout } from "@/components/layout/Layout";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -54,6 +55,11 @@ const stats = [
 ];
 
 export default function About() {
+  usePageMeta({
+    title: "О платформе",
+    description: "ProStaff — нишевая платформа для поиска работы в спортивной индустрии. Узнайте о нашей миссии и команде.",
+  });
+
   return (
     <Layout>
       {/* Hero Section */}
