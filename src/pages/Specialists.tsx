@@ -425,7 +425,7 @@ export default function Specialists() {
     ...groups.map((g) => ({ key: g.key, title: g.title })),
   ];
 
-  const FilterSidebar = () => (
+  const filterSidebarContent = (
     <div className="space-y-5">
       {/* Search */}
       <div>
@@ -592,7 +592,7 @@ export default function Specialists() {
             </Button>
             {showMobileFilters && (
               <div className="mt-3 p-4 border rounded-xl bg-card">
-                <FilterSidebar />
+                {filterSidebarContent}
               </div>
             )}
           </div>
@@ -601,7 +601,7 @@ export default function Specialists() {
             {/* Desktop sidebar */}
             <aside className="hidden md:block w-[240px] flex-shrink-0">
               <div className="sticky top-20">
-                <FilterSidebar />
+                {filterSidebarContent}
               </div>
             </aside>
 
