@@ -35,7 +35,7 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg md:text-xl text-white/80 mb-4 max-w-2xl mx-auto"
             >
-              Создайте профиль за 5 минут — и клубы смогут найти вас по навыкам, опыту и виду спорта.
+              Специалисты спорта в одном месте. Будьте на виду у тех, кто ищет профессионалов.
             </motion.p>
 
             {/* Social proof */}
