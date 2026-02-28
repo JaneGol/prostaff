@@ -14,6 +14,7 @@ const allMockSpecialists = [
     searchStatus: "actively_looking",
     isRelocatable: true,
     isRemoteAvailable: false,
+    avatarUrl: "bank:17",
     skills: [
       { name: "Python" },
       { name: "Дашборды" },
@@ -54,6 +55,7 @@ const allMockSpecialists = [
     searchStatus: "open_to_offers",
     isRelocatable: false,
     isRemoteAvailable: false,
+    avatarUrl: "bank:17",
     skills: [
       { name: "Wyscout" },
       { name: "Оценка потенциала" },
@@ -95,6 +97,7 @@ const allMockSpecialists = [
     searchStatus: "actively_looking",
     isRelocatable: false,
     isRemoteAvailable: false,
+    avatarUrl: "bank:17",
     skills: [
       { name: "Предматчевая подготовка" },
       { name: "Индивидуальные планы" },
@@ -136,6 +139,7 @@ const allMockSpecialists = [
     searchStatus: "not_looking_but_open",
     isRelocatable: false,
     isRemoteAvailable: false,
+    avatarUrl: "bank:18",
     skills: [
       { name: "Return-to-play" },
       { name: "Мануальная терапия" },
@@ -157,6 +161,7 @@ const allMockSpecialists = [
     searchStatus: "open_to_offers",
     isRelocatable: false,
     isRemoteAvailable: false,
+    avatarUrl: "bank:17",
     skills: [
       { name: "Периодизация" },
       { name: "GPS-мониторинг" },
@@ -254,6 +259,7 @@ export function MockSpecialistsSection() {
                 aboutSnippet={spec.aboutSnippet}
                 experience={spec.experience}
                 secondaryRoleName={spec.secondaryRoleName}
+                avatarUrl={spec.avatarUrl}
                 variant="homepage"
               />
             </motion.div>
