@@ -156,10 +156,11 @@ Deno.serve(async (req) => {
             ? `"${rawQuery}"`
             : rawQuery;
           searchUrl += `&text=${encodeURIComponent(hhQuery)}`;
-          // Search field: default to "name" to avoid irrelevant results
+          // HH API uses "vacancy_search_fields" (not "search_field") to restrict search scope
+          // Valid values: "name" (title only), "company_name", "description"
           const searchField = filters.search_field || "name";
           if (searchField !== "all") {
-            searchUrl += `&search_field=${searchField}`;
+            searchUrl += `&vacancy_search_fields=${searchField}`;
           }
         }
 
