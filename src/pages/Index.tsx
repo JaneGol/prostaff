@@ -13,9 +13,9 @@ const JSONLD_ORG = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "ProStaff",
-  url: "https://prostaff.lovable.app",
-  logo: "https://prostaff.lovable.app/og-image.png",
-  description: "Нишевая платформа для поиска работы в спортивной индустрии. Объединяем специалистов и клубы РФ, Беларуси и Казахстана.",
+  url: "https://prostaff-sport.ru",
+  logo: "https://prostaff-sport.ru/og-image.png",
+  description: "Платформа для тренеров, аналитиков, врачей и других специалистов спортивной индустрии.",
   contactPoint: {
     "@type": "ContactPoint",
     email: "e89030922661@gmail.com",
@@ -27,10 +27,10 @@ const JSONLD_WEBSITE = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "ProStaff",
-  url: "https://prostaff.lovable.app",
+  url: "https://prostaff-sport.ru",
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://prostaff.lovable.app/specialists?q={search_term_string}",
+    target: "https://prostaff-sport.ru/specialists?q={search_term_string}",
     "query-input": "required name=search_term_string",
   },
 };
