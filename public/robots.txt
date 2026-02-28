@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://prostaff.lovable.app/sitemap.xml
+Sitemap: https://prostaff-sport.ru/sitemap.xml
