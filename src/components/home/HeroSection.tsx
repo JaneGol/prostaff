@@ -35,7 +35,7 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg md:text-xl text-white/80 mb-4 max-w-2xl mx-auto"
             >
-              Специалисты спорта в одном месте. Будьте на виду у тех, кто ищет профессионалов.
+              Платформа для тренеров, аналитиков, врачей и других профессионалов спорта.
             </motion.p>
 
             {/* Social proof */}
