@@ -85,7 +85,7 @@ export default function AdminHHSources() {
     setLoading(true);
     const [{ data: srcData }, { data: runData }, { data: groupData }, { data: roleData }] = await Promise.all([
       supabase.from("hh_sources").select("*").order("created_at", { ascending: false }),
-      supabase.from("import_runs").select("*").order("started_at", { ascending: false }).limit(200),
+      supabase.from("import_runs").select("*").order("started_at", { ascending: false }).limit(20),
       supabase.from("role_groups").select("*").order("sort_order"),
       supabase.from("specialist_roles").select("id, name, group_id").eq("is_active", true).order("sort_order"),
     ]);
@@ -495,7 +495,24 @@ export default function AdminHHSources() {
             )}
 
             {/* Import Logs */}
-            <h2 className="text-lg font-semibold mb-4">Логи импорта</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Логи импорта <span className="text-muted-foreground font-normal text-sm ml-1">(последние 20)</span></h2>
+              {runs.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-destructive hover:text-destructive"
+                  onClick={async () => {
+                    if (!confirm("Удалить все логи импорта?")) return;
+                    const { error } = await supabase.from("import_runs").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+                    if (error) toast.error("Ошибка: " + error.message);
+                    else { toast.success("Логи очищены"); fetchData(); }
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Очистить логи
+                </Button>
+              )}
+            </div>
             {runs.length === 0 ? (
               <Card><CardContent className="py-8 text-center text-muted-foreground">Нет логов</CardContent></Card>
             ) : (
