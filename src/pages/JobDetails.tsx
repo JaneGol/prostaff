@@ -414,18 +414,39 @@ export default function JobDetails() {
               </Card>
             )}
 
-            {/* Responsibilities */}
-            {job.responsibilities && (
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="font-display text-lg font-bold uppercase mb-4">Обязанности</h2>
-                  <div 
-                    className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(job.responsibilities) }}
-                  />
-                </CardContent>
-              </Card>
-            )}
+            {/* Responsibilities / Key Skills */}
+            {job.responsibilities && (() => {
+              // HH imports store key_skills as comma-separated string in responsibilities
+              const isKeySkills = job.external_source === "hh" && !job.responsibilities.includes("<");
+              if (isKeySkills) {
+                const tags = job.responsibilities.split(",").map(s => s.trim()).filter(Boolean);
+                return (
+                  <Card>
+                    <CardContent className="p-6">
+                      <h2 className="font-display text-lg font-bold uppercase mb-4">Ключевые навыки</h2>
+                      <div className="flex flex-wrap gap-2">
+                        {tags.map((tag, i) => (
+                          <Badge key={i} variant="secondary" className="rounded-md px-4 py-1.5 text-sm font-medium">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              }
+              return (
+                <Card>
+                  <CardContent className="p-6">
+                    <h2 className="font-display text-lg font-bold uppercase mb-4">Обязанности</h2>
+                    <div 
+                      className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1"
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(job.responsibilities) }}
+                    />
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
             {/* Skills */}
             {skills.length > 0 && (
