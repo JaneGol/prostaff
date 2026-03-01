@@ -372,6 +372,19 @@ Deno.serve(async (req) => {
         else if (deletedCount && deletedCount > 0) {
           console.log(`Deleted ${deletedCount} closed jobs older than 60 days for source ${source.id}`);
         }
+
+        // Auto-cleanup: delete import_runs older than 30 days
+        const logsDeleteDate = new Date();
+        logsDeleteDate.setDate(logsDeleteDate.getDate() - 30);
+        const { error: logsDelErr, count: logsDeleted } = await supabase
+          .from("import_runs")
+          .delete({ count: "exact" })
+          .lt("started_at", logsDeleteDate.toISOString());
+
+        if (logsDelErr) console.error(`Delete old import_runs error:`, logsDelErr);
+        else if (logsDeleted && logsDeleted > 0) {
+          console.log(`Deleted ${logsDeleted} import_runs older than 30 days`);
+        }
       } catch (err) {
         runStatus = "failed";
         errorMsg = err instanceof Error ? err.message : String(err);
