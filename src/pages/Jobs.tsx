@@ -157,10 +157,23 @@ export default function Jobs() {
     });
 
     if (sortMode === "salary") {
+      // Normalize salary to RUB for fair comparison
+      const toRub: Record<string, number> = { KZT: 0.18, BYR: 24.5, USD: 89, EUR: 97, UZS: 0.007 };
+      const getSalaryRub = (j: JobCardData) => {
+        const val = j.salary_max ?? j.salary_min;
+        if (val == null) return 0;
+        const code = j.salary_currency || "RUB";
+        if (code === "RUB" || code === "RUR") return val;
+        return val * (toRub[code] || 1);
+      };
       filtered.sort((a, b) => {
-        const aHasSalary = a.salary_min != null || a.salary_max != null ? 1 : 0;
-        const bHasSalary = b.salary_min != null || b.salary_max != null ? 1 : 0;
-        if (bHasSalary !== aHasSalary) return bHasSalary - aHasSalary;
+        const aRub = getSalaryRub(a);
+        const bRub = getSalaryRub(b);
+        // Both have salary → sort by RUB value desc
+        if (aRub > 0 && bRub > 0) return bRub - aRub;
+        // Salary vs no salary → salary first
+        if (aRub > 0 !== bRub > 0) return bRub > 0 ? 1 : -1;
+        // Both no salary → by date
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
     }
