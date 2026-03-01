@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const HH_API = "https://api.hh.ru";
-const USER_AGENT = "ProStaff/1.0 (prostaff.icu)";
+const USER_AGENT = "ProStaff/1.0 (prostaff-sport.ru)";
 
 interface HHVacancy {
   id: string;
@@ -43,6 +43,13 @@ const TITLE_BLACKLIST = [
   "школ", "детский сад", "доу",
 ];
 
+interface SkipReasons {
+  archived: number;
+  too_old: number;
+  blacklisted: number;
+  no_match: number;
+}
+
 function isTitleRelevant(title: string, searchQuery: string): boolean {
   const lowerTitle = title.toLowerCase();
 
@@ -53,19 +60,13 @@ function isTitleRelevant(title: string, searchQuery: string): boolean {
 
   const lowerQuery = searchQuery.toLowerCase();
 
-  // Extract core words from query (e.g. "тренер по регби" → ["тренер", "регби"])
-  // Filter out short prepositions and common connectors
   const stopWords = ["по", "для", "на", "из", "при", "или"];
   const queryWords = lowerQuery.split(/\s+/).filter(w => w.length > 2 && !stopWords.includes(w));
 
   if (queryWords.length === 0) return true;
 
-  // Require ALL query words to be present in the title (strict match)
-  // Use stem-like matching: check if the title contains the first 4+ chars of each word
   const allMatch = queryWords.every(word => {
-    // For short words (3-4 chars), require exact substring match
     if (word.length <= 4) return lowerTitle.includes(word);
-    // For longer words, match by stem (first 5 chars minimum) to handle Russian morphology
     const stem = word.slice(0, Math.min(word.length, 6));
     return lowerTitle.includes(stem);
   });
@@ -97,7 +98,6 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Optionally accept source_id to import specific source
     let sourceFilter: string | null = null;
     try {
       const body = await req.json();
@@ -106,7 +106,6 @@ Deno.serve(async (req) => {
       // no body = import all enabled sources
     }
 
-    // Get enabled sources
     let sourcesQuery = supabase
       .from("hh_sources")
       .select("*")
@@ -127,7 +126,6 @@ Deno.serve(async (req) => {
     const results = [];
 
     for (const source of sources) {
-      // Create import run
       const { data: run } = await supabase
         .from("import_runs")
         .insert({ source_id: source.id, status: "running" })
@@ -136,40 +134,33 @@ Deno.serve(async (req) => {
 
       const runId = run?.id;
       let itemsFound = 0, itemsCreated = 0, itemsUpdated = 0, itemsClosed = 0, itemsSkipped = 0;
+      const skipReasons: SkipReasons = { archived: 0, too_old: 0, blacklisted: 0, no_match: 0 };
       let runStatus = "success";
       let errorMsg: string | null = null;
 
       try {
-        // Build HH API URL
         let searchUrl = `${HH_API}/vacancies?per_page=50`;
 
-        // Parse filters first
         const filters = source.filters_json || {};
 
         if (source.type === "employer" && source.employer_id) {
           searchUrl += `&employer_id=${source.employer_id}`;
         } else if (source.type === "search" && source.search_query) {
-          // Wrap multi-word queries in quotes for exact phrase matching
-          // Prevents "тренер по регби" from matching "тренер" OR "регби" separately
           const rawQuery = source.search_query.trim();
           const hhQuery = rawQuery.includes(" ") && !rawQuery.startsWith('"')
             ? `"${rawQuery}"`
             : rawQuery;
           searchUrl += `&text=${encodeURIComponent(hhQuery)}`;
-          // HH API uses "vacancy_search_fields" (not "search_field") to restrict search scope
-          // Valid values: "name" (title only), "company_name", "description"
           const searchField = filters.search_field || "name";
           if (searchField !== "all") {
             searchUrl += `&vacancy_search_fields=${searchField}`;
           }
         }
 
-        // Add other filters
         if (filters.area) searchUrl += `&area=${filters.area}`;
         if (filters.professional_role) searchUrl += `&professional_role=${filters.professional_role}`;
         if (filters.schedule) searchUrl += `&schedule=${filters.schedule}`;
 
-        // Fetch vacancies from HH
         const hhResponse = await fetch(searchUrl, {
           headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
         });
@@ -182,13 +173,10 @@ Deno.serve(async (req) => {
         const vacancies: HHVacancy[] = hhData.items || [];
         itemsFound = vacancies.length;
 
-        // We need a company_id to link imported jobs. Use source.company_id or create a generic one
         let companyId = source.company_id;
 
-        // If no company linked, we'll need to handle per-vacancy
         const externalIds = vacancies.map((v) => v.id);
 
-        // Get existing jobs for this source (including rejected/closed — to skip them on re-import)
         const { data: existingJobs } = await supabase
           .from("jobs")
           .select("id, external_id, moderation_status, status")
@@ -199,7 +187,6 @@ Deno.serve(async (req) => {
           (existingJobs || []).map((j) => [j.external_id, { id: j.id, moderation_status: j.moderation_status, status: j.status }])
         );
 
-        // Calculate cutoff date: 1 month ago
         const cutoffDate = new Date();
         cutoffDate.setMonth(cutoffDate.getMonth() - 1);
 
@@ -207,6 +194,8 @@ Deno.serve(async (req) => {
           // Skip archived vacancies
           if (vacancy.archived) {
             console.log(`Skipping vacancy ${vacancy.id}: archived`);
+            itemsSkipped++;
+            skipReasons.archived++;
             continue;
           }
 
@@ -215,20 +204,29 @@ Deno.serve(async (req) => {
             const publishedAt = new Date(vacancy.published_at);
             if (publishedAt < cutoffDate) {
               console.log(`Skipping vacancy ${vacancy.id}: published too long ago (${vacancy.published_at})`);
+              itemsSkipped++;
+              skipReasons.too_old++;
               continue;
             }
           }
 
-          // Relevance filter: skip vacancies whose title doesn't match sport-related keywords
+          // Relevance filter
           if (source.type === "search" && source.search_query) {
             if (!isTitleRelevant(vacancy.name, source.search_query)) {
+              // Determine reason: blacklist or no_match
+              const lowerTitle = vacancy.name.toLowerCase();
+              if (TITLE_BLACKLIST.some(word => lowerTitle.includes(word))) {
+                skipReasons.blacklisted++;
+              } else {
+                skipReasons.no_match++;
+              }
               console.log(`Skipping vacancy ${vacancy.id}: title not relevant ("${vacancy.name}" vs query "${source.search_query}")`);
               itemsSkipped++;
               continue;
             }
           }
 
-          // Fetch full details for richer data
+          // Fetch full details
           let description = vacancy.snippet?.requirement || "";
           let responsibilities = vacancy.snippet?.responsibility || "";
           
@@ -241,17 +239,15 @@ Deno.serve(async (req) => {
               description = detail.description || description;
               responsibilities = detail.key_skills?.map((s: { name: string }) => s.name).join(", ") || responsibilities;
             } else {
-              await detailRes.text(); // consume body
+              await detailRes.text();
             }
           } catch {
             // use snippet data
           }
 
-          // Determine company - use source's company or create/find by employer name
           let jobCompanyId = companyId;
 
           if (!jobCompanyId && vacancy.employer) {
-            // Try find existing company by name
             const { data: existingCompany } = await supabase
               .from("companies")
               .select("id")
@@ -262,13 +258,11 @@ Deno.serve(async (req) => {
             if (existingCompany) {
               jobCompanyId = existingCompany.id;
             } else {
-              // Auto-create company from HH employer data
               const { data: newCompany, error: compErr } = await supabase
                 .from("companies")
                 .insert({
                   name: vacancy.employer.name,
                   logo_url: vacancy.employer.logo_urls?.original || null,
-                  // user_id is nullable for auto-imported companies
                   country: "Россия",
                 })
                 .select("id")
@@ -322,17 +316,14 @@ Deno.serve(async (req) => {
 
           const existing = existingMap.get(vacancy.id);
           if (existing) {
-            // Skip rejected or manually closed jobs — don't re-import them
             if (existing.moderation_status === "rejected" || existing.status === "closed") {
               console.log(`Skipping vacancy ${vacancy.id}: already ${existing.moderation_status}/${existing.status}`);
               continue;
             }
-            // Update existing active/draft job
             const { error: upErr } = await supabase
               .from("jobs")
               .update({
                 ...jobData,
-                // Don't overwrite moderation_status/status for published jobs
                 status: existing.moderation_status === "published" ? existing.status : jobData.status,
                 moderation_status: existing.moderation_status === "published" ? "published" : jobData.moderation_status,
                 updated_at: new Date().toISOString(),
@@ -342,7 +333,6 @@ Deno.serve(async (req) => {
             if (upErr) console.error(`Update error for ${vacancy.id}:`, upErr);
             else itemsUpdated++;
           } else {
-            // Insert
             const { error: insErr } = await supabase
               .from("jobs")
               .insert(jobData);
@@ -352,8 +342,7 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Close vacancies that are no longer on HH (draft and published)
-        // Don't touch rejected or manually closed jobs
+        // Close vacancies that are no longer on HH
         const currentExternalIds = new Set(externalIds);
         const toClose = (existingJobs || []).filter(
           (j) => j.external_id && !currentExternalIds.has(j.external_id)
@@ -389,7 +378,7 @@ Deno.serve(async (req) => {
         console.error(`Import failed for source ${source.id}:`, errorMsg);
       }
 
-      // Update import run
+      // Update import run with skip data
       if (runId) {
         await supabase
           .from("import_runs")
@@ -400,6 +389,8 @@ Deno.serve(async (req) => {
             items_created: itemsCreated,
             items_updated: itemsUpdated,
             items_closed: itemsClosed,
+            items_skipped: itemsSkipped,
+            skip_reasons: skipReasons,
             error_message: errorMsg,
           })
           .eq("id", runId);
@@ -410,14 +401,11 @@ Deno.serve(async (req) => {
         source_name: source.name,
         status: runStatus,
         items_found: itemsFound,
-        source_id: source.id,
-        source_name: source.name,
-        status: runStatus,
-        items_found: itemsFound,
         items_created: itemsCreated,
         items_updated: itemsUpdated,
         items_closed: itemsClosed,
         items_skipped: itemsSkipped,
+        skip_reasons: skipReasons,
         error: errorMsg,
       });
     }
