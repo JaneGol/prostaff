@@ -56,6 +56,7 @@ export default function Jobs() {
   const [selectedContract, setSelectedContract] = useState("");
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [sortMode, setSortMode] = useState<"salary" | "date">("salary");
 
   // Track search queries (debounced)
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -130,26 +131,19 @@ export default function Jobs() {
 
   // Filter jobs
   const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
+    const filtered = jobs.filter((job) => {
       const roleId = job.specialist_roles?.id || null;
-      // Tab filter
       if (activeTab !== "all") {
         const jobGroup = getGroupKeyForRoleId(roleId);
         if (jobGroup !== activeTab) return false;
       }
-      // Role filter
       if (selectedSpec && selectedSpec !== "all") {
         if (!roleId || roleId !== selectedSpec) return false;
       }
-      // City filter
       if (selectedCity && selectedCity !== "all" && job.city !== selectedCity) return false;
-      // Level filter
       if (selectedLevel && selectedLevel !== "all" && job.level !== selectedLevel) return false;
-      // Contract filter
       if (selectedContract && selectedContract !== "all" && job.contract_type !== selectedContract) return false;
-      // Remote
       if (remoteOnly && !job.is_remote) return false;
-      // Search
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const match =
@@ -161,7 +155,19 @@ export default function Jobs() {
       }
       return true;
     });
-  }, [jobs, activeTab, selectedSpec, selectedCity, selectedLevel, selectedContract, searchQuery, remoteOnly, getGroupKeyForRoleId]);
+
+    if (sortMode === "salary") {
+      filtered.sort((a, b) => {
+        const aHasSalary = a.salary_min != null || a.salary_max != null ? 1 : 0;
+        const bHasSalary = b.salary_min != null || b.salary_max != null ? 1 : 0;
+        if (bHasSalary !== aHasSalary) return bHasSalary - aHasSalary;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+    }
+    // "date" mode keeps the original DB order (created_at desc)
+
+    return filtered;
+  }, [jobs, activeTab, selectedSpec, selectedCity, selectedLevel, selectedContract, searchQuery, remoteOnly, sortMode, getGroupKeyForRoleId]);
 
   const hasActiveFilters = !!(selectedSpec || selectedCity || selectedSport || selectedContract || selectedLevel || searchQuery || remoteOnly);
 
@@ -404,19 +410,30 @@ export default function Jobs() {
             {/* Results */}
             <div className="flex-1 min-w-0">
               {/* Summary bar */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-muted-foreground text-sm">
                   <Briefcase className="h-4 w-4" />
                   <span>
                     Найдено: <strong className="text-foreground">{filteredJobs.length}</strong>
                   </span>
                 </div>
-                {hasActiveFilters && (
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5 text-muted-foreground hidden md:flex">
-                    <X className="h-3.5 w-3.5" />
-                    Сбросить
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  <Select value={sortMode} onValueChange={(v) => setSortMode(v as "salary" | "date")}>
+                    <SelectTrigger className="h-8 text-xs w-auto min-w-[180px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="salary">Сначала с зарплатой</SelectItem>
+                      <SelectItem value="date">По дате</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {hasActiveFilters && (
+                    <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5 text-muted-foreground hidden md:flex">
+                      <X className="h-3.5 w-3.5" />
+                      Сбросить
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Job list */}
