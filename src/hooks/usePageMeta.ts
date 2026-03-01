@@ -32,7 +32,7 @@ export function usePageMeta({ title, description, ogTitle, ogDescription, ogImag
     setMeta("og:type", "website", "property");
 
     return () => {
-      document.title = `${BASE_TITLE} — Работа в спорте`;
+      document.title = `ProStaff — Банк специалистов спортивной индустрии`;
     };
   }, [title, description, ogTitle, ogDescription, ogImage]);
 }
