@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { ArrowLeft, CheckCircle, XCircle, ExternalLink, Building2, MapPin, Eye, Trash2, Search } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, ExternalLink, Building2, MapPin, Eye, Trash2, Search, Tag } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -24,7 +25,23 @@ interface ModerationJob {
   status: string;
   moderation_status: string | null;
   created_at: string;
+  role_id: string | null;
+  source_id: string | null;
   company: { name: string; logo_url: string | null } | null;
+  source: { name: string } | null;
+}
+
+interface RoleGroup {
+  id: string;
+  key: string;
+  title: string;
+  sort_order: number;
+}
+
+interface SpecialistRole {
+  id: string;
+  name: string;
+  group_id: string | null;
 }
 
 type TabKey = "draft" | "active" | "rejected" | "all";
@@ -38,6 +55,21 @@ export default function AdminJobModeration() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [counts, setCounts] = useState({ draft: 0, active: 0, rejected: 0, all: 0 });
+  const [roleGroups, setRoleGroups] = useState<RoleGroup[]>([]);
+  const [roles, setRoles] = useState<SpecialistRole[]>([]);
+  const [groupFilter, setGroupFilter] = useState<string>("all");
+
+  useEffect(() => {
+    const loadMeta = async () => {
+      const [{ data: gData }, { data: rData }] = await Promise.all([
+        supabase.from("role_groups").select("*").order("sort_order"),
+        supabase.from("specialist_roles").select("id, name, group_id").eq("is_active", true).order("sort_order"),
+      ]);
+      if (gData) setRoleGroups(gData);
+      if (rData) setRoles(rData);
+    };
+    loadMeta();
+  }, []);
 
   const fetchCounts = useCallback(async () => {
     const [draftRes, activeRes, rejectedRes, allRes] = await Promise.all([
@@ -63,7 +95,7 @@ export default function AdminJobModeration() {
 
     let query = supabase
       .from("jobs")
-      .select("id, title, description, city, country, external_url, external_source, status, moderation_status, created_at, companies(name, logo_url)")
+      .select("id, title, description, city, country, external_url, external_source, status, moderation_status, created_at, role_id, source_id, companies(name, logo_url), hh_sources(name)")
       .order("created_at", { ascending: false })
       .limit(500);
 
@@ -79,22 +111,48 @@ export default function AdminJobModeration() {
       query = query.ilike("title", `%${search.trim()}%`);
     }
 
+    // Filter by group (via role_id -> role -> group_id) — client-side
     const { data } = await query;
 
     if (data) {
-      setJobs(data.map((j: any) => ({ ...j, company: j.companies })));
+      let mapped = data.map((j: any) => ({
+        ...j,
+        company: j.companies,
+        source: j.hh_sources,
+      }));
+
+      // Client-side group filter
+      if (groupFilter !== "all") {
+        mapped = mapped.filter(j => {
+          if (!j.role_id) return false;
+          const role = roles.find(r => r.id === j.role_id);
+          return role?.group_id === groupFilter;
+        });
+      }
+
+      setJobs(mapped);
     }
     setLoading(false);
-  }, [tab, search]);
+  }, [tab, search, groupFilter, roles]);
 
   useEffect(() => {
     if (userRole === "admin") {
       fetchJobs();
       fetchCounts();
     }
-  }, [userRole, tab, search, fetchJobs, fetchCounts]);
+  }, [userRole, tab, search, groupFilter, fetchJobs, fetchCounts]);
 
   if (userRole !== "admin") return <Navigate to="/" />;
+
+  const changeJobRole = async (jobId: string, roleId: string) => {
+    const { error } = await supabase.from("jobs").update({ role_id: roleId }).eq("id", jobId);
+    if (error) {
+      toast.error("Ошибка: " + error.message);
+    } else {
+      toast.success("Группа обновлена");
+      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, role_id: roleId } : j));
+    }
+  };
 
   const publishJob = async (id: string) => {
     setActing(id);
@@ -117,7 +175,6 @@ export default function AdminJobModeration() {
   const deleteJob = async (id: string) => {
     if (!confirm("Удалить вакансию навсегда?")) return;
     setActing(id);
-    // Delete related records first
     await Promise.all([
       supabase.from("job_skills").delete().eq("job_id", id),
       supabase.from("applications").delete().eq("job_id", id),
@@ -133,13 +190,9 @@ export default function AdminJobModeration() {
   const publishAll = async () => {
     if (counts.draft === 0) return;
     if (!confirm(`Опубликовать все черновики (${counts.draft})?`)) return;
-
-    // Fetch all draft IDs
     const { data } = await supabase.from("jobs").select("id").or("status.eq.draft,moderation_status.eq.draft");
     if (!data) return;
     const ids = data.map(j => j.id);
-
-    // Batch update in chunks of 100
     for (let i = 0; i < ids.length; i += 100) {
       await supabase.from("jobs").update({ status: "active", moderation_status: "published" }).in("id", ids.slice(i, i + 100));
     }
@@ -203,11 +256,9 @@ export default function AdminJobModeration() {
     if (counts.rejected === 0) return;
     if (!confirm(`Удалить ВСЕ отклонённые вакансии навсегда (${counts.rejected})?`)) return;
     setActing("batch");
-
     const { data } = await supabase.from("jobs").select("id").eq("moderation_status", "rejected");
     if (!data) { setActing(null); return; }
     const ids = data.map(j => j.id);
-
     await Promise.all([
       supabase.from("job_skills").delete().in("job_id", ids),
       supabase.from("applications").delete().in("job_id", ids),
@@ -238,6 +289,18 @@ export default function AdminJobModeration() {
     }
   };
 
+  const getRoleName = (roleId: string | null) => {
+    if (!roleId) return null;
+    return roles.find(r => r.id === roleId)?.name || null;
+  };
+
+  const getGroupForRole = (roleId: string | null) => {
+    if (!roleId) return null;
+    const role = roles.find(r => r.id === roleId);
+    if (!role?.group_id) return null;
+    return roleGroups.find(g => g.id === role.group_id)?.title || null;
+  };
+
   return (
     <Layout>
       <section className="py-8">
@@ -258,6 +321,27 @@ export default function AdminJobModeration() {
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
+          </div>
+
+          {/* Group filter tabs */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <Button
+              variant={groupFilter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setGroupFilter("all")}
+            >
+              Все
+            </Button>
+            {roleGroups.map(group => (
+              <Button
+                key={group.id}
+                variant={groupFilter === group.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => setGroupFilter(group.id)}
+              >
+                {group.title}
+              </Button>
+            ))}
           </div>
 
           <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)}>
@@ -321,65 +405,105 @@ export default function AdminJobModeration() {
                     <span className="text-xs text-muted-foreground">Выбрать все ({jobs.length})</span>
                   </div>
                 )}
-                {jobs.map(job => (
-                  <Card key={job.id} className={selected.has(job.id) ? "ring-2 ring-accent/40" : ""}>
-                    <CardContent className="py-4">
-                      <div className="flex items-start gap-3">
-                        <div className="pt-1 flex-shrink-0">
-                          <Checkbox
-                            checked={selected.has(job.id)}
-                            onCheckedChange={() => toggleSelect(job.id)}
-                          />
-                        </div>
-                        {job.company?.logo_url ? (
-                          <img src={job.company.logo_url} alt="" className="w-10 h-10 rounded object-contain flex-shrink-0 hidden sm:block" />
-                        ) : (
-                          <div className="w-10 h-10 rounded bg-muted items-center justify-center flex-shrink-0 hidden sm:flex">
-                            <Building2 className="h-5 w-5 text-muted-foreground" />
+                {jobs.map(job => {
+                  const roleName = getRoleName(job.role_id);
+                  const groupName = getGroupForRole(job.role_id);
+                  return (
+                    <Card key={job.id} className={selected.has(job.id) ? "ring-2 ring-accent/40" : ""}>
+                      <CardContent className="py-4">
+                        <div className="flex items-start gap-3">
+                          <div className="pt-1 flex-shrink-0">
+                            <Checkbox
+                              checked={selected.has(job.id)}
+                              onCheckedChange={() => toggleSelect(job.id)}
+                            />
                           </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-sm">{job.title}</span>
-                            {job.external_source && <Badge variant="outline" className="text-xs">HH</Badge>}
-                            <Badge variant={job.status === "active" ? "default" : "secondary"} className="text-xs">
-                              {job.status === "draft" ? "Черновик" : job.status === "active" ? "Активна" : "Закрыта"}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                            <span>{job.company?.name || "—"}</span>
-                            {job.city && <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{job.city}</span>}
-                            <span>{new Date(job.created_at).toLocaleDateString("ru-RU")}</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{job.description?.replace(/<[^>]*>/g, "").slice(0, 200)}</p>
-                        </div>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          {job.external_url && (
-                            <a href={job.external_url} target="_blank" rel="noopener noreferrer">
-                              <Button variant="ghost" size="icon" title="Открыть на HH"><ExternalLink className="h-4 w-4" /></Button>
-                            </a>
+                          {job.company?.logo_url ? (
+                            <img src={job.company.logo_url} alt="" className="w-10 h-10 rounded object-contain flex-shrink-0 hidden sm:block" />
+                          ) : (
+                            <div className="w-10 h-10 rounded bg-muted items-center justify-center flex-shrink-0 hidden sm:flex">
+                              <Building2 className="h-5 w-5 text-muted-foreground" />
+                            </div>
                           )}
-                          <Link to={`/jobs/${job.id}`}>
-                            <Button variant="ghost" size="icon" title="Просмотр"><Eye className="h-4 w-4" /></Button>
-                          </Link>
-                          {(job.status === "draft" || job.moderation_status === "draft") && (
-                            <>
-                              <Button size="sm" onClick={() => publishJob(job.id)} disabled={!!acting} className="gap-1">
-                                <CheckCircle className="h-3.5 w-3.5" /> Да
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={() => rejectJob(job.id)} disabled={!!acting}>
-                                <XCircle className="h-3.5 w-3.5" />
-                              </Button>
-                            </>
-                          )}
-                          <Button size="sm" variant="ghost" onClick={() => deleteJob(job.id)} disabled={!!acting} title="Удалить навсегда">
-                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                          </Button>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-medium text-sm">{job.title}</span>
+                              {job.external_source && <Badge variant="outline" className="text-xs">HH</Badge>}
+                              <Badge variant={job.status === "active" ? "default" : "secondary"} className="text-xs">
+                                {job.status === "draft" ? "Черновик" : job.status === "active" ? "Активна" : "Закрыта"}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                              <span>{job.company?.name || "—"}</span>
+                              {job.city && <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{job.city}</span>}
+                              <span>{new Date(job.created_at).toLocaleDateString("ru-RU")}</span>
+                            </div>
+                            {/* Source info */}
+                            {job.source?.name && (
+                              <div className="text-xs text-muted-foreground mt-0.5">
+                                Источник: {job.source.name}
+                                {groupName && ` (${groupName})`}
+                                {` · Импортирован: ${new Date(job.created_at).toLocaleDateString("ru-RU")}`}
+                              </div>
+                            )}
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{job.description?.replace(/<[^>]*>/g, "").slice(0, 200)}</p>
+                            {/* Role changer */}
+                            <div className="flex items-center gap-2 mt-2">
+                              <Tag className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                              <Select
+                                value={job.role_id || "none"}
+                                onValueChange={(v) => changeJobRole(job.id, v)}
+                              >
+                                <SelectTrigger className="h-7 text-xs w-auto min-w-[180px]">
+                                  <SelectValue placeholder="Без роли" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {roleGroups.map(group => {
+                                    const groupRoles = roles.filter(r => r.group_id === group.id);
+                                    if (groupRoles.length === 0) return null;
+                                    return (
+                                      <div key={group.id}>
+                                        <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">{group.title}</div>
+                                        {groupRoles.map(r => (
+                                          <SelectItem key={r.id} value={r.id} className="text-xs">
+                                            {r.name}
+                                          </SelectItem>
+                                        ))}
+                                      </div>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {job.external_url && (
+                              <a href={job.external_url} target="_blank" rel="noopener noreferrer">
+                                <Button variant="ghost" size="icon" title="Открыть на HH"><ExternalLink className="h-4 w-4" /></Button>
+                              </a>
+                            )}
+                            <Link to={`/jobs/${job.id}`}>
+                              <Button variant="ghost" size="icon" title="Просмотр"><Eye className="h-4 w-4" /></Button>
+                            </Link>
+                            {(job.status === "draft" || job.moderation_status === "draft") && (
+                              <>
+                                <Button size="sm" onClick={() => publishJob(job.id)} disabled={!!acting} className="gap-1">
+                                  <CheckCircle className="h-3.5 w-3.5" /> Да
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={() => rejectJob(job.id)} disabled={!!acting}>
+                                  <XCircle className="h-3.5 w-3.5" />
+                                </Button>
+                              </>
+                            )}
+                            <Button size="sm" variant="ghost" onClick={() => deleteJob(job.id)} disabled={!!acting} title="Удалить навсегда">
+                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </Tabs>

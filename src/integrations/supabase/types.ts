@@ -576,7 +576,9 @@ export type Database = {
           items_closed: number | null
           items_created: number | null
           items_found: number | null
+          items_skipped: number | null
           items_updated: number | null
+          skip_reasons: Json | null
           source_id: string
           started_at: string
           status: string
@@ -589,7 +591,9 @@ export type Database = {
           items_closed?: number | null
           items_created?: number | null
           items_found?: number | null
+          items_skipped?: number | null
           items_updated?: number | null
+          skip_reasons?: Json | null
           source_id: string
           started_at?: string
           status?: string
@@ -602,7 +606,9 @@ export type Database = {
           items_closed?: number | null
           items_created?: number | null
           items_found?: number | null
+          items_skipped?: number | null
           items_updated?: number | null
+          skip_reasons?: Json | null
           source_id?: string
           started_at?: string
           status?: string
