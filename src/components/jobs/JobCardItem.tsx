@@ -57,13 +57,43 @@ const contractLabels: Record<string, string> = {
 
 export { levelLabels, contractLabels };
 
+/** Approximate exchange rates to RUB (updated periodically) */
+const TO_RUB: Record<string, number> = {
+  KZT: 0.18,   // 1 KZT ≈ 0.18 RUB
+  BYR: 24.5,   // 1 BYN ≈ 24.5 RUB
+  USD: 89,
+  EUR: 97,
+  UZS: 0.007,
+};
+
+const currencySymbols: Record<string, string> = {
+  RUB: "₽", RUR: "₽", KZT: "₸", BYR: "Br", USD: "$", EUR: "€", UZS: "сўм",
+};
+
 const formatSalary = (min: number | null, max: number | null, currency: string | null) => {
   if (!min && !max) return null;
-  const curr = currency === "RUR" || currency === "RUB" ? "₽" : currency || "₽";
-  if (min && max) return `${min.toLocaleString()} – ${max.toLocaleString()} ${curr}`;
-  if (min) return `от ${min.toLocaleString()} ${curr}`;
-  if (max) return `до ${max.toLocaleString()} ${curr}`;
-  return null;
+  const code = currency || "RUB";
+  const sym = currencySymbols[code] || code;
+  const isRub = code === "RUB" || code === "RUR";
+
+  const fmtRange = (lo: number | null, hi: number | null, s: string) => {
+    if (lo && hi) return `${lo.toLocaleString("ru-RU")} – ${hi.toLocaleString("ru-RU")} ${s}`;
+    if (lo) return `от ${lo.toLocaleString("ru-RU")} ${s}`;
+    if (hi) return `до ${hi.toLocaleString("ru-RU")} ${s}`;
+    return null;
+  };
+
+  const original = fmtRange(min, max, sym);
+
+  if (isRub) return original;
+
+  // Convert to RUB equivalent
+  const rate = TO_RUB[code];
+  if (!rate) return original;
+  const rubMin = min ? Math.round(min * rate) : null;
+  const rubMax = max ? Math.round(max * rate) : null;
+  const rubStr = fmtRange(rubMin, rubMax, "₽");
+  return `${original} (≈ ${rubStr})`;
 };
 
 const formatDate = (dateStr: string) => {
